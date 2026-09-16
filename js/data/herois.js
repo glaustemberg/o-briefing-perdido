@@ -1,11 +1,13 @@
 // Parâmetros da seção 3 da spec, prefixo e vozes de cada herói (spec 8), e as funções puras de física
 // que Player.js e tests/teste.html compartilham.
 window.OBP = window.OBP || {};
-OBP.FRAMES = { idle: 0, walk1: 1, walk2: 2, walk3: 3, jump: 4, fall: 5, punch: 6, hurt: 7 };
+OBP.FRAMES = { idle: 0, walk1: 1, walk2: 2, walk3: 3, jump: 4, fall: 5, punch: 6, hurt: 7,
+  // 8 a 15: ciclo de andar (decisao 42). 16 a 22: agachar e extras (decisao 53)
+  crouch: 16, crouchPunch: 17, crouchStep: 18, crouchHurt: 19, windup: 20, lookUp: 21, idle2: 22 };
 OBP.HEROIS = {
   tikinho: {
     id: 'tikinho', nome: 'TIKINHO', prefixo: 'tk', tira: 'assets/sprites/tikinho/tk-tira.png', celula: 64,
-    hitbox: { w: 24, h: 52 },
+    hitbox: { w: 24, h: 52 }, hitboxAgachado: { w: 24, h: 38 },
     vel: 220, acel: 2200, freio: 2640,
     v0: 590, gSubida: 1552, gQueda: 2328, apiceMs: 30, bufferMs: 133, puloPx: 112,
     // soco 7 f: frame 1 em f0, hitbox f1 a f3, recupera f4 a f6, cancela em pulo de f4; caixa 20x20 à frente, dy do topo da hitbox
@@ -20,7 +22,7 @@ OBP.HEROIS = {
   },
   gilpp: {
     id: 'gilpp', nome: 'GILPP', prefixo: 'gp', tira: 'assets/sprites/gilpp/gp-tira.png', celula: 96,
-    hitbox: { w: 28, h: 68 },
+    hitbox: { w: 28, h: 68 }, hitboxAgachado: { w: 28, h: 56 },
     vel: 170, acel: 1020, freio: 1276,
     v0: 626, gSubida: 1360, gQueda: 2040, apiceMs: 60, bufferMs: 167, puloPx: 144,
     // soco 11 f: antecipa f0, hitbox f1 a f4, recupera f5 a f10, não cancela; caixa 28x20

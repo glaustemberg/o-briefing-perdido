@@ -11,7 +11,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     this.setOrigin(0.5, 1); // x,y do sprite é o pé (spec 2.4: pés na última linha da célula)
     this.body.setSize(hb.w, hb.h).setOffset((c - hb.w) / 2, c - hb.h); // hitbox centrada no pé (spec 2.5)
     this.body.setMaxVelocity(100000, 100000); // nunca setMaxVelocityY: o teto de queda é clamp em update
-    this.dir = 1; this.estado = 'chao'; this.morto = false;
+    this.dir = 1; this.estado = 'chao'; this.morto = false; this.agachado = false;
     this.ultChao = -1e9; this.ultAperto = -1e9; this.pausaRest = 0; this.pausou = false; this.cortou = false;
     this.socoMs = -1; this.acertados = new Set();
     this.feridoAte = 0; this.recuoAte = 0; this.invencivelAte = 0; this.quedaDe = yPe;
@@ -22,6 +22,8 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (a.exists(`${id}-andar`)) return;
     // ciclo de andar da v1: 2-3-4-3 (decisão 31), a 12 fps tikinho e 10 fps gilpp
     a.create({ key: `${id}-andar`, frames: a.generateFrameNumbers(id, { frames: [8, 9, 10, 11, 12, 13, 14, 15] }), frameRate: this.h.andarFps, repeat: -1 });
+    // deslizar agachado: alterna a pose parada e a do pe a frente (decisao 53)
+    a.create({ key: `${id}-deslizar`, frames: a.generateFrameNumbers(id, { frames: [OBP.FRAMES.crouch, OBP.FRAMES.crouchStep] }), frameRate: 6, repeat: -1 });
   }
   socoFrame() { return this.socoMs < 0 ? -1 : Math.floor(this.socoMs * 60 / 1000); }
   socoCaixa() {
@@ -48,6 +50,28 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     this.body.setGravityY(1200);
     this.anims.stop(); this.setFrame(OBP.FRAMES.hurt); this.setVisible(true);
   }
+  // troca a caixa de colisao mantendo o pe no lugar (o offset conta do topo da celula)
+  agachar(v) {
+    if (this.agachado === v) return;
+    const c = this.h.celula, hb = v ? this.h.hitboxAgachado : this.h.hitbox;
+    this.body.setSize(hb.w, hb.h).setOffset((c - hb.w) / 2, c - hb.h);
+    this.agachado = v;
+  }
+  // so levanta se a caixa em pe couber: senao o heroi atravessaria o teto
+  tetoLivre() {
+    const camada = this.scene.camada;
+    if (!camada) return true;
+    const b = this.body, hb = this.h.hitbox, topo = b.bottom - hb.h + 1;
+    for (const x of [b.left + 2, b.right - 2]) {
+      for (let y = topo; y < b.top; y += 16) {
+        const t = camada.getTileAtWorldXY(x, y);
+        if (t && t.collides) return false;
+      }
+      const t = camada.getTileAtWorldXY(x, topo);
+      if (t && t.collides) return false;
+    }
+    return true;
+  }
   update(inp, t, dt) {
     if (this.morto) return;
     const b = this.body, h = this.h, F = OBP.Fisica, s = dt / 1000;
@@ -59,9 +83,13 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     } else if (this.estado === 'chao') { this.estado = 'ar'; this.quedaDe = this.y; }
     if (!noChao && this.quedaDe !== null) this.quedaDe = Math.min(this.quedaDe, this.y);
     const travado = t < this.recuoAte;
+    // agachar: so no chao. Pular levanta primeiro, se houver teto. Soltar Baixo so levanta se couber.
+    if (noChao && inp.baixo && !travado && !(inp.puloAgora && this.tetoLivre())) this.agachar(true);
+    else if (this.agachado && (!noChao || !inp.baixo || inp.puloAgora) && this.tetoLivre()) this.agachar(false);
     // horizontal: aceleração e freio por herói; no chão o soco para o herói (Alex Kidd zera a velocidade no soco)
     let alvo = 0;
     if (!travado) { if (inp.esq) alvo = -h.vel; else if (inp.dir) alvo = h.vel; }
+    if (this.agachado) alvo *= OBP.CFG.VEL_AGACHADO;   // desliza mais devagar que andando
     if (this.socoMs >= 0 && noChao) alvo = 0;
     if (!travado) b.setVelocityX(F.andar(b.velocity.x, alvo, h, s));
     if (alvo !== 0) { this.dir = Math.sign(alvo); this.setFlipX(this.dir < 0); }
@@ -89,7 +117,13 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     const F = OBP.FRAMES, b = this.body;
     // invencível pisca por visibilidade (alpha parcial é proibido, spec 2.3): 4 f ligado, 4 f desligado
     this.setVisible(t >= this.invencivelAte || Math.floor(t / 66) % 2 === 0);
-    if (t < this.feridoAte) { this.anims.stop(); this.setFrame(F.hurt); return; }
+    if (t < this.feridoAte) { this.anims.stop(); this.setFrame(this.agachado ? F.crouchHurt : F.hurt); return; }
+    if (this.agachado) {
+      if (this.socoMs >= 0) { this.anims.stop(); this.setFrame(F.crouchPunch); return; }
+      if (Math.abs(b.velocity.x) > 8) this.play(`${this.h.id}-deslizar`, true);
+      else { this.anims.stop(); this.setFrame(F.crouch); }
+      return;
+    }
     if (this.socoMs >= 0) { this.anims.stop(); this.setFrame(F.punch); return; }
     if (!noChao) { this.anims.stop(); this.setFrame(b.velocity.y < 0 ? F.jump : F.fall); return; }
     if (Math.abs(b.velocity.x) > 8) this.play(`${this.h.id}-andar`, true);

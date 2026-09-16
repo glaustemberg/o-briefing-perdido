@@ -3,7 +3,7 @@ window.OBP = window.OBP || {};
 OBP.CFG = {
   LARG: 640, ALT: 360, TILE: 32,
   COYOTE_MS: 100, CORTE: 0.5, TERMINAL: 480, DECOLAGEM: 4, APICE_V: 48,
-  CORACOES: 3, VIDAS: 3,
+  CORACOES: 3, VIDAS: 3, VEL_AGACHADO: 0.45,   // desliza agachado a 45% da velocidade normal (decisao 53)
   INVENCIVEL_MS: 1000, RECUO_MS: 100, HITSTOP_DANO_MS: 100,
   PHASER_URL: 'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js',
 };

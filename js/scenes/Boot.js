@@ -8,6 +8,16 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.spritesheet('tikinho', 'assets/sprites/tikinho/tk-tira.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('gilpp', 'assets/sprites/gilpp/gp-tira.png', { frameWidth: 96, frameHeight: 96 });
     for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav`);
+    // Arte final da fase 1. As texturas provisorias de Level/Item/Enemy so nascem se a chave nao existir,
+    // entao carregar aqui com a MESMA chave faz o jogo usar a arte sem mudar logica nenhuma.
+    const T = 'assets/tiles/fase-01/';
+    this.load.image('tiles', T + 'tileset-leg.png');        // 8 tiles na ordem de OBP.Mapa.LEG, 7 = parede interna
+    this.load.image('saco', 'assets/tiles/itens/item-lampada.png');   // lampada no lugar do saco de dinheiro (decisao 43)
+    this.load.image('coxinha', T + 'item-coxinha.png');
+    this.load.image('check-off', T + 'item-checkpoint-off.png');
+    this.load.image('check-on', T + 'item-checkpoint-on.png');
+    this.load.image('postit', T + 'inimigo-postit.png');
+    this.load.image('fundo', 'assets/fundos/fase-01.png');
   }
   create() {
     this.registry.set({ heroi: 'tikinho', coracoes: OBP.CFG.CORACOES, verba: 0, vidas: OBP.CFG.VIDAS });

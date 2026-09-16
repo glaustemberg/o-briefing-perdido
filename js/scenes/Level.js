@@ -36,10 +36,24 @@ OBP.Level = class extends Phaser.Scene {
     this.m = OBP.Mapa.parse(fase.mapa);
     OBP.Level.criarTiles(this);
     this.cameras.main.setBackgroundColor(OBP.PAL.ceu);
+    // fundo da fase: fica parado na tela e anda pela tilePosition, entao repete para sempre sem acabar no fim do mapa
+    if (this.textures.exists('fundo')) {
+      const alt = this.textures.get('fundo').getSourceImage().height;
+      this.fundo = this.add.tileSprite(0, 0, 640, 360, 'fundo').setOrigin(0).setScrollFactor(0).setDepth(-10);
+      this.fundo.tilePositionY = Math.max(0, alt - 360);   // ancora no pe da parede
+    }
     this.map = this.make.tilemap({ data: this.m.dados, tileWidth: 32, tileHeight: 32 });
     const ts = this.map.addTilesetImage('tiles', 'tiles', 32, 32, 0, 0);
     this.camada = this.map.createLayer(0, ts, 0, 0);
-    this.camada.setCollision([0, 1, 2, 3, 4, 6]); // 5 (espinho) não colide
+    // '#' com outro solido em cima vira parede interna (7); o tile 0 tem rodape claro e so serve de piso exposto
+    if (this.textures.get('tiles').getSourceImage().width >= 256) {
+      this.camada.forEachTile(t => {
+        if (t.index !== 0) return;
+        const acima = this.camada.getTileAt(t.x, t.y - 1);
+        if (acima && [0, 2, 3, 4, 6, 7].includes(acima.index)) t.index = 7;
+      });
+    }
+    this.camada.setCollision([0, 1, 2, 3, 4, 6, 7]); // 5 (espinho) não colide
     this.camada.forEachTile(t => { if (t.index === 1) { t.collideDown = false; t.collideLeft = false; t.collideRight = false; } });
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
     this.criarEntidades();
@@ -200,6 +214,7 @@ OBP.Level = class extends Phaser.Scene {
     for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
     this.blocos.update(t);
     this.cam.update();
+    if (this.fundo) this.fundo.tilePositionX = this.cameras.main.scrollX * 0.4;  // parallax do fundo
     if (this.morrendo) return;
     const caixa = this.player.socoCaixa();
     if (caixa) { this.blocos.socar(caixa, this.player); this.socarInimigos(caixa); }
