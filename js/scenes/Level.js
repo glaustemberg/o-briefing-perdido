@@ -6,6 +6,8 @@ OBP.Level = class extends Phaser.Scene {
     this.faseId = (data && data.fase) || 'fase-01';
     this.checkpoint = (data && data.checkpoint) || null;
     this.heroiId = this.registry.get('heroi') || 'tikinho';
+    this.checkpointAtivo = !!this.checkpoint;
+    this.concluida = false; this.podeSair = false;
   }
   // 7 tiles de 32 em uma textura 224x32, na ordem de OBP.Mapa.LEG mais o usado (6). Só retângulos: sem anti-aliasing.
   static criarTiles(scene) {
@@ -43,18 +45,35 @@ OBP.Level = class extends Phaser.Scene {
     this.criarEntidades();
     this.inp = new OBP.Input(this);
     this.cam = new OBP.Camera(this, this.player, this.map.widthInPixels, this.map.heightInPixels);
-    this.parada = 0; this.controle = true;
+    this.parada = 0; this.controle = false; this.morrendo = false;
+    // iris de entrada simplificada em fade (300 ms); a fala de inicio toca no primeiro frame de controle
+    this.cameras.main.once('camerafadeincomplete', () => {
+      this.controle = true;
+      OBP.Voice.falar(this.checkpoint ? 'inicio-01' : 'inicio-f1');
+    });
+    this.cameras.main.fadeIn(300, 0, 0, 0);
+    this.mostrarNome();
     this.debugSoco = this.add.graphics().setDepth(100);
     this.input.keyboard.on('keydown-F1', () => this.alternarDebug());
     this.registry.set('coracoes', OBP.CFG.CORACOES);
     this.scene.launch('Hud');
-    this.events.once('shutdown', () => this.scene.stop('Hud'));
+    this.events.once('shutdown', () => {
+      this.scene.stop('Hud');
+      // this.events (sys.events) sobrevive a reinicios da mesma cena; sem isso os listeners de criarEntidades()
+      // dobram a cada volta Level -> Select -> Level (ou respawn da Task 8).
+      this.events.off('bloco-quebrado');
+      this.events.off('saco');
+    });
   }
   criarEntidades() {
+    OBP.Hud.criarTexturas(this); // textura 'saco' tem que existir antes do Itens.criarDoMapa (Task 6 ainda nao liga isso aqui)
     const P = this.m.entidades.find(e => e.ch === 'P');
     const x = this.checkpoint ? this.checkpoint.x : P.col * 32 + 16, y = this.checkpoint ? this.checkpoint.y : (P.lin + 1) * 32;
     this.player = new OBP.Player(this, x, y, this.heroiId);
     this.physics.add.collider(this.player, this.camada);
+    this.itens = new OBP.Itens(this, this.camada);
+    this.itens.criarDoMapa(this.m.entidades, this.checkpointAtivo);
+    this.physics.add.overlap(this.player, this.itens.grupo, (p, item) => this.itens.coletar(p, item), (p) => !p.morto);
     this.player.on('pulou', () => { OBP.Audio.pulo(); OBP.Voice.reacaoCada('pulo-01', 10); });
     this.player.on('socou', () => OBP.Audio.soco());
     this.player.on('pousouAlto', () => OBP.Audio.pouso());
@@ -78,6 +97,29 @@ OBP.Level = class extends Phaser.Scene {
     this.debugSoco.clear();
     if (this.physics.world.drawDebug && caixa) this.debugSoco.lineStyle(1, 0xff00ff).strokeRect(caixa.x, caixa.y, caixa.w, caixa.h);
   }
+  mostrarNome() {
+    const t = this.add.text(320, 120, OBP.FASES[this.faseId].nome, OBP.estiloTexto(16, OBP.PAL.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(150);
+    this.time.delayedCall(1500, () => t.destroy());
+  }
+  ativarCheckpoint(item) {
+    this.checkpointAtivo = true;
+    item.setTexture('check-on');
+    this.checkpoint = { x: item.x, y: item.y + 16 }; // pe do heroi na base do tile da bandeira
+    OBP.Audio.checkpoint(); OBP.Voice.falar('check-01');
+  }
+  // coxinha (spec 4): fecha a fase, 3 coracoes, fala de vitoria; Enter, Z, espaco ou A voltam a selecao
+  concluir() {
+    if (this.concluida || this.morrendo) return;
+    this.concluida = true; this.controle = false;
+    this.registry.set('coracoes', OBP.CFG.CORACOES);
+    OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
+    const P = OBP.PAL, verba = String(this.registry.get('verba')).padStart(5, '0');
+    this.add.rectangle(320, 180, 400, 120, P.num(P.contorno)).setStrokeStyle(2, P.num(P.branco)).setScrollFactor(0).setDepth(200);
+    this.add.text(320, 148, 'FASE CONCLUÍDA', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.add.text(320, 180, `VERBA ${verba}`, OBP.estiloTexto(16, P.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.add.text(320, 208, 'ENTER VOLTA À SELEÇÃO', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.time.delayedCall(600, () => { this.podeSair = true; });
+  }
   update(t, dt) {
     if (this.parada > 0) {
       this.parada -= dt;
@@ -85,6 +127,7 @@ OBP.Level = class extends Phaser.Scene {
       return;
     }
     const inp = this.inp.ler();
+    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start('Select'); return; }
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
     this.cam.update();
     this.desenharDebug(this.player.socoCaixa());
