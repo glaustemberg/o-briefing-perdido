@@ -15,6 +15,10 @@ OBP.Select = class extends Phaser.Scene {
       return { spr, nome, moldura };
     });
     this.add.text(320, 330, 'SETAS ESCOLHEM   ENTER CONFIRMA', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5);
+    // gamepad só aparece depois de um botão apertado (política do navegador); no artifact pode ser barrado pelo iframe
+    const gp = this.input.gamepad;
+    this.txtPad = this.add.text(320, 346, gp && gp.total > 0 ? 'CONTROLE CONECTADO' : 'SEM CONTROLE: TECLADO OK', OBP.estiloTexto(8, OBP.PAL.rim)).setOrigin(0.5);
+    if (gp) gp.once('connected', () => this.txtPad.setText('CONTROLE CONECTADO'));
     this.inp = new OBP.Input(this);
     OBP.Audio.init(this);
     this.confirmado = false;
