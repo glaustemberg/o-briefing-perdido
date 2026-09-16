@@ -62,7 +62,8 @@ function validaArquivo(caminhoRelativo) {
     }
 
     // caracteres permitidos: LEG + ENTIDADES + '.'
-    const permitidos = new Set([...Object.keys(OBP.Mapa.LEG), ...OBP.Mapa.ENTIDADES.split(''), '.']);
+    // esteiras '>' '<' e bolha 'o' sao da legenda da spec (fases 4 e 5), mesmo antes de entrarem no Mapa.js
+    const permitidos = new Set([...Object.keys(OBP.Mapa.LEG), ...OBP.Mapa.ENTIDADES.split(''), '.', '>', '<', 'o']);
     fase.mapa.forEach((linha, lin) => {
       [...linha].forEach((ch, col) => {
         if (!permitidos.has(ch)) erros.push(`caractere '${ch}' invalido em col ${col} lin ${lin}`);
@@ -84,8 +85,11 @@ function validaArquivo(caminhoRelativo) {
     if (inimigos !== 6) erros.push(`inimigos ${inimigos} != 6`);
     if (npcs < 1 || npcs > 2) erros.push(`npcs ${npcs} fora da faixa 1-2`);
 
+    // fase 8 e dividida em 8a e 8b: K e A ficam em uma metade cada (spec secao 5)
+    const duasPartes = /fase-08[ab]/.test(caminhoRelativo);
     for (const ch of ['P', 'K', 'X', 'A']) {
       const n = conta(ch);
+      if (duasPartes && (ch === 'K' || ch === 'A') && n === 0) continue;
       if (n !== 1) erros.push(`${ch} aparece ${n}x, esperado exatamente 1x`);
     }
 
