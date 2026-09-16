@@ -5,13 +5,19 @@
 //
 // Blocos de 15 linhas:
 // 1 (lin 0-14): mergulho no arquivo, primeira camada que afunda, dois sacos
-// 2 (lin 15-29): bolha de fôlego, primeira pergunta, Comic Sans nadando em cardume
+// 2 (lin 15-29): bolha de fôlego, primeira pergunta, cardume de Comic Sans (dois juntos, col
+//    7-9) e a camada que afunda logo depois
 // 3 (lin 30-44): segunda camada, ponto de ancoragem solto, segunda pergunta
-// 4 (lin 45-59): fonte não incorporada cega a tela, bolha de fôlego
-// 5 (lin 60-74): checkpoint do Michel, segundo cardume de Comic Sans, nova camada
-// 6 (lin 75-89): segunda ancoragem, terceira pergunta, camada estreita
-// 7 (lin 90-104): segunda fonte não incorporada, reta de aproximação
-// 8 (lin 105-119): bolha final, carimbo aprovado de primeira e a saída no fundo do arquivo
+// 4 (lin 45-59): sacos, bolha de fôlego e a camada que afunda antes do checkpoint (a fonte que
+//    estava aqui foi pro susto final do bloco 8)
+// 5 (lin 60-74): checkpoint do Michel, segundo cardume de Comic Sans (dois juntos, col 15-17),
+//    nova camada logo depois
+// 6 (lin 75-89): terceira pergunta e a camada mais estreita do mergulho (a segunda ancoragem foi
+//    removida daqui pra sobrar espaço de inimigo pro susto final)
+// 7 (lin 90-104): reta de aproximação com a camada que afunda, estrelas e sacos guardados (a
+//    segunda fonte que estava aqui foi pro susto final do bloco 8)
+// 8 (lin 105-119): bolha final, camada que afunda, susto de fonte não incorporada bem perto do
+//    carimbo aprovado de primeira (col 8, ao lado do A em col 6) e a saída no fundo do arquivo
 window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-04'] = {
@@ -38,7 +44,7 @@ OBP.FASES['fase-04'] = {
     '#......................#',
     '#.........$............#',
     '#......................#',
-    '#....*..1..............#',
+    '#....*..11.............#',
     '#......................#',
     '#.............?........#',
     '#......................#',
@@ -68,7 +74,7 @@ OBP.FASES['fase-04'] = {
     '#......................#',
     '#.......*..............#',
     '#......................#',
-    '#.....3................#',
+    '#......................#',
     '#...........o..........#',
     '#......................#',
     '#...............*......#',
@@ -83,7 +89,7 @@ OBP.FASES['fase-04'] = {
     '#.......$..............#',
     '#......................#',
     '#....*.................#',
-    '#...............1......#',
+    '#...............11.....#',
     '#......................#',
     '#......................#',
     '#..................*...#',
@@ -96,7 +102,7 @@ OBP.FASES['fase-04'] = {
     '#......................#',
     '#......................#',
     '#..........$...........#',
-    '#......2...............#',
+    '#......................#',
     '#......................#',
     '#...........*..........#',
     '#......................#',
@@ -113,7 +119,7 @@ OBP.FASES['fase-04'] = {
     '#........*.............#',
     '#......................#',
     '#......................#',
-    '#..............3.......#',
+    '#......................#',
     '#......................#',
     '#......................#',
     '#................*.....#',
@@ -127,7 +133,7 @@ OBP.FASES['fase-04'] = {
     '#......................#',
     '#......................#',
     '#............*.........#',
-    '#.....A................#',
+    '#.....A.3..............#',
     '#........$.............#',
     '#......................#',
     '#......................#',
