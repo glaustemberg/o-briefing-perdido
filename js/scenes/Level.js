@@ -73,6 +73,7 @@ OBP.Level = class extends Phaser.Scene {
     this.blocos = new OBP.Blocos(this, this.camada);
     this.itens = new OBP.Itens(this, this.camada);
     this.itens.criarDoMapa(this.m.entidades, this.checkpointAtivo);
+    this.criarInimigos();
     this.physics.add.collider(this.player, this.camada, (p, tile) => this.blocos.cabecada(p, tile));
     this.physics.add.overlap(this.player, this.itens.grupo, (p, item) => this.itens.coletar(p, item), (p) => !p.morto);
     this.player.on('pulou', () => { OBP.Audio.pulo(); OBP.Voice.reacaoCada('pulo-01', 10); });
@@ -80,6 +81,72 @@ OBP.Level = class extends Phaser.Scene {
     this.player.on('pousouAlto', () => OBP.Audio.pouso());
     this.events.on('bloco-quebrado', () => { OBP.Audio.bloco(); OBP.Voice.reacaoCada('soco-01', 10); });
     this.events.on('saco', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
+  }
+  criarInimigos() {
+    OBP.Enemy.criarTextura(this);
+    const lista = OBP.FASES[this.faseId].inimigos;
+    this.inimigos = this.physics.add.group();
+    for (const e of this.m.entidades) {
+      if (!'123'.includes(e.ch)) continue;
+      if (lista[Number(e.ch) - 1] !== 'postit') continue; // M1 só conhece o Post-it
+      this.inimigos.add(new OBP.Enemy(this, e.col * 32 + 16, e.lin * 32 + 16));
+    }
+    this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto);
+    this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto);
+  }
+  contatoInimigo(e) {
+    this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
+  }
+  // toque de inimigo ou espinho: 1 coração, hit stop 100 ms, recuo 6 f, shake 4 px por 100 ms, invencível 60 f
+  ferirJogador(dir) {
+    if (this.morrendo || !this.player.ferir(dir, OBP.CFG.HITSTOP_DANO_MS)) return;
+    this.registry.inc('coracoes', -1);
+    OBP.Audio.dano();
+    this.pararTudo(OBP.CFG.HITSTOP_DANO_MS);
+    this.cameras.main.shake(100, new Phaser.Math.Vector2(4 / 640, 4 / 360));
+    if (this.registry.get('coracoes') <= 0) this.matar(); else OBP.Voice.falar('dano-01');
+  }
+  // soco no inimigo: mata, voa no knockback do herói, hit stop do herói (40 ms tikinho, 60 gilpp)
+  socarInimigos(caixa) {
+    const r = new Phaser.Geom.Rectangle(caixa.x, caixa.y, caixa.w, caixa.h), h = this.player.h;
+    for (const e of this.inimigos.getChildren()) {
+      if (e.morto || this.player.acertados.has(e)) continue;
+      const b = e.body;
+      if (Phaser.Geom.Intersects.RectangleToRectangle(r, new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height))) {
+        this.player.acertados.add(e);
+        e.morrer(this.player.dir, h.knockback);
+        this.pararTudo(h.hitStop);
+      }
+    }
+  }
+  // espinho (tile 5) não colide: fere por sobreposição com a hitbox do herói
+  checarEspinhos() {
+    const b = this.player.body;
+    const t = this.camada.getTilesWithinWorldXY(b.x, b.y, b.width, b.height, { isNotEmpty: true }).find(x => x.index === 5);
+    if (t) this.ferirJogador(Math.sign(this.player.x - t.getCenterX()) || 1);
+  }
+  // morte: voa e cai 1,2 s, fade 300 ms, volta ao checkpoint com 3 corações; sem vidas, game over mínimo do M1
+  matar() {
+    if (this.morrendo) return;
+    this.morrendo = true; this.controle = false;
+    this.registry.set('coracoes', 0);
+    this.registry.inc('vidas', -1);
+    this.player.morrer();
+    OBP.Audio.morte(); OBP.Voice.falar('morte-01');
+    this.time.delayedCall(1200, () => {
+      this.cameras.main.once('camerafadeoutcomplete', () => this.reiniciar());
+      this.cameras.main.fadeOut(300, 0, 0, 0);
+    });
+  }
+  reiniciar() {
+    if (this.registry.get('vidas') > 0) { this.scene.restart({ fase: this.faseId, checkpoint: this.checkpoint }); return; }
+    this.cameras.main.resetFX();
+    this.add.rectangle(320, 180, 640, 360, OBP.PAL.num(OBP.PAL.contorno)).setScrollFactor(0).setDepth(200);
+    this.add.text(320, 164, 'ACABOU O JOB', OBP.estiloTexto(16, OBP.PAL.coracao)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.add.text(320, 196, `VERBA ${String(this.registry.get('verba')).padStart(5, '0')}`, OBP.estiloTexto(8, OBP.PAL.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    // continue ilimitado: início da fase, 3 vidas, verba 0 (spec 4)
+    this.registry.set({ vidas: OBP.CFG.VIDAS, verba: 0 });
+    this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null }));
   }
   // hit stop: pausa física e animações por ms; o update devolve cedo enquanto durar
   pararTudo(ms) {
@@ -130,10 +197,14 @@ OBP.Level = class extends Phaser.Scene {
     const inp = this.inp.ler();
     if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start('Select'); return; }
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
+    for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
     this.blocos.update(t);
     this.cam.update();
+    if (this.morrendo) return;
     const caixa = this.player.socoCaixa();
-    if (caixa) this.blocos.socar(caixa, this.player);
+    if (caixa) { this.blocos.socar(caixa, this.player); this.socarInimigos(caixa); }
+    this.checarEspinhos();
+    if (this.player.y > this.map.heightInPixels + 64) this.matar(); // buraco mata direto
     this.desenharDebug(caixa);
   }
 };

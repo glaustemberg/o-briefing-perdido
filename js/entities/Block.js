@@ -19,12 +19,17 @@ OBP.Pedacos = {
       p.body.setAllowGravity(true); p.body.setGravityY(1000); p.body.setVelocity(sx * 120, -280); p.nasceu = t;
     });
   },
-  // giro em passos de 90 graus a cada 60 ms (a spec pede 45, a regra 2.3 proíbe rotação fora de 90); somem em 700 ms
+  // giro em passos de 90 graus a cada 60 ms (a spec pede 45, a regra 2.3 proíbe rotação fora de 90); somem em 700 ms.
+  // Um objeto só (não só os 4 quadrantes): a morte do inimigo (Task 8) chama isto direto no próprio sprite em vez de
+  // duplicar a conta de ângulo e expiração. Devolve true quando o objeto já passou dos 700 ms (quem chama destrói).
+  passo(obj, nascimento, t) {
+    obj.angle = Math.floor((t - nascimento) / 60) * 90;
+    return t - nascimento > 700;
+  },
   update(scene, t) {
     if (!scene._pedacosGrupo || !scene._pedacosGrupo.scene) return;
     for (const p of [...scene._pedacosGrupo.getChildren()]) {
-      p.angle = Math.floor((t - p.nasceu) / 60) * 90;
-      if (t - p.nasceu > 700) p.destroy();
+      if (this.passo(p, p.nasceu, t)) p.destroy();
     }
   },
 };
