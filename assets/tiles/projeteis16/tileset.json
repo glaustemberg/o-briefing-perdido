@@ -1,0 +1,18 @@
+{
+ "p-lampada": 0,
+ "p-lampada-apagada": 1,
+ "p-cafe": 2,
+ "p-energetico": 3,
+ "p-bola": 4,
+ "p-coracao": 5,
+ "p-coracao-vazio": 6,
+ "proj-sirene": 7,
+ "proj-camisa": 8,
+ "proj-calca": 9,
+ "proj-chapeu": 10,
+ "proj-bomba": 11,
+ "proj-raio": 12,
+ "p-relogio": 13,
+ "p-trofeu": 14,
+ "p-seta": 15
+}

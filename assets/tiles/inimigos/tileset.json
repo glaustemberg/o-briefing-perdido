@@ -1,0 +1,18 @@
+{
+ "inimigo-nuvem-a": 0,
+ "inimigo-nuvem-raio": 1,
+ "inimigo-nuvem-dorme": 2,
+ "proj-raio-solto": 3,
+ "inimigo-loira-a": 4,
+ "inimigo-loira-arremessa": 5,
+ "inimigo-loira-idle": 6,
+ "inimigo-bomba-solta": 7,
+ "inimigo-abacaxi-a": 8,
+ "inimigo-abacaxi-b": 9,
+ "inimigo-abacaxi-c": 10,
+ "inimigo-abacaxi-morto": 11,
+ "inimigo-postit-a": 12,
+ "inimigo-postit-b": 13,
+ "inimigo-notificacao": 14,
+ "inimigo-cadeira": 15
+}

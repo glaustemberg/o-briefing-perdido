@@ -1,0 +1,18 @@
+{
+ "item-lampada": 0,
+ "item-lampada-apagada": 1,
+ "item-cafe": 2,
+ "item-energetico": 3,
+ "item-bola-roxa": 4,
+ "item-coracao": 5,
+ "item-coracao-vazio": 6,
+ "proj-sirene": 7,
+ "proj-camisa": 8,
+ "proj-calca": 9,
+ "proj-chapeu": 10,
+ "inimigo-bomba": 11,
+ "proj-raio": 12,
+ "item-relogio": 13,
+ "item-trofeu": 14,
+ "ui-seta": 15
+}
