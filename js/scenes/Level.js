@@ -51,10 +51,15 @@ OBP.Level = class extends Phaser.Scene {
     this.events.once('shutdown', () => this.scene.stop('Hud'));
   }
   criarEntidades() {
+    OBP.Blocos.criarTexturas(this); OBP.Hud.criarTexturas(this);
     const P = this.m.entidades.find(e => e.ch === 'P');
     const x = this.checkpoint ? this.checkpoint.x : P.col * 32 + 16, y = this.checkpoint ? this.checkpoint.y : (P.lin + 1) * 32;
     this.player = new OBP.Player(this, x, y, this.heroiId);
-    this.physics.add.collider(this.player, this.camada);
+    this.blocos = new OBP.Blocos(this, this.camada);
+    this.itens = new OBP.Itens(this, this.camada);
+    this.itens.criarDoMapa(this.m.entidades);
+    this.physics.add.collider(this.player, this.camada, (p, tile) => this.blocos.cabecada(p, tile));
+    this.physics.add.overlap(this.player, this.itens.grupo, (p, item) => this.itens.coletar(p, item), (p) => !p.morto);
     this.player.on('pulou', () => { OBP.Audio.pulo(); OBP.Voice.reacaoCada('pulo-01', 10); });
     this.player.on('socou', () => OBP.Audio.soco());
     this.player.on('pousouAlto', () => OBP.Audio.pouso());
@@ -86,7 +91,10 @@ OBP.Level = class extends Phaser.Scene {
     }
     const inp = this.inp.ler();
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
+    this.blocos.update(t);
     this.cam.update();
-    this.desenharDebug(this.player.socoCaixa());
+    const caixa = this.player.socoCaixa();
+    if (caixa) this.blocos.socar(caixa, this.player);
+    this.desenharDebug(caixa);
   }
 };
