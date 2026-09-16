@@ -88,6 +88,38 @@ teste('parser rejeita largura desigual, mapa vazio e mapa sem P', () => {
   lanca(() => OBP.Mapa.parse(['....', '####']), 'sem P');
 });
 
+// vozes (spec 8): 1 canal, reação a cada 20 s, dano e morte com cooldown próprio de 4 s, garantidas fora do teto
+teste('classe do id: dano e morte urgentes, início/check/vitória/seleção garantidas, resto reação', () => {
+  igual(OBP.VoiceLogic.classe('tk-dano-01'), 'urgente'); igual(OBP.VoiceLogic.classe('gp-morte-01'), 'urgente');
+  igual(OBP.VoiceLogic.classe('gp-inicio-f1'), 'garantida'); igual(OBP.VoiceLogic.classe('tk-check-01'), 'garantida');
+  igual(OBP.VoiceLogic.classe('tk-vitfase-01'), 'garantida'); igual(OBP.VoiceLogic.classe('gp-sel-01'), 'garantida');
+  igual(OBP.VoiceLogic.classe('tk-pulo-01'), 'reacao'); igual(OBP.VoiceLogic.classe('tk-moeda-01'), 'reacao');
+});
+teste('reação respeita o teto de 20 s', () => {
+  const e = OBP.VoiceLogic.criar();
+  igual(OBP.VoiceLogic.decidir(e, 'tk-pulo-01', 1000), true, 'primeira');
+  igual(OBP.VoiceLogic.decidir(e, 'tk-soco-01', 20999), false, 'aos 19,999 s');
+  igual(OBP.VoiceLogic.decidir(e, 'tk-soco-01', 21000), true, 'aos 20 s');
+});
+teste('garantida sempre toca e não gasta o teto da reação', () => {
+  const e = OBP.VoiceLogic.criar();
+  igual(OBP.VoiceLogic.decidir(e, 'tk-inicio-f1', 0), true);
+  igual(OBP.VoiceLogic.decidir(e, 'tk-check-01', 10), true);
+  igual(OBP.VoiceLogic.decidir(e, 'tk-pulo-01', 20), true, 'reação logo depois');
+});
+teste('urgente tem cooldown próprio de 4 s e não gasta o teto da reação', () => {
+  const e = OBP.VoiceLogic.criar();
+  igual(OBP.VoiceLogic.decidir(e, 'tk-dano-01', 0), true);
+  igual(OBP.VoiceLogic.decidir(e, 'tk-dano-01', 3999), false);
+  igual(OBP.VoiceLogic.decidir(e, 'tk-pulo-01', 100), true, 'reação após dano');
+  igual(OBP.VoiceLogic.decidir(e, 'tk-morte-01', 4000), true);
+});
+teste('cada(chave, n) dispara só no múltiplo de n', () => {
+  const e = OBP.VoiceLogic.criar();
+  let vezes = 0; for (let i = 0; i < 25; i++) if (OBP.VoiceLogic.cada(e, 'soco', 10)) vezes++;
+  igual(vezes, 2); igual(OBP.VoiceLogic.cada(e, 'moeda', 1), true);
+});
+
 rodar();
 </script>
 </body>
