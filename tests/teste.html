@@ -56,6 +56,38 @@ teste('zoom CSS: 1080p a 125% dá físico 3x e CSS 2,4; a 150% dá 3x', () => {
   igual(OBP.zoomFisico(1280, 720, 1.5), 3); perto(OBP.zoomInteiro(1280, 720, 1.5), 3 / 1.5, 1e-9);
 });
 
+// parser do mapa ASCII (spec 5 e 9)
+teste('fase 1 mede 128x14 e devolve dados e entidades', () => {
+  const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
+  igual(m.larg, 128, 'larg'); igual(m.alt, 14, 'alt');
+  igual(m.dados.length, 14, 'linhas'); igual(m.dados[0].length, 128, 'colunas');
+});
+teste('fase 1 tem 16 estrelas, 3 perguntas, 3 reforçados, 2 espinhos e chão sólido', () => {
+  const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
+  const conta = i => m.dados.flat().filter(v => v === i).length;
+  igual(conta(2), 16, 'estrelas'); igual(conta(3), 3, 'perguntas'); igual(conta(4), 3, 'reforçados'); igual(conta(5), 2, 'espinhos');
+  igual(m.dados[13][0], 0, 'chão'); igual(m.dados[12][127], 0, 'parede direita');
+  igual(m.dados[4][90], 1, 'one-way'); igual(m.dados[10][70], 4, 'R'); igual(m.dados[9][24], 3, '? 1');
+});
+teste('fase 1 tem 3 buracos de 3 tiles na última linha', () => {
+  const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
+  const buracos = m.dados[13].map((v, i) => v === -1 ? i : -1).filter(i => i >= 0);
+  igual(JSON.stringify(buracos), JSON.stringify([36, 37, 38, 88, 89, 90, 105, 106, 107]));
+});
+teste('fase 1 tem 16 sacos, 6 inimigos, P em (2,12), K em (66,12), X em (124,12)', () => {
+  const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
+  const de = ch => m.entidades.filter(e => e.ch === ch);
+  igual(de('$').length, 16, 'sacos'); igual(de('1').length + de('2').length + de('3').length, 6, 'inimigos');
+  igual(de('P')[0].col, 2); igual(de('P')[0].lin, 12); igual(de('K')[0].col, 66); igual(de('X')[0].col, 124);
+  igual(de('A').length, 1, 'carimbo'); igual(de('N').length, 1, 'NPC');
+  igual(m.dados[12][2], -1, 'entidade vira -1 no tilemap');
+});
+teste('parser rejeita largura desigual, mapa vazio e mapa sem P', () => {
+  lanca(() => OBP.Mapa.parse(['#.', '###']), 'largura');
+  lanca(() => OBP.Mapa.parse([]), 'vazio');
+  lanca(() => OBP.Mapa.parse(['....', '####']), 'sem P');
+});
+
 rodar();
 </script>
 </body>
