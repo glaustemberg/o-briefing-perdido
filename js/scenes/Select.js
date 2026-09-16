@@ -16,6 +16,7 @@ OBP.Select = class extends Phaser.Scene {
     });
     this.add.text(320, 330, 'SETAS ESCOLHEM   ENTER CONFIRMA', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5);
     this.inp = new OBP.Input(this);
+    OBP.Audio.init(this);
     this.confirmado = false;
     this.atualizar();
   }
@@ -29,12 +30,13 @@ OBP.Select = class extends Phaser.Scene {
   update() {
     const e = this.inp.ler();
     if (this.confirmado) return;
-    if (e.esqAgora && this.sel > 0) { this.sel--; this.atualizar(); }
-    if (e.dirAgora && this.sel < this.ids.length - 1) { this.sel++; this.atualizar(); }
+    if (e.esqAgora && this.sel > 0) { this.sel--; OBP.Audio.menuMover(); this.atualizar(); }
+    if (e.dirAgora && this.sel < this.ids.length - 1) { this.sel++; OBP.Audio.menuMover(); this.atualizar(); }
     if (e.startAgora || e.puloAgora) {
       this.confirmado = true;
       const id = this.ids[this.sel];
       this.registry.set({ heroi: id, coracoes: OBP.CFG.CORACOES, verba: 0, vidas: OBP.CFG.VIDAS });
+      OBP.Audio.menuConfirmar(); OBP.Voice.init(this, id); OBP.Voice.falar('sel-01');
       this.cartas.forEach((c, i) => { if (i !== this.sel) { c.spr.setTint(OBP.PAL.num(OBP.PAL.rim)); c.spr.y += 2; } });
       this.time.delayedCall(400, () => this.scene.start('Level', { fase: 'fase-01' }));
     }

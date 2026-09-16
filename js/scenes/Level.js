@@ -39,18 +39,27 @@ OBP.Level = class extends Phaser.Scene {
     this.camada = this.map.createLayer(0, ts, 0, 0);
     this.camada.setCollision([0, 1, 2, 3, 4, 6]); // 5 (espinho) não colide
     this.camada.forEachTile(t => { if (t.index === 1) { t.collideDown = false; t.collideLeft = false; t.collideRight = false; } });
+    OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
     this.criarEntidades();
     this.inp = new OBP.Input(this);
     this.cam = new OBP.Camera(this, this.player, this.map.widthInPixels, this.map.heightInPixels);
     this.parada = 0; this.controle = true;
     this.debugSoco = this.add.graphics().setDepth(100);
     this.input.keyboard.on('keydown-F1', () => this.alternarDebug());
+    this.registry.set('coracoes', OBP.CFG.CORACOES);
+    this.scene.launch('Hud');
+    this.events.once('shutdown', () => this.scene.stop('Hud'));
   }
   criarEntidades() {
     const P = this.m.entidades.find(e => e.ch === 'P');
     const x = this.checkpoint ? this.checkpoint.x : P.col * 32 + 16, y = this.checkpoint ? this.checkpoint.y : (P.lin + 1) * 32;
     this.player = new OBP.Player(this, x, y, this.heroiId);
     this.physics.add.collider(this.player, this.camada);
+    this.player.on('pulou', () => { OBP.Audio.pulo(); OBP.Voice.reacaoCada('pulo-01', 10); });
+    this.player.on('socou', () => OBP.Audio.soco());
+    this.player.on('pousouAlto', () => OBP.Audio.pouso());
+    this.events.on('bloco-quebrado', () => { OBP.Audio.bloco(); OBP.Voice.reacaoCada('soco-01', 10); });
+    this.events.on('saco', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
   }
   // hit stop: pausa física e animações por ms; o update devolve cedo enquanto durar
   pararTudo(ms) {
