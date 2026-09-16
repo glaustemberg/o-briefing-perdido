@@ -41,6 +41,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     return true;
   }
   morrer() {
+    if (this.morto) return; // idempotente: buraco e 0 corações podem chamar no mesmo frame
     this.morto = true;
     this.body.checkCollision.none = true; // atravessa o chão: voa e cai fora da tela
     this.body.setVelocity(-this.dir * 60, -420);
