@@ -1,0 +1,18 @@
+{
+ "tile-piso": 0,
+ "tile-parede": 1,
+ "plat-mesa": 2,
+ "bloco-estrela": 3,
+ "bloco-pergunta": 4,
+ "bloco-reforcado": 5,
+ "bloco-usado": 6,
+ "item-verba": 7,
+ "item-coxinha": 8,
+ "item-carimbo": 9,
+ "item-checkpoint": 10,
+ "hazard-lapis": 11,
+ "inimigo-postit": 12,
+ "inimigo-notificacao": 13,
+ "inimigo-cadeira": 14,
+ "item-cafe": 15
+}
