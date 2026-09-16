@@ -6,7 +6,9 @@
 // A textura passada já precisa ter os frames 'q0'..'q3' (16x16 cada) registrados por quem a criou.
 OBP.Pedacos = {
   grupo(scene) {
-    if (!scene._pedacosGrupo) scene._pedacosGrupo = scene.physics.add.group();
+    // scene é reusada entre Level -> Select -> Level; o grupo antigo morre no shutdown da física mas a
+    // referência guardada aqui sobrevive, então também checa se o grupo ainda tem .scene (fica vazio quando destruído).
+    if (!scene._pedacosGrupo || !scene._pedacosGrupo.scene) scene._pedacosGrupo = scene.physics.add.group();
     return scene._pedacosGrupo;
   },
   // 4 quadrantes a ±120 px/s horizontal e -280 vertical, gravidade 1000 (spec 4)
@@ -19,7 +21,7 @@ OBP.Pedacos = {
   },
   // giro em passos de 90 graus a cada 60 ms (a spec pede 45, a regra 2.3 proíbe rotação fora de 90); somem em 700 ms
   update(scene, t) {
-    if (!scene._pedacosGrupo) return;
+    if (!scene._pedacosGrupo || !scene._pedacosGrupo.scene) return;
     for (const p of [...scene._pedacosGrupo.getChildren()]) {
       p.angle = Math.floor((t - p.nasceu) / 60) * 90;
       if (t - p.nasceu > 700) p.destroy();
