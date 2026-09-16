@@ -18,7 +18,11 @@ OBP.Select = class extends Phaser.Scene {
     // gamepad só aparece depois de um botão apertado (política do navegador); no artifact pode ser barrado pelo iframe
     const gp = this.input.gamepad;
     this.txtPad = this.add.text(320, 346, gp && gp.total > 0 ? 'CONTROLE CONECTADO' : 'SEM CONTROLE: TECLADO OK', OBP.estiloTexto(8, OBP.PAL.rim)).setOrigin(0.5);
-    if (gp) gp.once('connected', () => this.txtPad.setText('CONTROLE CONECTADO'));
+    if (gp) {
+      const aoConectar = () => this.txtPad.setText('CONTROLE CONECTADO');
+      gp.once('connected', aoConectar);
+      this.events.once('shutdown', () => gp.off('connected', aoConectar));  // sem isto o ouvinte sobra no restart
+    }
     this.inp = new OBP.Input(this);
     OBP.Audio.init(this);
     this.confirmado = false;
