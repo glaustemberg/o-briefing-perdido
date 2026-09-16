@@ -34,9 +34,13 @@ OBP.Voice = {
     if (tocando && classe === 'reacao') return false;
     if (!OBP.VoiceLogic.decidir(this.e, id, agora)) return false;
     if (tocando) this.atual.stop();
-    this.atual = this.scene.sound.add(id);
-    this.atual.once('complete', () => { if (this.atual) this.atual.destroy(); this.atual = null; });
-    this.atual.play();
+    const som = this.scene.sound.add(id);
+    // 'complete' cobre o fim natural; 'stop' cobre o corte por uma fala nova (senão o Sound antigo vaza).
+    const limpar = () => { som.destroy(); if (this.atual === som) this.atual = null; };
+    som.once('complete', limpar);
+    som.once('stop', limpar);
+    this.atual = som;
+    som.play();
     return true;
   },
   reacaoCada(sufixo, n) { if (OBP.VoiceLogic.cada(this.e, sufixo, n)) this.falar(sufixo); },
