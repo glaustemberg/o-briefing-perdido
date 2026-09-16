@@ -5,19 +5,20 @@
 // Blocos de 16 colunas:
 // 1 (col 0-15): Larissa entrega o patinete e dois sacos de partida
 // 2 (col 16-31): primeiro deadline persegue por trás, estrelas altas, espinho no chão
-// 3 (col 32-47): primeira pergunta no ar, paralelepípedo solto derruba do patinete
+// 3 (col 32-47): primeira pergunta no ar; paralelepípedo solto é obstáculo de chão (não cai de
+//    cima), derruba quem esbarra nele de patinete
 // 4 (col 48-63): motoboy atravessa a rua e some, estrelas, espinho
 // 5 (col 64-79): segundo deadline, sacos e estrela de respiro
 // 6 (col 80-95): segunda pergunta, par de estrelas
 // 7 (col 96-111): segundo paralelepípedo, espinho, sacos
 // 8 (col 112-127): checkpoint bem no meio da travessia, estrela de apoio
-// 9 (col 128-143): terceira pergunta, segundo motoboy, espinho, sacos
+// 9 (col 128-143): terceira pergunta, espinho, sacos (o motoboy que estava aqui foi pro combo final)
 // 10 (col 144-159): par de estrelas, sacos antes do respiro
 // 11 (col 160-175): respiro com espinho e estrelas
 // 12 (col 176-191): carimbo aprovado de primeira, estrela, sacos
 // 13 (col 192-207): espinho, par de estrelas
-// 14 (col 208-223): última leva de sacos e estrela antes da gráfica
-// 15 (col 224-239): reta final e a saída para a gráfica
+// 14 (col 208-223): sacos, estrela e o espinho do combo final com o motoboy
+// 15 (col 224-239): motoboy reaparece a seis tiles do espinho, depois é só a saída pra gráfica
 window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-03'] = {
@@ -34,7 +35,7 @@ OBP.FASES['fase-03'] = {
     '..................*.*.................?...........*.*...............*.................?...*.*.......................*.................?.............*.*...........*.*...............*...A...............*.*...........*........................#',
     '...............................................................................................................................................................................................................................................#',
     '...............................................................................................................................................................................................................................................#',
-    '..P.$...N...$.........1.....^.....$.......2..$........3.....^.....$...1...$.......................$...2..$..^...........K.........$.^.....3..$....$.......$...........^...........$.........$.........^...........$.........$.............X....#',
+    '..P.$...N...$.........1.....^.....$.......2..$........3.....^.....$...1...$.......................$...2..$..^...........K.........$.^........$....$.......$...........^...........$.........$.........^...........$........^$....3........X....#',
     '################################################################################################################################################################################################################################################',
   ],
 };
