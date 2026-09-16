@@ -10,7 +10,7 @@ OBP.HEROIS = {
     v0: 590, gSubida: 1552, gQueda: 2328, apiceMs: 30, bufferMs: 133, puloPx: 112,
     // soco 7 f: frame 1 em f0, hitbox f1 a f3, recupera f4 a f6, cancela em pulo de f4; caixa 20x20 à frente, dy do topo da hitbox
     soco: { w: 20, h: 20, dy: 8, frames: 7, ativoDe: 1, ativoAte: 3, cancelaEm: 4 },
-    knockback: 160, hitStop: 40, andarFps: 12, quebraReforcado: false,
+    knockback: 160, hitStop: 40, andarFps: 14, quebraReforcado: false,
     vozes: [
       'tk-check-01', 'tk-dano-01', 'tk-extra-01', 'tk-extra-02', 'tk-extra-03',
       'tk-inicio-01', 'tk-inicio-f1', 'tk-inicio-f2', 'tk-inicio-f3', 'tk-inicio-f4', 'tk-inicio-f5', 'tk-inicio-f6', 'tk-inicio-f7', 'tk-inicio-f8',
@@ -25,7 +25,7 @@ OBP.HEROIS = {
     v0: 626, gSubida: 1360, gQueda: 2040, apiceMs: 60, bufferMs: 167, puloPx: 144,
     // soco 11 f: antecipa f0, hitbox f1 a f4, recupera f5 a f10, não cancela; caixa 28x20
     soco: { w: 28, h: 20, dy: 12, frames: 11, ativoDe: 1, ativoAte: 4, cancelaEm: 11 },
-    knockback: 240, hitStop: 60, andarFps: 10, quebraReforcado: true,
+    knockback: 240, hitStop: 60, andarFps: 12, quebraReforcado: true,
     vozes: [
       'gp-check-01', 'gp-dano-01', 'gp-extra-01', 'gp-extra-02',
       'gp-inicio-01', 'gp-inicio-f1', 'gp-inicio-f2', 'gp-inicio-f3', 'gp-inicio-f4', 'gp-inicio-f5', 'gp-inicio-f6', 'gp-inicio-f7', 'gp-inicio-f8',

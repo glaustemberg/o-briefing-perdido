@@ -21,7 +21,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     const id = this.h.id, a = this.scene.anims;
     if (a.exists(`${id}-andar`)) return;
     // ciclo de andar da v1: 2-3-4-3 (decisão 31), a 12 fps tikinho e 10 fps gilpp
-    a.create({ key: `${id}-andar`, frames: a.generateFrameNumbers(id, { frames: [1, 2, 3, 2] }), frameRate: this.h.andarFps, repeat: -1 });
+    a.create({ key: `${id}-andar`, frames: a.generateFrameNumbers(id, { frames: [8, 9, 10, 11, 12, 13, 14, 15] }), frameRate: this.h.andarFps, repeat: -1 });
   }
   socoFrame() { return this.socoMs < 0 ? -1 : Math.floor(this.socoMs * 60 / 1000); }
   socoCaixa() {
