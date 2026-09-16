@@ -88,6 +88,52 @@ teste('parser rejeita largura desigual, mapa vazio e mapa sem P', () => {
   lanca(() => OBP.Mapa.parse(['....', '####']), 'sem P');
 });
 
+// física do pulo (spec 3 e 4): o simulador usa o integrador do Arcade (v += g*dt; y += v*dt a 1/60)
+teste('tikinho: pulo cheio dá 3,5 tiles (112 px ± 4) com decolagem de 4 px e pausa no ápice', () => {
+  const r = OBP.Fisica.simularPulo(OBP.HEROIS.tikinho);
+  perto(r.alturaPx, 112, 4, 'altura'); perto(r.tiles, 3.5, 0.125, 'tiles');
+});
+teste('gilpp: pulo cheio dá 4,5 tiles (144 px ± 4)', () => {
+  const r = OBP.Fisica.simularPulo(OBP.HEROIS.gilpp);
+  perto(r.alturaPx, 144, 4, 'altura'); perto(r.tiles, 4.5, 0.125, 'tiles');
+});
+teste('pulo curto (solta em 2 f) fica entre 1 e 2 tiles e abaixo da metade do cheio', () => {
+  for (const id of ['tikinho', 'gilpp']) {
+    const h = OBP.HEROIS[id], cheio = OBP.Fisica.simularPulo(h).alturaPx, curto = OBP.Fisica.simularPulo(h, 2).alturaPx;
+    if (curto < 32 || curto > 64) throw new Error(`${id}: curto ${curto}`);
+    if (curto >= cheio / 2) throw new Error(`${id}: curto ${curto} não é menor que metade de ${cheio}`);
+  }
+});
+teste('coyote 100 ms: pula 90 ms depois de sair do chão, não pula aos 130', () => {
+  const h = OBP.HEROIS.tikinho;
+  igual(OBP.Fisica.podePular(1090, 1000, 1090, h), true, '90 ms');
+  igual(OBP.Fisica.podePular(1130, 1000, 1130, h), false, '130 ms');
+});
+teste('buffer: aperto 120 ms antes de pousar vale para os dois; 150 vale só para o gilpp (167)', () => {
+  igual(OBP.Fisica.podePular(1120, 1120, 1000, OBP.HEROIS.tikinho), true);
+  igual(OBP.Fisica.podePular(1150, 1150, 1000, OBP.HEROIS.tikinho), false);
+  igual(OBP.Fisica.podePular(1150, 1150, 1000, OBP.HEROIS.gilpp), true);
+});
+teste('gravidade: subida usa gSubida, queda usa gQueda, pausa no ápice zera', () => {
+  const h = OBP.HEROIS.tikinho;
+  igual(OBP.Fisica.gravidade(h, -100, 0), 1552); igual(OBP.Fisica.gravidade(h, 100, 0), 2328);
+  igual(OBP.Fisica.gravidade(h, -10, 0.02), 0);
+  igual(OBP.Fisica.gravidade(OBP.HEROIS.gilpp, 5, 0), 2040);
+});
+teste('terminal corta em 480 e o corte de 0,5 só age subindo', () => {
+  igual(OBP.Fisica.terminal(600), 480); igual(OBP.Fisica.terminal(200), 200);
+  igual(OBP.Fisica.cortar(-400), -200); igual(OBP.Fisica.cortar(300), 300);
+});
+teste('aceleração: tikinho chega a 220 em 6 f e gilpp a 170 em 10 f', () => {
+  const corre = (h, n) => { let vx = 0; for (let i = 0; i < n; i++) vx = OBP.Fisica.andar(vx, h.vel, h, 1 / 60); return vx; };
+  perto(corre(OBP.HEROIS.tikinho, 6), 220, 0.01); if (corre(OBP.HEROIS.tikinho, 5) > 219) throw new Error('rápido demais');
+  perto(corre(OBP.HEROIS.gilpp, 10), 170, 0.01); if (corre(OBP.HEROIS.gilpp, 9) > 169) throw new Error('rápido demais');
+});
+teste('freio: tikinho para de 220 em 5 f, gilpp de 170 em 8 f', () => {
+  const freia = (h, n) => { let vx = h.vel; for (let i = 0; i < n; i++) vx = OBP.Fisica.andar(vx, 0, h, 1 / 60); return vx; };
+  perto(freia(OBP.HEROIS.tikinho, 5), 0, 0.01); perto(freia(OBP.HEROIS.gilpp, 8), 0, 0.01);
+});
+
 rodar();
 </script>
 </body>
