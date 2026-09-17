@@ -1,5 +1,9 @@
 // Efeitos sintetizados (spec 8): OscillatorNode mais GainNode, ruído por AudioBuffer aleatório, sem biblioteca.
 // Sem WebAudio (context ausente) tudo vira no-op.
+// MIX (decisao 81, Berg: "o volume da voz de tikinho e gilpp devem ser maior que os outros sons"). O arquivo do
+// heroi ja sai 6 dB acima do de inimigo (nivela_vozes.py), e estes fatores completam a diferenca no jogo. Com o
+// pico dos WAV em -1 dB, o 1,1 da voz do heroi ainda nao clipa.
+OBP.MIX = { vozHeroi: 1.1, vozInimigo: 0.5, sfx: 0.6, bipe: 0.6, musicaFase: 0.12, musicaTitulo: 0.22 };
 OBP.Audio = {
   ctx: null, semitom: 0, ultimaColeta: -1e9, scene: null,
   init(scene) { this.ctx = (scene.sound && scene.sound.context) || null; this.scene = scene; },
@@ -14,7 +18,7 @@ OBP.Audio = {
     const t = s.time ? s.time.now : 0;
     if (t - (this.ultimoSfx[chave] || -1e9) < gap) return true;
     this.ultimoSfx[chave] = t;
-    s.sound.play(chave, { volume: vol });
+    s.sound.play(chave, { volume: vol * OBP.MIX.sfx });
     return true;
   },
   osc(tipo, f0, f1, ms, vol = 0.2, atraso = 0) {
@@ -22,7 +26,7 @@ OBP.Audio = {
     const c = this.ctx, t0 = c.currentTime + atraso, o = c.createOscillator(), g = c.createGain();
     o.type = tipo; o.frequency.setValueAtTime(f0, t0);
     if (f1 !== f0) o.frequency.linearRampToValueAtTime(f1, t0 + ms / 1000);
-    g.gain.setValueAtTime(vol, t0); g.gain.linearRampToValueAtTime(0.0001, t0 + ms / 1000);
+    g.gain.setValueAtTime(vol * OBP.MIX.bipe, t0); g.gain.linearRampToValueAtTime(0.0001, t0 + ms / 1000);
     o.connect(g).connect(c.destination); o.start(t0); o.stop(t0 + ms / 1000 + 0.01);
   },
   ruido(ms, f0, f1, vol = 0.25, atraso = 0) {
@@ -33,7 +37,7 @@ OBP.Audio = {
     const s = c.createBufferSource(); s.buffer = buf;
     const f = c.createBiquadFilter(); f.type = 'lowpass';
     f.frequency.setValueAtTime(f0, t0); f.frequency.linearRampToValueAtTime(f1, t0 + ms / 1000);
-    const g = c.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.linearRampToValueAtTime(0.0001, t0 + ms / 1000);
+    const g = c.createGain(); g.gain.setValueAtTime(vol * OBP.MIX.bipe, t0); g.gain.linearRampToValueAtTime(0.0001, t0 + ms / 1000);
     s.connect(f).connect(g).connect(c.destination); s.start(t0);
   },
   pulo() { this.osc('square', 300, 700, 90); },

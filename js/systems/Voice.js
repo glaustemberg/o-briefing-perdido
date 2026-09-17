@@ -34,7 +34,7 @@ OBP.Voice = {
     if (tocando && classe === 'reacao') return false;
     if (!OBP.VoiceLogic.decidir(this.e, id, agora)) return false;
     if (tocando) this.atual.stop();
-    const som = this.scene.sound.add(id);
+    const som = this.scene.sound.add(id, { volume: OBP.MIX.vozHeroi });
     // 'complete' cobre o fim natural; 'stop' cobre o corte por uma fala nova (senão o Sound antigo vaza).
     const limpar = () => { som.destroy(); if (this.atual === som) this.atual = null; };
     som.once('complete', limpar);
@@ -64,7 +64,7 @@ OBP.VozInimigo = {
     if (tocando && !prio) return false;
     if (tocando) this.som.stop();
     this.ultima = t; this.porGrupo[grupo] = t;
-    const som = scene.sound.add(id, { volume: 0.75 });   // 0,75 deixa o heroi na frente no mix (decisao 80)
+    const som = scene.sound.add(id, { volume: OBP.MIX.vozInimigo });
     let limpo = false;
     const limpar = () => { if (limpo) return; limpo = true; som.destroy(); if (this.som === som) this.som = null; };
     som.once('complete', limpar); som.once('stop', limpar);
