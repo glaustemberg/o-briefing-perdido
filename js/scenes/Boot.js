@@ -24,6 +24,8 @@ OBP.Boot = class extends Phaser.Scene {
     // M2: formas de armadura, itens, projeteis e os inimigos novos (decisoes 43 a 53)
     this.load.spritesheet('tikinho-armadura', 'assets/sprites/tikinho-armadura/tka-tira.png', { frameWidth: 96, frameHeight: 96 });
     this.load.spritesheet('gilpp-armadura', 'assets/sprites/gilpp-armadura/gpa-tira.png', { frameWidth: 128, frameHeight: 128 });
+    // chefe final: 8 poses de 96 px (idle, provoca, briefing, prazo, verba, dano, derrotado, ri)
+    this.load.spritesheet('sobrinho', 'assets/sprites/sobrinho/sob-tira.png', { frameWidth: 96, frameHeight: 96 });
     const I = 'assets/tiles/itens/', N = 'assets/tiles/inimigos/';
     for (const k of ['lampada', 'lampada-apagada', 'cafe', 'energetico', 'coracao', 'coracao-vazio', 'relogio', 'trofeu'])
       this.load.image('item-' + k, I + 'item-' + k + '.png');
