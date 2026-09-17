@@ -9,7 +9,7 @@ OBP.Projeteis = class {
     scene.physics.add.collider(this.grupo, camada, p => p.destroy());
   }
   lancar(player) {
-    if (this.grupo.countActive(true) > 0) return null;
+    if (this.grupo.countActive(true) >= OBP.CFG.PROJETEIS_NA_TELA) return null;
     const h = player.h, b = player.body, lado = h.projetil.hitbox;
     const nome = OBP.ProjLogic.textura(h, this.n++);
     const x = player.dir > 0 ? b.right + 16 : b.left - 16;

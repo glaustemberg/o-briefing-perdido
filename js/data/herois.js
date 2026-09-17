@@ -18,7 +18,7 @@ OBP.ProjLogic = {
 OBP.HEROIS = {
   tikinho: {
     id: 'tikinho', nome: 'TIKINHO', prefixo: 'tk', tira: 'assets/sprites/tikinho/tk-tira.png', celula: 64,
-    celulaArmadura: 96, armaduraId: 'tikinho-armadura', tiraArmadura: 'assets/sprites/tikinho-armadura/tka-tira.png', andarArmaduraFps: 8,
+    celulaArmadura: 96, armaduraId: 'tikinho-armadura', tiraArmadura: 'assets/sprites/tikinho-armadura/tka-tira.png', andarArmaduraFps: 16,
     hitbox: { w: 24, h: 52 }, hitboxAgachado: { w: 24, h: 38 },
     vel: 220, acel: 2200, freio: 2640,
     v0: 590, gSubida: 1552, gQueda: 2328, apiceMs: 30, bufferMs: 133, puloPx: 112,
@@ -35,7 +35,7 @@ OBP.HEROIS = {
   },
   gilpp: {
     id: 'gilpp', nome: 'GILPP', prefixo: 'gp', tira: 'assets/sprites/gilpp/gp-tira.png', celula: 96,
-    celulaArmadura: 128, armaduraId: 'gilpp-armadura', tiraArmadura: 'assets/sprites/gilpp-armadura/gpa-tira.png', andarArmaduraFps: 8,
+    celulaArmadura: 128, armaduraId: 'gilpp-armadura', tiraArmadura: 'assets/sprites/gilpp-armadura/gpa-tira.png', andarArmaduraFps: 10,
     hitbox: { w: 28, h: 68 }, hitboxAgachado: { w: 28, h: 56 },
     vel: 170, acel: 1020, freio: 1276,
     v0: 626, gSubida: 1360, gQueda: 2040, apiceMs: 60, bufferMs: 167, puloPx: 144,

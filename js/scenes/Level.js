@@ -127,6 +127,14 @@ OBP.Level = class extends Phaser.Scene {
     }, (p, e) => !e.morto);
   }
   contatoInimigo(e) {
+    // bomba e o unico inimigo letal (decisao 68): encostou, ela explode na hora e o heroi morre, mesmo de armadura
+    if (e.tipo === 'bomba') {
+      if (!this.player.podeFerir()) return;        // respeita a piscada de invencibilidade, senao mata no respawn
+      e.explodir(this.time.now);
+      OBP.Audio.dano();
+      this.matar();
+      return;
+    }
     this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
   }
   // toque de inimigo ou espinho: 1 coração, hit stop 100 ms, recuo 6 f, shake 4 px por 100 ms, invencível 60 f.

@@ -44,8 +44,9 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     }
     const A = OBP.FRAMES_ARMADURA;
     if (!a.exists(`${h.armaduraId}-andar`)) {
-      // ciclo de andar de 2 quadros da armadura (walkA/walkC), mais devagar que os 8 quadros da forma normal
-      a.create({ key: `${h.armaduraId}-andar`, frames: a.generateFrameNumbers(h.armaduraId, { frames: [A.walkA, A.walkC] }), frameRate: h.andarArmaduraFps, repeat: -1 });
+      // ciclo de 4 tempos com a pose parada de passagem (decisao 68): so walkA/walkC, as duas com a perna aberta,
+      // lia como deslizar. Contato, passagem, contato, passagem e a caminhada classica de 2 poses.
+      a.create({ key: `${h.armaduraId}-andar`, frames: a.generateFrameNumbers(h.armaduraId, { frames: [A.walkA, A.idle, A.walkC, A.idle] }), frameRate: h.andarArmaduraFps, repeat: -1 });
       // deslizar agachado da armadura: mesmo par crouch/crouchStep, na tira de 8 quadros
       a.create({ key: `${h.armaduraId}-deslizar`, frames: a.generateFrameNumbers(h.armaduraId, { frames: [A.crouch, A.crouchStep] }), frameRate: 6, repeat: -1 });
     }
@@ -134,12 +135,10 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (this.pausaRest > 0) this.pausaRest -= s;
     if (b.velocity.y > OBP.CFG.TERMINAL) b.setVelocityY(F.terminal(b.velocity.y));
     // soco: começa em f0, hitbox nos frames ativos, termina em h.soco.frames
-    if (inp.socoAgora && this.socoMs < 0 && !travado) {
-      this.socoMs = 0; this.acertados.clear(); this.emit('socou');
-      // de armadura, o mesmo toque que soca já dispara o projétil (decisão 67): não sobra tecla para um botão de
-      // tiro (spec 9) e segurar o botão era invisível para quem joga. O teto de 1 projétil na tela é o freio.
-      if (this.armadura) { this.tiroAte = t + 133; this.emit('atirou'); }
-    }
+    // de armadura, o toque do murro SEMPRE solta o poder (decisão 68), inclusive no meio da animação do soco
+    // anterior. O soco físico continua preso à animação; só o tiro escapa dela.
+    if (inp.socoAgora && !travado && this.armadura) { this.tiroAte = t + 133; this.emit('atirou'); }
+    if (inp.socoAgora && this.socoMs < 0 && !travado) { this.socoMs = 0; this.acertados.clear(); this.emit('socou'); }
     else if (this.socoMs >= 0) {
       this.socoMs += dt;
       if (this.socoFrame() >= h.soco.frames) this.socoMs = -1;

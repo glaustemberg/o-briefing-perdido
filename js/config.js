@@ -5,6 +5,7 @@ OBP.CFG = {
   COYOTE_MS: 100, CORTE: 0.5, TERMINAL: 480, DECOLAGEM: 4, APICE_V: 48,
   CORACOES: 3, VIDAS: 3, VEL_AGACHADO: 0.45, FASE_FINAL: 'fase-08b',   // desliza agachado a 45% da velocidade normal (decisao 53)
   INVENCIVEL_MS: 1000, RECUO_MS: 100, HITSTOP_DANO_MS: 100,
+  PROJETEIS_NA_TELA: 3,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
   PHASER_URL: 'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js',
 };
 // Zoom inteiro por pixel físico (spec 2.1): floor(min(larguraFísica/640, alturaFísica/360)), mínimo 1.
@@ -78,16 +79,18 @@ OBP.proximaFase = (id) => OBP.ORDEM[OBP.ORDEM.indexOf(id) + 1] || null;
 // de nascimento em relação à marca do mapa (a nuvem "flutua no alto", mas o mapa a marca no chão, com os outros).
 // fere: false só para a bomba antes de explodir. invencivel: soco e projétil não matam (hazard, não inimigo).
 // frame* são chaves de TEXTURA carregadas pelo Boot (arte final ini-*/proj-*, uma imagem por estado, sem atlas).
+// corpo: [largura, altura] da hitbox quando o sprite nao e 32x32 (decisao 68). Sem corpo, vale 28x28 da spec 2.5.
 OBP.INIMIGOS = {
   postit:  { fam: 'patrulha', frame: 'postit', vel: 110, grav: 1000 },
   abacaxi: { fam: 'patrulha', frame: 'ini-abacaxi-a', frames: ['ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c'],
-             vel: 230, grav: 1000, pula: 420, pulaCada: 900, frameMorto: 'ini-abacaxi-morto' },
+             vel: 230, grav: 1000, pula: 420, pulaCada: 900, frameMorto: 'ini-abacaxi-morto', corpo: [32, 40] },
   nuvem:   { fam: 'nuvem', frame: 'ini-nuvem-a', frameDorme: 'ini-nuvem-dorme', frameAviso: 'ini-nuvem-raio',
              vel: 90, grav: 0, dy: -96 },
   loira:   { fam: 'loira', frame: 'ini-loira-idle', frameAlt: 'ini-loira-a', frameArremessa: 'ini-loira-arremessa',
-             vel: 0, grav: 1000 },
+             vel: 0, grav: 1000, corpo: [26, 56] },
+  // a bomba quica 3 vezes e explode; encostar nela em qualquer instante explode na hora e mata (decisao 68)
   bomba:   { fam: 'bomba', frame: 'proj-bomba', framePousada: 'ini-bomba-solta',
-             vel: 0, grav: 1000, invencivel: true, fere: false },
+             vel: 0, grav: 1000, invencivel: true, quique: 0.55, quiquesAteExplodir: 3 },
   raio:    { fam: 'raio', frame: 'proj-raio-solto', vel: 0, grav: 0, invencivel: true },
 };
 // Armadura roxa (adendo 6): +3 corações num contador separado, drenado antes do contador normal. Ao zerar, o herói

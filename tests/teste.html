@@ -228,7 +228,11 @@ teste('tabela de inimigos: 6 arquétipos, texturas conhecidas e famílias válid
   igual(OBP.INIMIGOS.abacaxi.vel, 230, 'abacaxi corre a 230 px/s');
   igual(OBP.INIMIGOS.nuvem.grav, 0, 'nuvem não cai');
   igual(OBP.INIMIGOS.nuvem.dy, -96, 'nuvem nasce 3 tiles acima da marca do mapa');
-  igual(OBP.INIMIGOS.bomba.fere, false, 'bomba só fere ao explodir');
+  // decisao 68: a bomba deixou de ser inofensiva em voo. Quica 3 vezes, explode, e encostar nela mata na hora.
+  igual(OBP.INIMIGOS.bomba.fere, undefined, 'bomba fere desde o voo');
+  igual(OBP.INIMIGOS.bomba.quiquesAteExplodir, 3); igual(OBP.INIMIGOS.bomba.quique > 0, true, 'bomba quica');
+  igual(OBP.INIMIGOS.loira.corpo.join(), '26,56', 'menina de 64 px tem hitbox de gente');
+  igual(OBP.INIMIGOS.abacaxi.corpo.join(), '32,40', 'abacaxi de 48 px tem hitbox maior');
   igual(OBP.INIMIGOS.bomba.invencivel, true); igual(OBP.INIMIGOS.raio.invencivel, true);
 });
 // escopo do M2 (decisão do Berg, 17/09): só fases 1, 2, 5 e 8 existem no jogo. As fases 3, 6 e 7 do plano

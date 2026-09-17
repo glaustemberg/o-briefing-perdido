@@ -10,18 +10,35 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, t.frame);
     scene.add.existing(this); scene.physics.add.existing(this);
     this.tipo = tipo; this.t = t;
-    this.body.setSize(28, 28).setOffset(2, 2);
+    // sprite maior que um tile (menina 64, abacaxi 48) cresce para CIMA: o mapa marca o tile do pe, entao o centro
+    // sobe metade do excedente e a hitbox fica colada na base da imagem, do mesmo jeito que a de 32x32 (decisao 68).
+    const img = scene.textures.get(t.frame).getSourceImage();
+    if (img.height !== 32) this.y -= (img.height - 32) / 2;
+    const [cw, ch] = t.corpo || [28, 28];
+    this.body.setSize(cw, ch).setOffset((img.width - cw) / 2, img.height - ch - 2);
+    this.fisicaOk = false;
     this.body.setAllowGravity(t.grav > 0);
     this.body.setGravityY(t.grav);
     this.dir = -1; this.morto = false; this.morreuEm = 0;
     this.invencivel = !!t.invencivel; this.fere = t.fere !== false;
     this.proximo = -1;  // relógio do próximo ato; -1 = ainda não iniciado (o primeiro update calibra)
     this.aviso = 0;     // fim do tell de 500 ms da nuvem
-    this.pousou = -1; this.explodiu = -1; // relógios da bomba
+    this.pousou = -1; this.explodiu = -1; this.quiques = 0; this.noChao = false; // relógios e quiques da bomba
     this.proximoPulo = null;            // relógio do pulo do abacaxi
+  }
+  // BUG ate a decisao 68: o PhysicsGroup do Phaser reaplica os defaults dele (gravidade, quique e velocidade
+  // zeradas) em quem entra no grupo, e o Level adiciona o inimigo DEPOIS do construtor. Resultado: gravidade 0 em
+  // todo mundo, ninguem encostava no chao, blocked.down era sempre falso e por isso o abacaxi nunca pulava, a
+  // bomba nunca quicava e ninguem virava na beirada. A fisica do arquetipo e reaplicada aqui, ja dentro do grupo.
+  aplicarFisica() {
+    this.fisicaOk = true;
+    this.body.setAllowGravity(this.t.grav > 0);
+    this.body.setGravityY(this.t.grav);
+    if (this.t.quique) this.body.setBounceY(this.t.quique);
   }
   update(t, dt) {
     const b = this.body;
+    if (!this.fisicaOk) this.aplicarFisica();
     if (this.morto) {
       // reusa o giro e a expiração de OBP.Pedacos (Block.js) em vez de duplicar a mesma conta de ângulo
       if (OBP.Pedacos.passo(this, this.morreuEm, t)) this.destroy();
@@ -93,19 +110,34 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     this.scene.inimigos.add(bomba);
     bomba.body.setVelocity(this.dir * 140, -260); // arco curto: cai a pouco mais de 2 tiles à frente
   }
-  // bomba: voa inofensiva (textura de projétil), pousa e troca pra textura solta, pavio de 1 s piscando,
-  // explode e vira hazard 48x48 por 300 ms, some
+  // bomba (decisao 68): voa, quica 3 vezes no chao piscando cada vez mais rapido e explode no terceiro toque.
+  // Encostar nela em qualquer instante explode na hora e mata o heroi, e quem trata isso e o Level.
   comoBomba(b, t) {
-    if (this.pousou < 0) { if (b.blocked.down) { this.pousou = t; b.setVelocityX(0); this.setTexture(this.t.framePousada); } return; }
-    if (t < this.pousou + 1000) { this.setVisible(Math.floor(t / 100) % 2 === 0); return; }
-    if (this.explodiu < 0) {
-      this.explodiu = t; this.fere = true;
-      this.body.setSize(48, 48).setOffset(-8, -8); // hazard avulso maior que o sprite (adendo 7)
-      OBP.Audio.explosao();
-      OBP.Pedacos.spawn(this.scene, this.x, this.y, 'estrela32');
+    if (this.explodiu >= 0) {                       // hazard de 48x48 por 300 ms
+      this.setVisible(Math.floor(t / 33) % 2 === 0);
+      if (t > this.explodiu + 300) this.destroy();
+      return;
     }
-    this.setVisible(Math.floor(t / 33) % 2 === 0);
-    if (t > this.explodiu + 300) this.destroy();
+    if (this.y > this.scene.map.heightInPixels) return this.destroy();   // caiu num buraco: some sem explodir
+    if (b.blocked.down) {
+      if (!this.noChao) {                            // transicao no ar -> chao: conta um quique
+        this.noChao = true; this.quiques++;
+        this.setTexture(this.t.framePousada);
+        b.setVelocityX(b.velocity.x * 0.6);          // perde embalo a cada toque em vez de parar seco
+        OBP.Audio.pouso();
+        if (this.quiques >= this.t.quiquesAteExplodir) return this.explodir(t);
+      }
+    } else this.noChao = false;
+    // pisca a partir do primeiro quique, mais rapido a cada um: 150, 100 e 50 ms
+    if (this.quiques > 0) this.setVisible(Math.floor(t / (200 - this.quiques * 50)) % 2 === 0);
+  }
+  explodir(t) {
+    if (this.explodiu >= 0) return;
+    this.explodiu = t; this.fere = true; this.setVisible(true);
+    this.body.setSize(48, 48).setOffset(-8, -8);   // hazard avulso maior que o sprite (adendo 7)
+    this.body.setVelocity(0, 0); this.body.setAllowGravity(false);
+    OBP.Audio.explosao();
+    OBP.Pedacos.spawn(this.scene, this.x, this.y, 'estrela32');
   }
   morrer(dir, knockback) {
     this.morto = true; this.morreuEm = this.scene.time.now;
