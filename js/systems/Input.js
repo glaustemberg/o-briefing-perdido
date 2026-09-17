@@ -29,12 +29,12 @@ OBP.Input = class {
     const start = down(this.k.start) || !!(pad && pad.buttons[9] && pad.buttons[9].pressed);
     e.esq = esq; e.dir = dir; e.esqAgora = esq && !this.ant.esq; e.dirAgora = dir && !this.ant.dir;
     e.puloAgora = pulo && !this.ant.pulo; e.puloSegurado = pulo; e.puloSoltou = !pulo && this.ant.pulo;
-    e.socoAgora = soco && !this.ant.soco; e.startAgora = start && !this.ant.start;
+    e.socoAgora = soco && !this.ant.soco; e.socoSegurado = soco; e.startAgora = start && !this.ant.start;
     this.ant = { esq, dir, pulo, soco, start };
     return e;
   }
 };
 OBP.Input.VAZIO = Object.freeze({
   esq: false, dir: false, cima: false, baixo: false, esqAgora: false, dirAgora: false,
-  puloAgora: false, puloSegurado: false, puloSoltou: false, socoAgora: false, startAgora: false, gamepad: false,
+  puloAgora: false, puloSegurado: false, puloSoltou: false, socoAgora: false, socoSegurado: false, startAgora: false, gamepad: false,
 });

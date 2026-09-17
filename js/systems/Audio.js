@@ -43,6 +43,8 @@ OBP.Audio = {
   raio() { this.osc('sawtooth', 1400, 200, 220, 0.18); this.ruido(220, 5000, 1200, 0.12); },
   // explosão da bomba: ruído grave curto com um baixo por baixo
   explosao() { this.ruido(260, 900, 80, 0.3); this.osc('square', 120, 40, 260, 0.2); },
+  // tiro da armadura: descida curta e seca, para não se confundir com o soco (que é 180 para 90 Hz em 60 ms)
+  tiro() { this.osc('square', 900, 300, 70, 0.16); this.ruido(40, 4000, 1500, 0.08); },
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };
