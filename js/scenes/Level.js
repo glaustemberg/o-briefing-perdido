@@ -201,17 +201,26 @@ OBP.Level = class extends Phaser.Scene {
     this.checkpoint = { x: item.x, y: item.y + 16 }; // pe do heroi na base do tile da bandeira
     OBP.Audio.checkpoint(); OBP.Voice.falar('check-01');
   }
-  // coxinha (spec 4): fecha a fase, 3 coracoes, fala de vitoria; Enter, Z, espaco ou A voltam a selecao
+  // coxinha (spec 4): fecha a fase, coracoes cheios, fala de vitoria; os segundos que sobraram viram lampadas
+  // (1 s = 1 lampada, adendo 2) e a pontuacao da corrida e comparada com o recorde da dupla fase mais heroi.
   concluir() {
     if (this.concluida || this.morrendo) return;
     this.concluida = true; this.controle = false;
-    this.registry.set('coracoes', OBP.CFG.CORACOES);
+    this.registry.set('coracoes', this.registry.get('coracoesMax'));
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
-    const P = OBP.PAL, lampadas = String(this.registry.get('lampadas')).padStart(5, '0');
-    this.add.rectangle(320, 180, 400, 120, P.num(P.contorno)).setStrokeStyle(2, P.num(P.branco)).setScrollFactor(0).setDepth(200);
-    this.add.text(320, 148, 'FASE CONCLUÍDA', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(320, 180, `LÂMPADAS ${lampadas}`, OBP.estiloTexto(16, P.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(320, 208, 'ENTER VOLTA À SELEÇÃO', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.bonus = OBP.Relogio.bonus(this.prazoMs / 1000);
+    this.pontos = OBP.Save.pontuacao(this.registry.get('lampadas'), this.bonus);
+    this.registry.set('lampadas', this.pontos); // o bonus entra no mesmo contador, nao num segundo saldo
+    this.recorde = OBP.Save.gravar(this.faseId, this.heroiId, this.pontos);
+    const P = OBP.PAL, n = v => String(Math.max(0, v)).padStart(5, '0');
+    const linha = (y, txt, tam, cor) => this.add.text(320, y, txt, OBP.estiloTexto(tam, cor)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.add.rectangle(320, 180, 460, 160, P.num(P.contorno)).setStrokeStyle(2, P.num(P.branco)).setScrollFactor(0).setDepth(200);
+    linha(118, 'FASE CONCLUÍDA', 16, P.moeda);
+    linha(146, `LÂMPADAS ${n(this.pontos - this.bonus)}`, 8, P.branco);
+    linha(164, `BÔNUS DE TEMPO ${n(this.bonus)}`, 8, P.branco);
+    linha(188, `PONTUAÇÃO ${n(this.pontos)}`, 16, P.moeda);
+    linha(212, this.recorde ? 'NOVO RECORDE' : `RECORDE ${n(OBP.Save.ler(this.faseId, this.heroiId))}`, 8, this.recorde ? P.verdeClaro : P.cinzaClaro);
+    linha(240, 'ENTER VOLTA À SELEÇÃO', 8, P.cinzaClaro);
     this.time.delayedCall(600, () => { this.podeSair = true; });
   }
   // O registry só é escrito quando o segundo inteiro muda: mandar float a 60 Hz dispara changedata 60 vezes por
