@@ -178,6 +178,7 @@ teste('HUD: corações, lâmpadas, prazo e slot de item não se sobrepõem', () 
   igual(c[4].x1, 472, 'borda direita do prazo');
   igual(c[5].x1, 624, 'slot de item termina na margem de 16 px');
   igual(OBP.hudColide(), null, OBP.hudColide() || '');
+});
 // prazo por fase (adendo 2): regressivo em branco, progressivo em vermelho, bônus de lâmpadas por tempo restante
 teste('relógio formata mm:ss, inclusive no overtime e no teto', () => {
   igual(OBP.Relogio.formatar(180), '03:00'); igual(OBP.Relogio.formatar(0), '00:00');

@@ -6,7 +6,7 @@ OBP.FASES['fase-01'] = {
   nome: 'ESTÚDIO, 8H47',
   // marca 1 no chao (2 deles), marca 2 no alto (2), marca 3 no meio (2). A fase 1 mostra os quatro tipos:
   // post-it de tutorial, abacaxi que corre e pula, nuvem que solta raio e a menina que arremessa bomba.
-  inimigos: ['abacaxi', 'nuvem', 'loira'],
+  inimigos: ['abacaxi', 'nuvem', 'postit'],
   mapa: [
     '...............................................................................................................................#',
     '...............................................................................................................................#',
