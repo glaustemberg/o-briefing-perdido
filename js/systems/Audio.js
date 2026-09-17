@@ -50,3 +50,37 @@ OBP.Audio = {
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };
+// Trilha (decisao 69). Uma faixa por vez; pedir a que ja esta tocando nao reinicia, senao cada respawn recomecava
+// a musica da fase. Faixa que nao esta no cache e ignorada em silencio, para nao derrubar a cena.
+OBP.Musica = {
+  atual: null, som: null,
+  tocar(scene, chave, volume = 0.35) {
+    if (this.atual === chave && this.som && this.som.isPlaying) return;
+    if (!scene.cache.audio.exists(chave)) return;
+    this.parar();
+    this.som = scene.sound.add(chave, { loop: true, volume });
+    this.som.play();
+    this.atual = chave;
+  },
+  parar() {
+    if (this.som) { this.som.stop(); this.som.destroy(); }
+    this.som = null; this.atual = null;
+  },
+};
+// Trilha (decisao 69): as duas faixas ja existiam renderizadas em 03-assets/musicas e nenhuma linha do jogo as
+// tocava. Uma faixa por vez; pedir a que ja esta tocando nao reinicia, que e o que acontecia a cada respawn.
+OBP.Musica = {
+  atual: null, som: null,
+  tocar(scene, chave, volume = 0.35) {
+    if (this.atual === chave && this.som && this.som.isPlaying) return;
+    if (!scene.cache.audio.exists(chave)) return;   // faixa que ainda nao existe nao derruba a cena
+    this.parar(scene);
+    this.som = scene.sound.add(chave, { loop: true, volume });
+    this.som.play();
+    this.atual = chave;
+  },
+  parar() {
+    if (this.som) { this.som.stop(); this.som.destroy(); }
+    this.som = null; this.atual = null;
+  },
+};

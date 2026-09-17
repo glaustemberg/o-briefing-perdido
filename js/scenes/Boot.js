@@ -37,6 +37,9 @@ OBP.Boot = class extends Phaser.Scene {
                      'abacaxi-a', 'abacaxi-b', 'abacaxi-c', 'abacaxi-morto', 'bomba-solta'])
       this.load.image('ini-' + k, N + 'inimigo-' + k + '.png');
     this.load.image('proj-raio-solto', N + 'proj-raio-solto.png');
+    // trilha (decisao 69): as duas faixas ja existiam renderizadas e nenhuma linha do jogo as tocava
+    this.load.audio('mus-titulo', 'assets/musicas/titulo.mp3');
+    this.load.audio('mus-fase-01', 'assets/musicas/fase-01.mp3');
   }
   create() {
     // Registry do M2 inteiro declarado num lugar só: chave que nasce undefined vira NaN no primeiro inc()
@@ -47,21 +50,8 @@ OBP.Boot = class extends Phaser.Scene {
     });
     const fonte = document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => []) : Promise.resolve([]);
     const teto = new Promise(r => setTimeout(r, 2000));
-    Promise.race([fonte, teto]).then(() => this.mostrarAperte());
-  }
-  mostrarAperte() {
-    this.children.removeAll();
-    this.add.text(320, 150, 'tikinho & gilpp', OBP.estiloTexto(16, OBP.PAL.moeda)).setOrigin(0.5);
-    this.add.text(320, 180, 'O BRIEFING PERDIDO', OBP.estiloTexto(16, OBP.PAL.branco)).setOrigin(0.5);
-    this.add.text(320, 240, 'APERTE UMA TECLA', OBP.estiloTexto(8, OBP.PAL.cinzaClaro)).setOrigin(0.5);
-    const ir = () => {
-      const ctx = this.sound.context;
-      if (ctx && ctx.state === 'suspended') ctx.resume();
-      // Select entra na Task 5; até lá Boot vai direto para Level (Task 4).
-      this.scene.start(OBP.Select ? 'Select' : (OBP.Level ? 'Level' : 'Boot'), { fase: 'fase-01' });
-    };
-    this.input.keyboard.once('keydown', ir);
-    this.input.once('pointerdown', ir);
-    if (this.input.gamepad) this.input.gamepad.once('down', ir);
+    // a capa agora e a Select (decisao 69): o titulo em tela de texto puro morria no primeiro toque, e o gesto
+    // que libera o audio do navegador passou a ser o primeiro toque da capa
+    Promise.race([fonte, teto]).then(() => this.scene.start('Select'));
   }
 };
