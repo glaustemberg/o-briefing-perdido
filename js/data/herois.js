@@ -4,9 +4,15 @@ window.OBP = window.OBP || {};
 OBP.FRAMES = { idle: 0, walk1: 1, walk2: 2, walk3: 3, jump: 4, fall: 5, punch: 6, hurt: 7,
   // 8 a 15: ciclo de andar (decisao 42). 16 a 22: agachar e extras (decisao 53)
   crouch: 16, crouchPunch: 17, crouchStep: 18, crouchHurt: 19, windup: 20, lookUp: 21, idle2: 22 };
+// A tira de armadura tem 8 quadros (a normal tem 16): não há quadro de queda, o de pulo serve para subida e queda,
+// e o ciclo de andar tem só walkA e walkC, por isso roda mais devagar que o de 8 quadros da forma normal.
+// Os quadros de agachar (8 a 11) existem porque a armadura também agacha (ruling do Berg): mesma pose, tira menor.
+OBP.FRAMES_ARMADURA = { idle: 0, walkA: 1, walkC: 2, jump: 3, punch: 4, shoot: 5, hurt: 6, win: 7,
+  crouch: 8, crouchPunch: 9, crouchStep: 10, crouchHurt: 11 };
 OBP.HEROIS = {
   tikinho: {
     id: 'tikinho', nome: 'TIKINHO', prefixo: 'tk', tira: 'assets/sprites/tikinho/tk-tira.png', celula: 64,
+    celulaArmadura: 96, armaduraId: 'tikinho-armadura', tiraArmadura: 'assets/sprites/tikinho-armadura/tka-tira.png', andarArmaduraFps: 8,
     hitbox: { w: 24, h: 52 }, hitboxAgachado: { w: 24, h: 38 },
     vel: 220, acel: 2200, freio: 2640,
     v0: 590, gSubida: 1552, gQueda: 2328, apiceMs: 30, bufferMs: 133, puloPx: 112,
@@ -22,6 +28,7 @@ OBP.HEROIS = {
   },
   gilpp: {
     id: 'gilpp', nome: 'GILPP', prefixo: 'gp', tira: 'assets/sprites/gilpp/gp-tira.png', celula: 96,
+    celulaArmadura: 128, armaduraId: 'gilpp-armadura', tiraArmadura: 'assets/sprites/gilpp-armadura/gpa-tira.png', andarArmaduraFps: 8,
     hitbox: { w: 28, h: 68 }, hitboxAgachado: { w: 28, h: 56 },
     vel: 170, acel: 1020, freio: 1276,
     v0: 626, gSubida: 1360, gQueda: 2040, apiceMs: 60, bufferMs: 167, puloPx: 144,

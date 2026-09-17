@@ -175,6 +175,7 @@ teste('HUD: corações, lâmpadas, prazo e slot de item não se sobrepõem', () 
   igual(c[4].x1, 472, 'borda direita do prazo');
   igual(c[5].x1, 624, 'slot de item termina na margem de 16 px');
   igual(OBP.hudColide(), null, OBP.hudColide() || '');
+  igual(OBP.CFG.HUD.CORACAO_MAX, 7, '4 normais com o permanente mais 3 extras da armadura');
 // prazo por fase (adendo 2): regressivo em branco, progressivo em vermelho, bônus de lâmpadas por tempo restante
 teste('relógio formata mm:ss, inclusive no overtime e no teto', () => {
   igual(OBP.Relogio.formatar(180), '03:00'); igual(OBP.Relogio.formatar(0), '00:00');
@@ -195,6 +196,31 @@ teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 300 s nas d
   igual(OBP.PRAZOS['fase-01'], 180); igual(OBP.PRAZOS['fase-02'], 220); igual(OBP.PRAZOS['fase-05'], 220);
   igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 300, 'as duas metades da fase 8');
 });
+});
+
+// armadura roxa (adendo 6): 3 corações extras, drenados antes dos normais
+teste('dano drena o coração extra antes do normal e volta à forma normal no zero', () => {
+  igual(OBP.CFG.CORACOES_ARMADURA, 3);
+  igual(OBP.Armadura.vestida(3), true); igual(OBP.Armadura.vestida(0), false);
+  let e = { coracoes: 3, extra: 3 };
+  e = OBP.Armadura.dano(e.coracoes, e.extra); igual(e.extra, 2); igual(e.coracoes, 3, 'normal intacto');
+  e = OBP.Armadura.dano(e.coracoes, e.extra); igual(e.extra, 1);
+  e = OBP.Armadura.dano(e.coracoes, e.extra); igual(e.extra, 0); igual(e.coracoes, 3, 'ainda intacto');
+  igual(OBP.Armadura.vestida(e.extra), false, 'saiu da armadura sem perder coração normal');
+  e = OBP.Armadura.dano(e.coracoes, e.extra); igual(e.coracoes, 2); igual(e.extra, 0);
+  igual(OBP.Armadura.dano(1, 0).coracoes, 0, 'último coração leva a zero');
+});
+teste('armadura: célula maior, mesma hitbox, pé na última linha da célula', () => {
+  for (const id of ['tikinho', 'gilpp']) {
+    const h = OBP.HEROIS[id];
+    if (!(h.celulaArmadura > h.celula)) throw new Error(`${id}: célula de armadura não é maior`);
+    // o offset do corpo é recalculado pela célula em uso; o pé fica na base da célula nas duas formas
+    igual((h.celulaArmadura - h.hitbox.w) % 2, 0, `${id}: offset horizontal inteiro`);
+    if (h.celulaArmadura - h.hitbox.h < 0) throw new Error(`${id}: hitbox maior que a célula`);
+  }
+  igual(OBP.HEROIS.tikinho.celulaArmadura, 96); igual(OBP.HEROIS.gilpp.celulaArmadura, 128);
+  igual(OBP.HEROIS.tikinho.hitbox.h, 52, 'hitbox do tikinho intacta'); igual(OBP.HEROIS.gilpp.hitbox.h, 68);
+  igual(OBP.FRAMES_ARMADURA.idle, 0); igual(OBP.FRAMES_ARMADURA.shoot, 5); igual(OBP.FRAMES_ARMADURA.win, 7);
 });
 
 rodar();

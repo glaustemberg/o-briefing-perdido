@@ -68,3 +68,12 @@ OBP.Relogio = {
 OBP.PRAZOS = {
   'fase-01': 180, 'fase-02': 220, 'fase-05': 220, 'fase-08a': 130, 'fase-08b': 170,
 };
+// Armadura roxa (adendo 6): +3 corações num contador separado, drenado antes do contador normal. Ao zerar, o herói
+// volta à forma normal sem perder coração normal nenhum. Fica puro aqui para o teste cobrir a ordem da drenagem.
+OBP.CFG.CORACOES_ARMADURA = 3;
+OBP.Armadura = {
+  vestida(extra) { return extra > 0; },
+  dano(coracoes, extra) {
+    return extra > 0 ? { coracoes, extra: extra - 1 } : { coracoes: coracoes - 1, extra: 0 };
+  },
+};
