@@ -66,8 +66,12 @@ OBP.Relogio = {
   bonus(seg) { return Math.min(40, Math.max(0, Math.floor(seg / 4))); },
 };
 OBP.PRAZOS = {
-  'fase-01': 180, 'fase-02': 220, 'fase-05': 220, 'fase-08a': 130, 'fase-08b': 170,
+  'fase-01': 140, 'fase-02': 170, 'fase-05': 170, 'fase-08a': 100, 'fase-08b': 130,
 };
+// Ordem das fases do escopo cortado (decisão 63): Estúdio, Reunião, Gráfica e as duas metades da Torre. Terminar
+// uma leva à seguinte pela loja; a última cai na Seleção, que é onde uma partida nova começa.
+OBP.ORDEM = ['fase-01', 'fase-02', 'fase-05', 'fase-08a', 'fase-08b'];
+OBP.proximaFase = (id) => OBP.ORDEM[OBP.ORDEM.indexOf(id) + 1] || null;
 // Arquétipos de inimigo (spec 4 e adendo 7). Fica aqui, e não em Enemy.js, porque tests/teste.html carrega este
 // arquivo sem o Phaser e Enemy.js não pode ser carregado (estende Phaser.Physics.Arcade.Sprite).
 // fam: qual comportamento o update roda. grav: gravidade do corpo (0 = flutua). dy: deslocamento em px do ponto
@@ -75,11 +79,11 @@ OBP.PRAZOS = {
 // fere: false só para a bomba antes de explodir. invencivel: soco e projétil não matam (hazard, não inimigo).
 // frame* são chaves de TEXTURA carregadas pelo Boot (arte final ini-*/proj-*, uma imagem por estado, sem atlas).
 OBP.INIMIGOS = {
-  postit:  { fam: 'patrulha', frame: 'postit', vel: 80, grav: 1000 },
+  postit:  { fam: 'patrulha', frame: 'postit', vel: 110, grav: 1000 },
   abacaxi: { fam: 'patrulha', frame: 'ini-abacaxi-a', frames: ['ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c'],
-             vel: 200, grav: 1000, pula: 420, pulaCada: 1100, frameMorto: 'ini-abacaxi-morto' },
+             vel: 230, grav: 1000, pula: 420, pulaCada: 900, frameMorto: 'ini-abacaxi-morto' },
   nuvem:   { fam: 'nuvem', frame: 'ini-nuvem-a', frameDorme: 'ini-nuvem-dorme', frameAviso: 'ini-nuvem-raio',
-             vel: 60, grav: 0, dy: -96 },
+             vel: 90, grav: 0, dy: -96 },
   loira:   { fam: 'loira', frame: 'ini-loira-idle', frameAlt: 'ini-loira-a', frameArremessa: 'ini-loira-arremessa',
              vel: 0, grav: 1000 },
   bomba:   { fam: 'bomba', frame: 'proj-bomba', framePousada: 'ini-bomba-solta',

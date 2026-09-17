@@ -7,7 +7,7 @@ window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-05'] = {
   nome: 'A GRÁFICA',
-  inimigos: ['loira', 'guilhotina', 'pendrive'], // M2: marca 1 vira a menina loira (adendo 7); 2 e 3 seguem stub do M3
+  inimigos: ['loira', 'abacaxi', 'nuvem'],   // decisao 67: os 3 slots so usam arquetipo implementado (os stubs do M3 nao nasciam e deixavam a fase vazia)
   // Bloco 1 (col 0-15): abertura, soco no piso solido, primeira impressora parada.
   // Bloco 2 (col 16-31): esteira de 10 tiles empurrando, plataforma one-way com estrelas.
   // Bloco 3 (col 32-47): Simone da a dica, guilhotina no ritmo fixo, primeiro bloco de pergunta flutuando livre.

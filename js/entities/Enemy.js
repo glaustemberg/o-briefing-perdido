@@ -62,7 +62,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     if (this.aviso > 0) {
       this.setTexture(this.t.frameAviso); b.setVelocityX(0);
       if (t >= this.aviso) {
-        this.aviso = 0; this.proximo = t + 2000;
+        this.aviso = 0; this.proximo = t + 1300;
         const r = new OBP.Enemy(this.scene, this.x, this.y + 24, 'raio');
         this.scene.inimigos.add(r);
         r.body.setVelocityY(300);
@@ -76,18 +76,19 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     if (Math.abs(dx) < 8) { b.setVelocityX(0); this.aviso = t + 500; } // 500 ms de tell, igual ao dos chefes (spec 6)
     else { this.dir = Math.sign(dx); b.setVelocityX(this.dir * this.t.vel); }
   }
-  // menina loira: parada de costas, arremessa uma bomba em arco a cada 2,5 s. Na espera alterna idle/frameAlt
-  // (blink lento) pra não ficar estática; frameArremessa é o quadro de recuo logo após o arremesso.
+  // menina loira: parada de costas, arremessa uma bomba em arco a cada ESPERA ms (1,7 s desde a decisão 67). Na
+  // espera alterna idle/frameAlt (blink lento) pra não ficar estática; frameArremessa é o recuo de 200 ms.
   comoLoira(b, t) {
+    const ESPERA = 1700;
     b.setVelocityX(0);
-    if (this.proximo < 0) { this.proximo = t + 2500; return; }
+    if (this.proximo < 0) { this.proximo = t + ESPERA; return; }
     this.dir = Math.sign(this.scene.player.x - this.x) || 1;
     if (t < this.proximo) {
-      if (t < this.proximo - 2300) this.setTexture(this.t.frameArremessa);
+      if (t < this.proximo - (ESPERA - 200)) this.setTexture(this.t.frameArremessa);
       else this.setTexture(Math.floor(t / 600) % 2 === 0 ? this.t.frame : this.t.frameAlt);
       return;
     }
-    this.proximo = t + 2500;
+    this.proximo = t + ESPERA;
     const bomba = new OBP.Enemy(this.scene, this.x + this.dir * 12, this.y - 12, 'bomba');
     this.scene.inimigos.add(bomba);
     bomba.body.setVelocity(this.dir * 140, -260); // arco curto: cai a pouco mais de 2 tiles à frente

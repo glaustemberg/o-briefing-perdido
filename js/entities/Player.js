@@ -134,15 +134,15 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (this.pausaRest > 0) this.pausaRest -= s;
     if (b.velocity.y > OBP.CFG.TERMINAL) b.setVelocityY(F.terminal(b.velocity.y));
     // soco: começa em f0, hitbox nos frames ativos, termina em h.soco.frames
-    if (inp.socoAgora && this.socoMs < 0 && !travado) { this.socoMs = 0; this.acertados.clear(); this.emit('socou'); }
+    if (inp.socoAgora && this.socoMs < 0 && !travado) {
+      this.socoMs = 0; this.acertados.clear(); this.emit('socou');
+      // de armadura, o mesmo toque que soca já dispara o projétil (decisão 67): não sobra tecla para um botão de
+      // tiro (spec 9) e segurar o botão era invisível para quem joga. O teto de 1 projétil na tela é o freio.
+      if (this.armadura) { this.tiroAte = t + 133; this.emit('atirou'); }
+    }
     else if (this.socoMs >= 0) {
       this.socoMs += dt;
-      if (this.socoFrame() >= h.soco.frames) {
-        // segurar o soco além da animação inteira dispara o projétil; toque rápido continua sendo só o soco físico
-        // (adendo 6): não sobra tecla no teclado nem no gamepad para um botão de tiro (spec 9).
-        if (this.armadura && inp.socoSegurado) { this.tiroAte = t + 133; this.emit('atirou'); }
-        this.socoMs = -1;
-      }
+      if (this.socoFrame() >= h.soco.frames) this.socoMs = -1;
     }
     this.animar(noChao, t);
   }

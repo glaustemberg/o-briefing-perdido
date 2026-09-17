@@ -18,6 +18,7 @@
 <script src="../js/data/fase-02.js"></script>
 <script src="../js/data/fase-05.js"></script>
 <script src="../js/data/fase-08a.js"></script>
+<script src="../js/data/fase-08b.js"></script>
 <script src="../js/systems/Mapa.js"></script>
 <script src="../js/systems/Save.js"></script>
 <script src="../js/data/loja.js"></script>
@@ -67,10 +68,10 @@ teste('fase 1 mede 128x14 e devolve dados e entidades', () => {
   igual(m.larg, 128, 'larg'); igual(m.alt, 14, 'alt');
   igual(m.dados.length, 14, 'linhas'); igual(m.dados[0].length, 128, 'colunas');
 });
-teste('fase 1 tem 16 estrelas, 3 perguntas, 3 reforçados, 2 espinhos e chão sólido', () => {
+teste('fase 1 tem 16 estrelas, 3 perguntas, 3 reforçados, 6 espinhos e chão sólido', () => {
   const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
   const conta = i => m.dados.flat().filter(v => v === i).length;
-  igual(conta(2), 16, 'estrelas'); igual(conta(3), 3, 'perguntas'); igual(conta(4), 3, 'reforçados'); igual(conta(5), 2, 'espinhos');
+  igual(conta(2), 16, 'estrelas'); igual(conta(3), 3, 'perguntas'); igual(conta(4), 3, 'reforçados'); igual(conta(5), 6, 'espinhos');
   igual(m.dados[13][0], 0, 'chão'); igual(m.dados[12][127], 0, 'parede direita');
   igual(m.dados[4][90], 1, 'one-way'); igual(m.dados[10][70], 4, 'R'); igual(m.dados[9][24], 3, '? 1');
 });
@@ -79,12 +80,12 @@ teste('fase 1 tem 3 buracos de 3 tiles na última linha', () => {
   const buracos = m.dados[13].map((v, i) => v === -1 ? i : -1).filter(i => i >= 0);
   igual(JSON.stringify(buracos), JSON.stringify([36, 37, 38, 88, 89, 90, 105, 106, 107]));
 });
-teste('fase 1 tem 16 sacos, 6 inimigos, P em (2,12), K em (66,12), X em (124,12)', () => {
+teste('fase 1 tem 16 sacos, 13 inimigos, P em (2,12), K em (66,12), X em (124,12)', () => {
   const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
   const de = ch => m.entidades.filter(e => e.ch === ch);
-  igual(de('$').length, 16, 'sacos'); igual(de('1').length + de('2').length + de('3').length, 6, 'inimigos');
+  igual(de('$').length, 16, 'sacos'); igual(de('1').length + de('2').length + de('3').length, 13, 'inimigos');   // subiu de 6 na decisao 67
   igual(de('P')[0].col, 2); igual(de('P')[0].lin, 12); igual(de('K')[0].col, 66); igual(de('X')[0].col, 124);
-  igual(de('A').length, 1, 'carimbo'); igual(de('N').length, 1, 'NPC');
+  igual(de('A').length, 1, 'carimbo'); igual(de('N').length, 2, 'meninas loiras');
   igual(m.dados[12][2], -1, 'entidade vira -1 no tilemap');
 });
 teste('parser rejeita largura desigual, mapa vazio e mapa sem P', () => {
@@ -197,10 +198,17 @@ teste('bônus de tempo: 1 lâmpada a cada 4 s, arredondado para baixo, teto 40, 
   igual(OBP.Relogio.bonus(160), 40, 'no limite exato do teto');
   igual(OBP.Relogio.bonus(220), 40, 'passou do teto, trava em 40');
 });
-teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 300 s nas duas metades', () => {
+// prazos apertados na decisao 67: o bonus de lampada e min(40, seg/4), entao cortar tempo tambem encarece a loja
+teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 230 s nas duas metades', () => {
   igual(Object.keys(OBP.PRAZOS).length, 5, 'fases com prazo (08 conta como 2 metades)');
-  igual(OBP.PRAZOS['fase-01'], 180); igual(OBP.PRAZOS['fase-02'], 220); igual(OBP.PRAZOS['fase-05'], 220);
-  igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 300, 'as duas metades da fase 8');
+  igual(OBP.PRAZOS['fase-01'], 140); igual(OBP.PRAZOS['fase-02'], 170); igual(OBP.PRAZOS['fase-05'], 170);
+  igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 230, 'as duas metades da fase 8');
+});
+teste('ordem das fases: a loja leva a fase seguinte e a ultima cai na Selecao', () => {
+  igual(OBP.ORDEM.join(), 'fase-01,fase-02,fase-05,fase-08a,fase-08b');
+  igual(OBP.proximaFase('fase-01'), 'fase-02'); igual(OBP.proximaFase('fase-08a'), 'fase-08b');
+  igual(OBP.proximaFase(OBP.CFG.FASE_FINAL), null, 'depois da ultima nao tem proxima');
+  igual(OBP.ORDEM[OBP.ORDEM.length - 1], OBP.CFG.FASE_FINAL, 'a ultima da ordem e a fase do chefe');
 });
 // arquétipos de inimigo do M2 (adendo 7). Sem folha 'inimigos32' nesta arte final (Boot carrega uma imagem por
 // estado), então em vez de OBP.frame() a checagem confere contra a lista real de chaves que o Boot carrega.
@@ -217,7 +225,7 @@ teste('tabela de inimigos: 6 arquétipos, texturas conhecidas e famílias válid
       if (t[campo] && !texturas.includes(t[campo])) throw new Error(`${id}.${campo}: textura desconhecida ${t[campo]}`);
     }
   }
-  igual(OBP.INIMIGOS.abacaxi.vel, 200, 'abacaxi corre a 200 px/s');
+  igual(OBP.INIMIGOS.abacaxi.vel, 230, 'abacaxi corre a 230 px/s');
   igual(OBP.INIMIGOS.nuvem.grav, 0, 'nuvem não cai');
   igual(OBP.INIMIGOS.nuvem.dy, -96, 'nuvem nasce 3 tiles acima da marca do mapa');
   igual(OBP.INIMIGOS.bomba.fere, false, 'bomba só fere ao explodir');
@@ -232,6 +240,9 @@ teste('fases em escopo: nuvem em 8a; loira em 2 e 5; abacaxi em 1; post-it do M1
   igual(tem('fase-01', 'abacaxi'), true, 'abacaxi em fase-01');
   igual(tem('fase-01', 'postit'), true, 'post-it do M1 continua na fase 1');
   for (const f of Object.keys(OBP.FASES)) igual(OBP.FASES[f].inimigos.length, 3, `${f}: 3 slots`);
+  // decisao 67: slot apontando para arquetipo inexistente nao nasce inimigo nenhum, e foi assim que as fases 2, 5
+  // e 8 ficaram praticamente vazias. Nas fases em escopo os 3 slots precisam existir em OBP.INIMIGOS.
+  for (const f of OBP.ORDEM.filter(f => OBP.FASES[f])) for (const id of OBP.FASES[f].inimigos) igual(!!OBP.INIMIGOS[id], true, `${f}: ${id}`);
 });
 
 // armadura roxa (adendo 6): 3 corações extras, drenados antes dos normais

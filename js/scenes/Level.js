@@ -110,8 +110,10 @@ OBP.Level = class extends Phaser.Scene {
     const lista = OBP.FASES[this.faseId].inimigos;
     this.inimigos = this.physics.add.group();
     for (const e of this.m.entidades) {
-      if (!'123'.includes(e.ch)) continue;
-      const tipo = lista[Number(e.ch) - 1];
+      if (!'123N'.includes(e.ch)) continue;
+      // N e a menina loira, fixa no mapa e fora dos 3 slots da fase (decisao 67): estava no ASCII da spec desde o
+      // inicio e nunca nascia, o que deixava a fase 1 com 3 tipos de inimigo em vez dos 4 que o mapa promete.
+      const tipo = e.ch === 'N' ? 'loira' : lista[Number(e.ch) - 1];
       if (!OBP.INIMIGOS[tipo]) { console.warn('inimigo do M3 ainda não implementado, pulando:', tipo); continue; }
       const dy = OBP.INIMIGOS[tipo].dy || 0;
       this.inimigos.add(new OBP.Enemy(this, e.col * 32 + 16, Math.max(16, e.lin * 32 + 16 + dy), tipo));

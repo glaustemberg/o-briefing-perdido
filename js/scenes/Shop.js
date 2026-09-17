@@ -71,6 +71,11 @@ OBP.Shop = class extends Phaser.Scene {
     this.atualizar();
     this.time.delayedCall(700, () => this.sair());
   }
-  // manter: true diz à Seleção para não zerar lâmpadas, vidas e bônus comprados (o reset é só de jogo novo)
-  sair() { this.scene.start('Select', { manter: true }); }
+  // fim de fase leva à seguinte (decisão 67). Depois da última cai na Seleção com manter: true, que diz para não
+  // zerar lâmpadas, vidas e bônus comprados (o reset é só de jogo novo).
+  sair() {
+    const prox = OBP.proximaFase(this.faseId);
+    if (prox) this.scene.start('Level', { fase: prox });
+    else this.scene.start('Select', { manter: true });
+  }
 };

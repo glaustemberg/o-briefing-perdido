@@ -21,7 +21,7 @@ window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-02'] = {
   nome: 'SALA DE REUNIÃO',
-  inimigos: ['loira', 'logomaior', 'template'],
+  inimigos: ['loira', 'postit', 'nuvem'],   // decisao 67: os 3 slots so usam arquetipo implementado (os stubs do M3 nao nasciam e deixavam a fase vazia)
   mapa: [
     '...............................................................................................................................................................#',
     '...............................................................................................................................................................#',

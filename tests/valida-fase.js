@@ -82,7 +82,8 @@ function validaArquivo(caminhoRelativo) {
     if (estrelas < 12) erros.push(`estrelas ${estrelas} < 12`);
     if (perguntas !== 3) erros.push(`perguntas ${perguntas} != 3`);
     if (sacos !== 16) erros.push(`sacos ${sacos} != 16`);
-    if (inimigos !== 6) erros.push(`inimigos ${inimigos} != 6`);
+    // piso de 6, nao igualdade: a decisao 67 subiu a densidade das fases em escopo (a fase 1 foi a 13 marcas)
+    if (inimigos < 6) erros.push(`inimigos ${inimigos} < 6`);
     if (npcs < 1 || npcs > 2) erros.push(`npcs ${npcs} fora da faixa 1-2`);
 
     // fase 8 e dividida em 8a e 8b: K e A ficam em uma metade cada (spec secao 5)
