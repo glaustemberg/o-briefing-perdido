@@ -64,7 +64,7 @@ OBP.Level = class extends Phaser.Scene {
     this.criarEntidades();
     this.inp = new OBP.Input(this);
     this.cam = new OBP.Camera(this, this.player, this.map.widthInPixels, this.map.heightInPixels);
-    this.parada = 0; this.controle = false; this.morrendo = false;
+    this.parada = 0; this.controle = false; this.morrendo = false; this.chefeVencido = false;
     // iris de entrada simplificada em fade (300 ms); a fala de inicio toca no primeiro frame de controle
     this.cameras.main.once('camerafadeincomplete', () => {
       this.controle = true;
@@ -214,8 +214,19 @@ OBP.Level = class extends Phaser.Scene {
   }
   // coxinha (spec 4): fecha a fase, coracoes cheios, fala de vitoria; os segundos que sobraram viram lampadas
   // (1 s = 1 lampada, adendo 2) e a pontuacao da corrida e comparada com o recorde da dupla fase mais heroi.
+  // Na ultima fase a saida nao conclui: chama o chefe. So depois de vencer o jokenpo a fase fecha.
+  // Perder custa uma vida e devolve o controle no mesmo lugar, para a revanche comecar na hora.
+  chamarChefe() {
+    this.controle = false;
+    this.scene.launch('Boss', { chefe: 'sobrinho', heroi: this.heroiId, aoFim: (ganhou) => {
+      if (ganhou) { this.chefeVencido = true; this.concluir(); return; }
+      this.registry.set('vidas', this.registry.get('vidas') - 1);
+      this.reiniciar();   // com vida sobrando volta ao checkpoint, sem vida mostra ACABOU O JOB
+    } });
+  }
   concluir() {
     if (this.concluida || this.morrendo) return;
+    if (this.faseId === OBP.CFG.FASE_FINAL && !this.chefeVencido) return this.chamarChefe();
     this.concluida = true; this.controle = false;
     this.registry.set('coracoes', this.registry.get('coracoesMax'));
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
