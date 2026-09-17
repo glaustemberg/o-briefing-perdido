@@ -26,3 +26,39 @@ OBP.pixels = function (scene, chave, linhas, cores) {
   g.generateTexture(chave, linhas[0].length, linhas.length);
   g.destroy();
 };
+// Prazo alvo por fase em segundos (adendo 2). Escopo de hoje: só as 4 fases que restaram no jogo (1 Estúdio,
+// 2 Reunião, 5 Gráfica, 8 Torre, dividida em 08a/08b). As demais entram nesta mesma tabela quando entrarem no
+// jogo, sem mexer em lógica nenhuma: Relogio e Level só leem por OBP.PRAZOS[faseId].
+OBP.PRAZOS = {
+  'fase-01': 180, 'fase-02': 220, 'fase-05': 220, 'fase-08a': 130, 'fase-08b': 170,
+};
+// Relógio do prazo. Zerou, não trava: o contador vira progressivo e a cor muda (o Hud decide a cor por atrasado()).
+OBP.Relogio = {
+  formatar(seg) {
+    const s = Math.min(5999, Math.floor(Math.abs(seg)));
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  },
+  atrasado(seg) { return seg < 0; },
+  // bônus de tempo (decisão do Berg 2026-09-17): 1 lâmpada a cada 4 s restantes, arredondado para baixo, teto 40/fase
+  bonus(seg) { return Math.min(40, Math.max(0, Math.floor(seg / 4))); },
+};
+// Caixas do HUD (spec 7 + adendo 2): fonte única de verdade pro desenho (Hud.js) e pro teste anti-colisão.
+// Armadilha diagnosticada: a Press Start 2P avança 1 em por caractere, então um ícone de 32x32 na mesma borda
+// esquerda dos dígitos fica embaixo deles. x,y,w,h em px de jogo (640x360).
+OBP.HUD = {
+  coracoes: { x: 16, y: 16, w: 2 * 20 + 18, h: 16 },
+  lampadaIcone: { x: 188, y: 16, w: 32, h: 32 },
+  lampadaDigitos: { x: 224, y: 16, w: 80, h: 16 },   // 5 dígitos de 16 px, borda direita em 304
+  prazoIcone: { x: 356, y: 16, w: 32, h: 32 },
+  prazoDigitos: { x: 392, y: 16, w: 80, h: 16 },     // "00:00", borda direita em 472
+  item: { x: 588, y: 16, w: 36, h: 36 },
+};
+// Colisão AABB entre as caixas do HUD: devolve o par que se sobrepõe, ou null se está tudo limpo.
+OBP.hudColide = () => {
+  const nomes = Object.keys(OBP.HUD);
+  for (let i = 0; i < nomes.length; i++) for (let j = i + 1; j < nomes.length; j++) {
+    const a = OBP.HUD[nomes[i]], b = OBP.HUD[nomes[j]];
+    if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) return [nomes[i], nomes[j]];
+  }
+  return null;
+};

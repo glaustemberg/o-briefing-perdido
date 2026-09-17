@@ -1,5 +1,7 @@
-// HUD (spec 2.11 e 7): corações 18x16 com vão 2 em (16,16); ícone de verba 16x16 em (224,16) e 5 dígitos com a
-// borda direita em x = 304; slot do item 36x36 em (588,16) com a única moldura roxa do jogo. Roda em paralelo ao Level.
+// HUD (spec 2.11 e 7 + adendo 2): corações 18x16 com vão 2 em (16,16); ícone de lâmpada 32x32 em (188,16) e 5
+// dígitos com a borda direita em x = 304; ícone de relógio 32x32 em (356,16) e mm:ss com a borda direita em x =
+// 472; slot do item 36x36 em (588,16) com a única moldura roxa do jogo. Layout inteiro em OBP.HUD (config.js) e
+// validado por OBP.hudColide(). Roda em paralelo ao Level.
 OBP.Hud = class extends Phaser.Scene {
   constructor() { super('Hud'); }
   static criarTexturas(scene) {
@@ -44,20 +46,28 @@ OBP.Hud = class extends Phaser.Scene {
   }
   create() {
     OBP.Hud.criarTexturas(this);
-    const P = OBP.PAL;
+    const P = OBP.PAL, H = OBP.HUD;
     this.coracoes = [];
-    this.add.image(224, 16, 'saco').setOrigin(0, 0);
-    this.txtVerba = this.add.text(304, 16, '00000', OBP.estiloTexto(16, P.moeda)).setOrigin(1, 0);
+    this.add.image(H.lampadaIcone.x, H.lampadaIcone.y, 'saco').setOrigin(0, 0);
+    this.txtVerba = this.add.text(H.lampadaDigitos.x + H.lampadaDigitos.w, H.lampadaDigitos.y, '00000', OBP.estiloTexto(16, P.moeda)).setOrigin(1, 0);
+    this.add.image(H.prazoIcone.x, H.prazoIcone.y, 'item-relogio').setOrigin(0, 0);
+    this.txtPrazo = this.add.text(H.prazoDigitos.x + H.prazoDigitos.w, H.prazoDigitos.y, '00:00', OBP.estiloTexto(16, P.branco)).setOrigin(1, 0);
     const g = this.add.graphics();
     g.fillStyle(P.num(P.roxo)); g.fillRect(588, 16, 36, 36);
     g.fillStyle(P.num(P.roxoBrilho)); g.fillRect(590, 18, 32, 32);
     g.fillStyle(P.num(P.pretoCamisa)); g.fillRect(591, 19, 30, 30);
     this.desenharCoracoes(this.registry.get('coracoes'));
     this.mostrarVerba(this.registry.get('verba'));
-    const aoCoracao = (_p, v) => this.desenharCoracoes(v), aoVerba = (_p, v) => this.mostrarVerba(v, true);
+    this.mostrarPrazo(this.registry.get('prazo'));
+    const aoCoracao = (_p, v) => this.desenharCoracoes(v), aoVerba = (_p, v) => this.mostrarVerba(v, true), aoPrazo = (_p, v) => this.mostrarPrazo(v);
     this.registry.events.on('changedata-coracoes', aoCoracao);
     this.registry.events.on('changedata-verba', aoVerba);
-    this.events.once('shutdown', () => { this.registry.events.off('changedata-coracoes', aoCoracao); this.registry.events.off('changedata-verba', aoVerba); });
+    this.registry.events.on('changedata-prazo', aoPrazo);
+    this.events.once('shutdown', () => {
+      this.registry.events.off('changedata-coracoes', aoCoracao);
+      this.registry.events.off('changedata-verba', aoVerba);
+      this.registry.events.off('changedata-prazo', aoPrazo);
+    });
   }
   desenharCoracoes(n) {
     this.coracoes.forEach(c => c.destroy());
@@ -67,5 +77,10 @@ OBP.Hud = class extends Phaser.Scene {
   mostrarVerba(v, nudge = false) {
     this.txtVerba.setText(String(Math.max(0, v)).padStart(5, '0'));
     if (nudge) { this.txtVerba.y = 18; this.time.delayedCall(33, () => { this.txtVerba.y = 16; }); }
+  }
+  // branco enquanto sobra prazo, vermelho P.coracao no overtime (adendo 2); o texto nunca some, só troca de cor
+  mostrarPrazo(seg) {
+    this.txtPrazo.setText(OBP.Relogio.formatar(seg));
+    this.txtPrazo.setColor(OBP.Relogio.atrasado(seg) ? OBP.PAL.coracao : OBP.PAL.branco);
   }
 };
