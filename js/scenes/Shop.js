@@ -75,7 +75,8 @@ OBP.Shop = class extends Phaser.Scene {
   // zerar lâmpadas, vidas e bônus comprados (o reset é só de jogo novo).
   sair() {
     const prox = OBP.proximaFase(this.faseId);
+    // depois da ultima fase o jogo FECHA numa tela de fim (decisao 82), em vez de voltar calado para a Selecao
     if (prox) this.scene.start('Level', { fase: prox });
-    else this.scene.start('Select', { manter: true });
+    else this.scene.start('Fim');
   }
 };

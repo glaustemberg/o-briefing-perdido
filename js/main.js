@@ -6,7 +6,7 @@
     scale: { mode: Phaser.Scale.NONE, zoom: OBP.zoomInteiro(), autoCenter: Phaser.Scale.NO_CENTER },
     physics: { default: 'arcade', arcade: { gravity: { y: 0 }, tileBias: 32, fps: 60, debug: false } },
     input: { gamepad: true },
-    scene: [OBP.Boot, OBP.Select, OBP.Shop, OBP.Level, OBP.Hud, OBP.Boss].filter(Boolean),
+    scene: [OBP.Boot, OBP.Select, OBP.Shop, OBP.Level, OBP.Hud, OBP.Boss, OBP.Fim].filter(Boolean),
   });
   // O autoCenter do Phaser centraliza em pixel CSS, e com dpr fracionario (Windows a 125% ou 150%) isso cai em
   // MEIO pixel fisico. Com nearest neighbor, meio pixel de deslocamento come uma linha inteira do sprite: e o que

@@ -7,7 +7,10 @@ const fs = require('fs');
 const path = require('path');
 const RAIZ = path.join(__dirname, '..');
 const TILE = 32;
-const SOLIDO = '#*?R><';      // bloqueiam dos quatro lados (> e < sao esteira, solidos pela spec 218)
+// A esteira saiu do escopo e os marcadores > e < viraram chao (decisao 82). Eles NAO voltam para esta lista:
+// nao estao em OBP.Mapa.LEG, entao no jogo viram BURACO, e trata-los como solido aqui foi o que escondeu 12
+// tiles de chao inexistentes no comeco da fase 5.
+const SOLIDO = '#*?R';        // bloqueiam dos quatro lados
 const PLATAF = '=';           // atravessa de baixo, pousa em cima
 const PERIGO = '^';           // espinho: nao pisa
 
@@ -105,11 +108,19 @@ function alcanca(linhas, heroi, quebra) {
     for (const v of vizinhos) { const k = v.join(':');
       if (!vistos.has(k) && v[0] >= 0 && v[0] < m.larg) { vistos.add(k); fila.push(v); } }
   }
-  const ok = [...vistos].some(k => Number(k.split(':')[0]) >= chegada[0] - 1);
+  // Chegada por PROXIMIDADE, nao por coluna. O teste antigo (`coluna >= a do X`) dava sempre positivo em mapa
+  // vertical, onde a torre inteira tem a mesma largura: o gilpp nao subia um andar da fase 8b e mesmo assim
+  // constava como "alcanca a saida" (decisao 82).
+  const ok = [...vistos].some(k => {
+    const [c, l] = k.split(':').map(Number);
+    return Math.abs(c - chegada[0]) <= 1 && l - chegada[1] >= 0 && l - chegada[1] <= 4;
+  });
   return { ok, maisLonge, meta: chegada[0], vistos };
 }
 
-const alvos = process.argv.slice(2).length ? process.argv.slice(2)
+// as flags (--onde) sao filtradas: sem isso o proprio --onde vira nome de arquivo de fase
+const args = process.argv.slice(2).filter((a, i, t) => !a.startsWith('--') && (i === 0 || !t[i - 1].startsWith('--')));
+const alvos = args.length ? args
   : fs.readdirSync(path.join(RAIZ, 'js', 'data')).filter(f => /^fase-0/.test(f)).map(f => 'js/data/' + f);
 let falhou = false;
 for (const rel of alvos) {
@@ -131,6 +142,32 @@ for (const rel of alvos) {
       if (!achou) perdidos.push(`(${col},${lin})`);
     }));
     if (perdidos.length) { console.log(`${chave} ${id}: ${perdidos.length} itens sem alcance: ${perdidos.join(' ')}`); falhou = true; }
+    // --onde col,lin diz se o heroi consegue POUSAR naquela celula: serve para achar por que um item ficou de fora
+    // --perfil mostra, por linha do mapa, quantas celulas o heroi consegue ocupar: e assim que se ve onde ele
+    // fica preso num mapa vertical
+    if (process.argv.includes('--perfil')) {
+      const porLinha = {};
+      for (const k of pes) { const l = Number(k.split(':')[1]); porLinha[l] = (porLinha[l] || 0) + 1; }
+      const faixas = [];
+      for (let l = 0; l < linhas.length; l += 5) {
+        let n = 0; for (let j = l; j < l + 5 && j < linhas.length; j++) n += porLinha[j] || 0;
+        faixas.push(`${l}:${n}`);
+      }
+      console.log(`  ${id} celulas por faixa de 5 linhas: ${faixas.join(' ')}`);
+    }
+    // --pulo col,lin lista para onde o heroi consegue saltar a partir daquela celula
+    const ip = process.argv.indexOf('--pulo');
+    if (ip > 0 && process.argv[ip + 1]) {
+      const [c0, l0] = process.argv[ip + 1].split(',').map(Number);
+      const mundo = criaMundo(linhas);
+      console.log(`  ${id} pula de (${c0},${l0}) para: ${pulos(mundo, herois[id], c0, l0).map(v => v.join(',')).join(' ') || 'LUGAR NENHUM'}`);
+    }
+    const onde = process.argv.indexOf('--onde');
+    if (onde > 0 && process.argv[onde + 1]) {
+      const [c0, l0] = process.argv[onde + 1].split(',').map(Number);
+      const perto = [...pes].filter(k => { const [c, l] = k.split(':').map(Number); return Math.abs(c - c0) <= 2 && Math.abs(l - l0) <= 4; });
+      console.log(`  ${id} perto de (${c0},${l0}): ${perto.sort().join(' ') || 'NADA'}`);
+    }
   }
 }
 process.exit(falhou ? 1 : 0);
