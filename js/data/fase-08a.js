@@ -6,7 +6,7 @@ window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-08a'] = {
   nome: 'A TORRE: O CAPIBARIBE',
-  inimigos: ['recepcionista', 'porta', 'template'],
+  inimigos: ['recepcionista', 'nuvem', 'template'], // M2: marca 2 vira a nuvem com raio (adendo 7); 1 e 3 seguem stub do M3
   // Bloco 1 (col 0-15): embarque no catamara, estrelas 4 a 6 colunas depois do P, primeiro template em dupla.
   // Bloco 2 (col 16-31): onda de 3 tiles, comporta afastada 5 colunas do pouso (sem desvio, ciclo sincronizado ao passo automatico do catamara, sempre da tempo), primeiro bloco de pergunta.
   // Bloco 3 (col 32-47): onda de 4 tiles, segundo template em dupla, estrelas.

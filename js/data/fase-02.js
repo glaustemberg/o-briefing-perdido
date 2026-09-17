@@ -1,5 +1,6 @@
 // Fase 2: Sala de Reunião, mesa comprida e projetor. Mapa 160x14 (spec 5).
-// M1: os três índices de inimigo viram o Post-it genérico; na M3 a lista vira ['stakeholder', 'logomaior', 'template'].
+// M2: marca 1 vira a menina loira, que arremessa bomba (adendo 7). Marcas 2 e 3 ainda são stub do M3
+// ('logomaior', 'template'): o Level pula com aviso até esses arquétipos existirem.
 // Gimmick da fase (apertar para baixo passa o slide e alterna as plataformas A/B) ainda não está
 // no parser M1, então o mapa fixa uma leitura única das plataformas; o slide entra na M2/M3.
 //
@@ -20,7 +21,7 @@ window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-02'] = {
   nome: 'SALA DE REUNIÃO',
-  inimigos: ['stakeholder', 'logomaior', 'template'],
+  inimigos: ['loira', 'logomaior', 'template'],
   mapa: [
     '...............................................................................................................................................................#',
     '...............................................................................................................................................................#',

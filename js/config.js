@@ -26,3 +26,21 @@ OBP.pixels = function (scene, chave, linhas, cores) {
   g.generateTexture(chave, linhas[0].length, linhas.length);
   g.destroy();
 };
+// Arquétipos de inimigo (spec 4 e adendo 7). Fica aqui, e não em Enemy.js, porque tests/teste.html carrega este
+// arquivo sem o Phaser e Enemy.js não pode ser carregado (estende Phaser.Physics.Arcade.Sprite).
+// fam: qual comportamento o update roda. grav: gravidade do corpo (0 = flutua). dy: deslocamento em px do ponto
+// de nascimento em relação à marca do mapa (a nuvem "flutua no alto", mas o mapa a marca no chão, com os outros).
+// fere: false só para a bomba antes de explodir. invencivel: soco e projétil não matam (hazard, não inimigo).
+// frame* são chaves de TEXTURA carregadas pelo Boot (arte final ini-*/proj-*, uma imagem por estado, sem atlas).
+OBP.INIMIGOS = {
+  postit:  { fam: 'patrulha', frame: 'postit', vel: 80, grav: 1000 },
+  abacaxi: { fam: 'patrulha', frame: 'ini-abacaxi-a', frames: ['ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c'],
+             vel: 200, grav: 1000, pula: 420, frameMorto: 'ini-abacaxi-morto' },
+  nuvem:   { fam: 'nuvem', frame: 'ini-nuvem-a', frameDorme: 'ini-nuvem-dorme', frameAviso: 'ini-nuvem-raio',
+             vel: 60, grav: 0, dy: -96 },
+  loira:   { fam: 'loira', frame: 'ini-loira-idle', frameAlt: 'ini-loira-a', frameArremessa: 'ini-loira-arremessa',
+             vel: 0, grav: 1000 },
+  bomba:   { fam: 'bomba', frame: 'proj-bomba', framePousada: 'ini-bomba-solta',
+             vel: 0, grav: 1000, invencivel: true, fere: false },
+  raio:    { fam: 'raio', frame: 'proj-raio-solto', vel: 0, grav: 0, invencivel: true },
+};
