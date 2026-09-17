@@ -9,6 +9,12 @@ OBP.FRAMES = { idle: 0, walk1: 1, walk2: 2, walk3: 3, jump: 4, fall: 5, punch: 6
 // Os quadros de agachar (8 a 11) existem porque a armadura também agacha (ruling do Berg): mesma pose, tira menor.
 OBP.FRAMES_ARMADURA = { idle: 0, walkA: 1, walkC: 2, jump: 3, punch: 4, shoot: 5, hurt: 6, win: 7,
   crouch: 8, crouchPunch: 9, crouchStep: 10, crouchHurt: 11 };
+// Projétil da forma de armadura (adendo 6). O tikinho tem ciclo de um elemento só (sirene, agora vermelha) e o
+// gilpp cicla camisa, calça e chapéu de São João; com isso os dois passam pela mesma função e o Player não
+// precisa saber quem é quem. Cada nome do ciclo já é a CHAVE de textura carregada pelo Boot (sem atlas).
+OBP.ProjLogic = {
+  textura(h, n) { const c = h.projetil.ciclo; return c[((n % c.length) + c.length) % c.length]; },
+};
 OBP.HEROIS = {
   tikinho: {
     id: 'tikinho', nome: 'TIKINHO', prefixo: 'tk', tira: 'assets/sprites/tikinho/tk-tira.png', celula: 64,
@@ -19,6 +25,7 @@ OBP.HEROIS = {
     // soco 7 f: frame 1 em f0, hitbox f1 a f3, recupera f4 a f6, cancela em pulo de f4; caixa 20x20 à frente, dy do topo da hitbox
     soco: { w: 20, h: 20, dy: 8, frames: 7, ativoDe: 1, ativoAte: 3, cancelaEm: 4 },
     knockback: 160, hitStop: 40, andarFps: 14, quebraReforcado: false,
+    projetil: { ciclo: ['proj-sirene'], vel: 260, hitbox: 24 },
     vozes: [
       'tk-check-01', 'tk-dano-01', 'tk-extra-01', 'tk-extra-02', 'tk-extra-03',
       'tk-inicio-01', 'tk-inicio-f1', 'tk-inicio-f2', 'tk-inicio-f3', 'tk-inicio-f4', 'tk-inicio-f5', 'tk-inicio-f6', 'tk-inicio-f7', 'tk-inicio-f8',
@@ -35,6 +42,7 @@ OBP.HEROIS = {
     // soco 11 f: antecipa f0, hitbox f1 a f4, recupera f5 a f10, não cancela; caixa 28x20
     soco: { w: 28, h: 20, dy: 12, frames: 11, ativoDe: 1, ativoAte: 4, cancelaEm: 11 },
     knockback: 240, hitStop: 60, andarFps: 12, quebraReforcado: true,
+    projetil: { ciclo: ['proj-camisa', 'proj-calca', 'proj-chapeu'], vel: 260, hitbox: 24 },
     vozes: [
       'gp-check-01', 'gp-dano-01', 'gp-extra-01', 'gp-extra-02',
       'gp-inicio-01', 'gp-inicio-f1', 'gp-inicio-f2', 'gp-inicio-f3', 'gp-inicio-f4', 'gp-inicio-f5', 'gp-inicio-f6', 'gp-inicio-f7', 'gp-inicio-f8',

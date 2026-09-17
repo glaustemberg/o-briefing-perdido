@@ -9,7 +9,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
     this.setOrigin(0.5, 1); // x,y do sprite é o pé (spec 2.4: pés na última linha da célula)
     this.body.setMaxVelocity(100000, 100000); // nunca setMaxVelocityY: o teto de queda é clamp em update
-    this.armadura = false;
+    this.armadura = false; this.tiroAte = 0;
     this.dir = 1; this.estado = 'chao'; this.morto = false; this.agachado = false;
     this.ajustarCorpo(); // hitbox centrada no pé (spec 2.5), com o offset saindo da célula em uso
     this.ultChao = -1e9; this.ultAperto = -1e9; this.pausaRest = 0; this.pausou = false; this.cortou = false;
@@ -135,7 +135,15 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (b.velocity.y > OBP.CFG.TERMINAL) b.setVelocityY(F.terminal(b.velocity.y));
     // soco: começa em f0, hitbox nos frames ativos, termina em h.soco.frames
     if (inp.socoAgora && this.socoMs < 0 && !travado) { this.socoMs = 0; this.acertados.clear(); this.emit('socou'); }
-    else if (this.socoMs >= 0) { this.socoMs += dt; if (this.socoFrame() >= h.soco.frames) this.socoMs = -1; }
+    else if (this.socoMs >= 0) {
+      this.socoMs += dt;
+      if (this.socoFrame() >= h.soco.frames) {
+        // segurar o soco além da animação inteira dispara o projétil; toque rápido continua sendo só o soco físico
+        // (adendo 6): não sobra tecla no teclado nem no gamepad para um botão de tiro (spec 9).
+        if (this.armadura && inp.socoSegurado) { this.tiroAte = t + 133; this.emit('atirou'); }
+        this.socoMs = -1;
+      }
+    }
     this.animar(noChao, t);
   }
   animar(noChao, t) {
@@ -143,6 +151,8 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     // invencível pisca por visibilidade (alpha parcial é proibido, spec 2.3): 4 f ligado, 4 f desligado
     this.setVisible(t >= this.invencivelAte || Math.floor(t / 66) % 2 === 0);
     if (t < this.feridoAte) { this.anims.stop(); this.setFrame(this.agachado ? F.crouchHurt : F.hurt); return; }
+    // tira de armadura não tem quadro de tiro agachado (só 8 quadros): o flash de disparo vale em pé ou agachado.
+    if (this.armadura && t < this.tiroAte) { this.anims.stop(); this.setFrame(F.shoot); return; }
     if (this.agachado) {
       if (this.socoMs >= 0) { this.anims.stop(); this.setFrame(F.crouchPunch); return; }
       if (Math.abs(b.velocity.x) > 8) this.play(`${this.animPrefixo()}-deslizar`, true);

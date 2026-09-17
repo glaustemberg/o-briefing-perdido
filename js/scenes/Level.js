@@ -95,11 +95,13 @@ OBP.Level = class extends Phaser.Scene {
     this.blocos = new OBP.Blocos(this, this.camada);
     this.itens = new OBP.Itens(this, this.camada);
     this.itens.criarDoMapa(this.m.entidades, this.checkpointAtivo);
+    this.projeteis = new OBP.Projeteis(this, this.camada);
     this.criarInimigos();
     this.physics.add.collider(this.player, this.camada, (p, tile) => this.blocos.cabecada(p, tile));
     this.physics.add.overlap(this.player, this.itens.grupo, (p, item) => this.itens.coletar(p, item), (p) => !p.morto);
     this.player.on('pulou', () => { OBP.Audio.pulo(); OBP.Voice.reacaoCada('pulo-01', 10); });
     this.player.on('socou', () => OBP.Audio.soco());
+    this.player.on('atirou', () => { if (this.projeteis.lancar(this.player)) OBP.Audio.tiro(); });
     this.player.on('pousouAlto', () => OBP.Audio.pouso());
     this.events.on('bloco-quebrado', () => { OBP.Audio.bloco(); OBP.Voice.reacaoCada('soco-01', 10); });
     this.events.on('lampada', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
@@ -116,6 +118,11 @@ OBP.Level = class extends Phaser.Scene {
     }
     this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto);
     this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto && e.fere);
+    // projétil mata inimigo comum em 1 acerto, igual ao soco (adendo 6); hazard invencível só consome o projétil
+    this.physics.add.overlap(this.projeteis.grupo, this.inimigos, (p, e) => {
+      if (!e.invencivel) e.morrer(Math.sign(p.body.velocity.x) || 1, this.player.h.knockback);
+      p.destroy();
+    }, (p, e) => !e.morto);
   }
   contatoInimigo(e) {
     this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
@@ -236,6 +243,7 @@ OBP.Level = class extends Phaser.Scene {
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
     for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
     this.blocos.update(t);
+    this.projeteis.update();
     this.cam.update();
     if (this.fundo) this.fundo.tilePositionX = this.cameras.main.scrollX * 0.4;  // parallax do fundo
     if (this.morrendo) return;

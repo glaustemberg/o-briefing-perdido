@@ -257,6 +257,21 @@ teste('armadura: célula maior, mesma hitbox, pé na última linha da célula', 
   igual(OBP.FRAMES_ARMADURA.idle, 0); igual(OBP.FRAMES_ARMADURA.shoot, 5); igual(OBP.FRAMES_ARMADURA.win, 7);
 });
 
+// tiro da armadura (adendo 6): tikinho só sirene; gilpp cicla camisa, calça e chapéu de São João. Cada nome do
+// ciclo já é a chave de textura carregada pelo Boot (proj-*, sem atlas: não existe folha 'itens32' nesta versão,
+// mesma decisão do Enemy.js), então o teste checa a string em vez de procurar quadro num atlas que não existe.
+teste('ciclo de projétil por herói, em ordem e sem fim', () => {
+  const t = OBP.HEROIS.tikinho, g = OBP.HEROIS.gilpp;
+  igual(OBP.ProjLogic.textura(t, 0), 'proj-sirene'); igual(OBP.ProjLogic.textura(t, 1), 'proj-sirene');
+  igual(OBP.ProjLogic.textura(t, 97), 'proj-sirene', 'uma textura só, nunca cicla');
+  igual(OBP.ProjLogic.textura(g, 0), 'proj-camisa'); igual(OBP.ProjLogic.textura(g, 1), 'proj-calca');
+  igual(OBP.ProjLogic.textura(g, 2), 'proj-chapeu'); igual(OBP.ProjLogic.textura(g, 3), 'proj-camisa', 'volta ao começo');
+  igual(OBP.ProjLogic.textura(g, 11), 'proj-chapeu');
+  igual(t.projetil.vel, 260); igual(g.projetil.vel, 260, 'mesma velocidade nos dois');
+  igual(t.projetil.hitbox, 24); igual(g.projetil.hitbox, 24);
+  for (const h of [t, g]) for (const n of h.projetil.ciclo) if (!/^proj-/.test(n)) throw new Error(`chave de textura fora do padrão: ${n}`);
+});
+
 rodar();
 </script>
 </body>
