@@ -81,7 +81,6 @@ OBP.proximaFase = (id) => OBP.ORDEM[OBP.ORDEM.indexOf(id) + 1] || null;
 // frame* são chaves de TEXTURA carregadas pelo Boot (arte final ini-*/proj-*, uma imagem por estado, sem atlas).
 // corpo: [largura, altura] da hitbox quando o sprite nao e 32x32 (decisao 68). Sem corpo, vale 28x28 da spec 2.5.
 OBP.INIMIGOS = {
-  postit:  { fam: 'patrulha', frame: 'postit', vel: 110, grav: 1000 },
   abacaxi: { fam: 'patrulha', frame: 'ini-abacaxi-a', frames: ['ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c'],
              vel: 230, grav: 1000, pula: 420, pulaCada: 900, frameMorto: 'ini-abacaxi-morto', corpo: [32, 40] },
   nuvem:   { fam: 'nuvem', frame: 'ini-nuvem-a', frameDorme: 'ini-nuvem-dorme', frameAviso: 'ini-nuvem-raio',

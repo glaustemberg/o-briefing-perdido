@@ -47,6 +47,11 @@ OBP.Audio = {
   tiro() { this.osc('square', 900, 300, 70, 0.16); this.ruido(40, 4000, 1500, 0.08); },
   // compra na loja: arpejo do item uma quinta acima, para não se confundir com pegar item no chão (spec 8)
   compra() { [784, 988, 1175].forEach((f, i) => this.osc('triangle', f, f, 50, 0.2, i * 0.05)); },
+  // ruídos dos inimigos (decisao 70): cada um com uma assinatura curta, para dar leitura sem depender de voz
+  pulinho() { this.osc('square', 220, 440, 70, 0.12); },          // abacaxi saltando
+  arremesso() { this.ruido(60, 2600, 900, 0.1); },                // a menina jogando a bomba
+  quique() { this.osc('triangle', 600, 300, 50, 0.12); },         // bomba batendo no chão
+  acordar() { this.osc('sawtooth', 90, 140, 260, 0.1); },         // nuvem saindo do sono
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };

@@ -8,6 +8,10 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.spritesheet('tikinho', 'assets/sprites/tikinho/tk-tira.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('gilpp', 'assets/sprites/gilpp/gp-tira.png', { frameWidth: 96, frameHeight: 96 });
     for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav`);
+    // falas dos inimigos (decisao 70): canal proprio, ids 'ini-*' que o OBP.VozInimigo procura no cache
+    for (const v of ['abacaxi-resmungo-01', 'abacaxi-resmungo-02', 'abacaxi-resmungo-03', 'abacaxi-acerto',
+                     'loira-tiro', 'loira-acerto', 'nuvem-raio', 'nuvem-acerto', 'chefe-01', 'chefe-02'])
+      this.load.audio('ini-' + v, `assets/vozes/inimigos/ini-${v}.wav`);
     // Arte final da fase 1. As texturas provisorias de Level/Item/Enemy so nascem se a chave nao existir,
     // entao carregar aqui com a MESMA chave faz o jogo usar a arte sem mudar logica nenhuma.
     // um tileset e um fundo por fase do escopo cortado (1 Estudio, 2 Reuniao, 5 Grafica, 8 Torre).
@@ -20,7 +24,6 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.image('coxinha', T + 'item-coxinha.png');
     this.load.image('check-off', T + 'item-checkpoint-off.png');
     this.load.image('check-on', T + 'item-checkpoint-on.png');
-    this.load.image('postit', T + 'inimigo-postit.png');
     // M2: formas de armadura, itens, projeteis e os inimigos novos (decisoes 43 a 53)
     this.load.spritesheet('tikinho-armadura', 'assets/sprites/tikinho-armadura/tka-tira.png', { frameWidth: 96, frameHeight: 96 });
     this.load.spritesheet('gilpp-armadura', 'assets/sprites/gilpp-armadura/gpa-tira.png', { frameWidth: 128, frameHeight: 128 });

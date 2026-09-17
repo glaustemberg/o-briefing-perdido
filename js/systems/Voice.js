@@ -45,3 +45,33 @@ OBP.Voice = {
   },
   reacaoCada(sufixo, n) { if (OBP.VoiceLogic.cada(this.e, sufixo, n)) this.falar(sufixo); },
 };
+// Falas dos inimigos (decisao 70, pedido do Berg). Canal separado do herói de propósito: no mesmo canal o
+// resmungo do abacaxi comeria o cooldown das falas dele. Dois freios: 2,2 s entre duas falas quaisquer e 6 s
+// entre repetições do mesmo grupo. Fala de acerto é prioritária: corta o que estiver tocando e só respeita 3 s
+// do próprio grupo, porque é ela que explica ao jogador quem acabou de machucá-lo.
+OBP.VozInimigo = {
+  GLOBAL_MS: 2200, GRUPO_MS: 6000, PRIORITARIA_MS: 3000,
+  ultima: -1e9, porGrupo: {}, som: null,
+  falar(scene, grupo, opc = {}) {
+    if (!scene || !scene.sound) return false;
+    const t = scene.time.now, n = opc.variantes || 1;
+    const prio = !!opc.prioritaria;
+    if (t - (this.porGrupo[grupo] || -1e9) < (prio ? this.PRIORITARIA_MS : this.GRUPO_MS)) return false;
+    if (!prio && t - this.ultima < this.GLOBAL_MS) return false;
+    const id = 'ini-' + grupo + (n > 1 ? '-' + String(1 + Math.floor(Math.random() * n)).padStart(2, '0') : '');
+    if (!scene.cache.audio.exists(id)) return false;   // fala ainda não gravada: silêncio, sem gastar cooldown
+    const tocando = this.som && this.som.isPlaying;
+    if (tocando && !prio) return false;
+    if (tocando) this.som.stop();
+    this.ultima = t; this.porGrupo[grupo] = t;
+    const som = scene.sound.add(id, { volume: 0.9 });
+    let limpo = false;
+    const limpar = () => { if (limpo) return; limpo = true; som.destroy(); if (this.som === som) this.som = null; };
+    som.once('complete', limpar); som.once('stop', limpar);
+    this.som = som; som.play();
+    return true;
+  },
+  // quem machucou o herói, na voz de quem machucou: a bomba fala pela menina e o raio pela nuvem
+  DONO: { abacaxi: 'abacaxi-acerto', loira: 'loira-acerto', bomba: 'loira-acerto', nuvem: 'nuvem-acerto', raio: 'nuvem-acerto' },
+  acertou(scene, tipo) { const g = this.DONO[tipo]; if (g) this.falar(scene, g, { prioritaria: true }); },
+};

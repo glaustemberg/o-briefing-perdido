@@ -8,7 +8,7 @@ window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-08b'] = {
   nome: 'A TORRE: O ELEVADOR',
-  inimigos: ['postit', 'nuvem', 'loira'],   // decisao 67: os 3 slots so usam arquetipo implementado (os stubs do M3 nao nasciam e deixavam a fase vazia)
+  inimigos: ['abacaxi', 'nuvem', 'loira'],   // decisao 67: os 3 slots so usam arquetipo implementado (os stubs do M3 nao nasciam e deixavam a fase vazia)
   mapa: [
     // Bloco 1 (linhas 0-14, topo): Cliente Final espera do lado do elevador D, reta final ate a saida.
     '#........XD..N.........#',

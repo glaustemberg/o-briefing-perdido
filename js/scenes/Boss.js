@@ -145,6 +145,7 @@ OBP.Boss = class extends Phaser.Scene {
   }
 
   iniciarRodada(t) {
+    if (this.rodada === 0) OBP.VozInimigo.falar(this, 'chefe', { variantes: 2 });   // abre a luta provocando
     this.fase = 'jo'; this.proximo = t + 500;
     this.batidaTxt.setText('JO');
     this.chefeSpr.setFrame(0);
@@ -161,7 +162,10 @@ OBP.Boss = class extends Phaser.Scene {
     const mao = OBP.JOKENPO.maoDoChefe(this.chefe, this.rodada);
     const r = OBP.JOKENPO.duelo(this.travada, mao);
     if (r > 0) { this.pontos.jogador++; this.chefeSpr.setFrame(5); OBP.Audio.menuConfirmar(); }
-    else if (r < 0) { this.pontos.chefe++; this.chefeSpr.setFrame(7); this.heroi.setFrame(OBP.FRAMES.hurt); OBP.Audio.dano(); }
+    else if (r < 0) {
+      this.pontos.chefe++; this.chefeSpr.setFrame(7); this.heroi.setFrame(OBP.FRAMES.hurt); OBP.Audio.dano();
+      OBP.VozInimigo.falar(this, 'chefe', { variantes: 2, prioritaria: true });   // ele provoca quando ganha
+    }
     else { this.batidaTxt.setText('EMPATE'); }
     this.placar.setText(`${this.pontos.jogador} x ${this.pontos.chefe}`);
     this.fase = 'resolve'; this.proximo = t + (r === 0 ? 700 : 900);

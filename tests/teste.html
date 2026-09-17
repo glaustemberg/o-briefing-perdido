@@ -212,11 +212,11 @@ teste('ordem das fases: a loja leva a fase seguinte e a ultima cai na Selecao', 
 });
 // arquétipos de inimigo do M2 (adendo 7). Sem folha 'inimigos32' nesta arte final (Boot carrega uma imagem por
 // estado), então em vez de OBP.frame() a checagem confere contra a lista real de chaves que o Boot carrega.
-teste('tabela de inimigos: 6 arquétipos, texturas conhecidas e famílias válidas', () => {
+teste('tabela de inimigos: 5 arquétipos, texturas conhecidas e famílias válidas', () => {
   const fams = ['patrulha', 'nuvem', 'loira', 'bomba', 'raio'];
-  igual(Object.keys(OBP.INIMIGOS).join(','), 'postit,abacaxi,nuvem,loira,bomba,raio', 'arquétipos');
-  // chaves de textura carregadas pelo Boot: 'postit' (M1) + 'ini-*'/'proj-*' (M2, Boot.js)
-  const texturas = ['postit', 'ini-nuvem-a', 'ini-nuvem-dorme', 'ini-nuvem-raio', 'ini-loira-idle', 'ini-loira-a',
+  igual(Object.keys(OBP.INIMIGOS).join(','), 'abacaxi,nuvem,loira,bomba,raio', 'arquétipos');   // post-it saiu na decisao 70
+  // chaves de textura carregadas pelo Boot ('ini-*' e 'proj-*', Boot.js)
+  const texturas = ['ini-nuvem-a', 'ini-nuvem-dorme', 'ini-nuvem-raio', 'ini-loira-idle', 'ini-loira-a',
     'ini-loira-arremessa', 'ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c', 'ini-abacaxi-morto',
     'ini-bomba-solta', 'proj-raio-solto', 'proj-bomba'];
   for (const [id, t] of Object.entries(OBP.INIMIGOS)) {
@@ -237,12 +237,12 @@ teste('tabela de inimigos: 6 arquétipos, texturas conhecidas e famílias válid
 });
 // escopo do M2 (decisão do Berg, 17/09): só fases 1, 2, 5 e 8 existem no jogo. As fases 3, 6 e 7 do plano
 // original ficam fora e não recebem nuvem/loira/abacaxi.
-teste('fases em escopo: nuvem em 8a; loira em 2 e 5; abacaxi em 1; post-it do M1 continua na fase 1', () => {
+teste('fases em escopo: nuvem em 8a; loira em 2 e 5; abacaxi em 1; o slot do post-it virou a menina', () => {
   const tem = (f, id) => OBP.FASES[f].inimigos.includes(id);
   igual(tem('fase-08a', 'nuvem'), true, 'nuvem em fase-08a');
   for (const f of ['fase-02', 'fase-05']) igual(tem(f, 'loira'), true, `loira em ${f}`);
   igual(tem('fase-01', 'abacaxi'), true, 'abacaxi em fase-01');
-  igual(tem('fase-01', 'postit'), true, 'post-it do M1 continua na fase 1');
+  igual(tem('fase-01', 'loira'), true, 'a menina entra no slot que era do post-it');
   for (const f of Object.keys(OBP.FASES)) igual(OBP.FASES[f].inimigos.length, 3, `${f}: 3 slots`);
   // decisao 67: slot apontando para arquetipo inexistente nao nasce inimigo nenhum, e foi assim que as fases 2, 5
   // e 8 ficaram praticamente vazias. Nas fases em escopo os 3 slots precisam existir em OBP.INIMIGOS.

@@ -68,7 +68,12 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     // entao dois abacaxis vizinhos nao pulam em sincronia e o padrao nao fica mecanico.
     if (this.t.pulaCada && b.blocked.down) {
       if (this.proximoPulo == null) this.proximoPulo = t + (Math.abs(Math.round(this.x)) % this.t.pulaCada);
-      if (t >= this.proximoPulo) { b.setVelocityY(-this.t.pula); this.proximoPulo = t + this.t.pulaCada; }
+      if (t >= this.proximoPulo) {
+        b.setVelocityY(-this.t.pula); this.proximoPulo = t + this.t.pulaCada;
+        OBP.Audio.pulinho();
+        // resmungo so perto do heroi (decisao 70): a fase tem 7 abacaxis, sem esse filtro viram uma feira
+        if (Math.abs(this.x - this.scene.player.x) < 220) OBP.VozInimigo.falar(this.scene, 'abacaxi-resmungo', { variantes: 3 });
+      }
     }
     b.setVelocityX(this.dir * this.t.vel);
     this.setFlipX(this.dir > 0);
@@ -90,7 +95,11 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     if (this.proximo > 0 && t < this.proximo) { this.setTexture(this.t.frameDorme); b.setVelocityX(0); return; }
     this.setTexture(this.t.frame);
     const dx = this.scene.player.x - this.x;
-    if (Math.abs(dx) < 8) { b.setVelocityX(0); this.aviso = t + 500; } // 500 ms de tell, igual ao dos chefes (spec 6)
+    if (Math.abs(dx) < 8) {
+      b.setVelocityX(0); this.aviso = t + 500;   // 500 ms de tell, igual ao dos chefes (spec 6)
+      OBP.Audio.acordar();
+      OBP.VozInimigo.falar(this.scene, 'nuvem-raio');
+    }
     else { this.dir = Math.sign(dx); b.setVelocityX(this.dir * this.t.vel); }
   }
   // menina loira: parada de costas, arremessa uma bomba em arco a cada ESPERA ms (1,7 s desde a decisão 67). Na
@@ -106,6 +115,8 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
       return;
     }
     this.proximo = t + ESPERA;
+    OBP.Audio.arremesso();
+    OBP.VozInimigo.falar(this.scene, 'loira-tiro');
     const bomba = new OBP.Enemy(this.scene, this.x + this.dir * 12, this.y - 12, 'bomba');
     this.scene.inimigos.add(bomba);
     bomba.body.setVelocity(this.dir * 140, -260); // arco curto: cai a pouco mais de 2 tiles à frente
@@ -124,7 +135,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
         this.noChao = true; this.quiques++;
         this.setTexture(this.t.framePousada);
         b.setVelocityX(b.velocity.x * 0.6);          // perde embalo a cada toque em vez de parar seco
-        OBP.Audio.pouso();
+        OBP.Audio.quique();
         if (this.quiques >= this.t.quiquesAteExplodir) return this.explodir(t);
       }
     } else this.noChao = false;
