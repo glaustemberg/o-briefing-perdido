@@ -18,6 +18,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     this.proximo = -1;  // relógio do próximo ato; -1 = ainda não iniciado (o primeiro update calibra)
     this.aviso = 0;     // fim do tell de 500 ms da nuvem
     this.pousou = -1; this.explodiu = -1; // relógios da bomba
+    this.proximoPulo = null;            // relógio do pulo do abacaxi
   }
   update(t, dt) {
     const b = this.body;
@@ -45,6 +46,12 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
         if (this.t.pula && alem && alem.collides) b.setVelocityY(-this.t.pula);
         else this.dir *= -1;
       }
+    }
+    // pulo periodico (pedido do Berg 17/09): o abacaxi corre e vai pulando. O instante inicial sai da posicao,
+    // entao dois abacaxis vizinhos nao pulam em sincronia e o padrao nao fica mecanico.
+    if (this.t.pulaCada && b.blocked.down) {
+      if (this.proximoPulo == null) this.proximoPulo = t + (Math.abs(Math.round(this.x)) % this.t.pulaCada);
+      if (t >= this.proximoPulo) { b.setVelocityY(-this.t.pula); this.proximoPulo = t + this.t.pulaCada; }
     }
     b.setVelocityX(this.dir * this.t.vel);
     this.setFlipX(this.dir > 0);
