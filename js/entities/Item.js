@@ -101,12 +101,27 @@ OBP.Itens = class {
     s.body.setAllowGravity(true); s.body.setGravityY(900); s.body.setVelocity(0, -240);
     return s;
   }
+  // Bola roxa com a marca da dot. (decisão 52): a única peça fora da grade de 32, 48x48 com corpo 40x40 centrado.
+  // Origem no pé para a bola descansar no chão do tile em vez de flutuar meio tile acima dele.
+  soltarBolaRoxa(x, y) {
+    const s = this.grupo.create(x, y, 'item-bola-roxa');
+    s.setOrigin(0.5, 1);
+    s.body.setSize(40, 40).setOffset(4, 8);
+    s.tipo = 'bola-roxa';
+    s.body.setAllowGravity(true); s.body.setGravityY(900); s.body.setVelocity(0, -240);
+    return s;
+  }
   coletar(player, item) {
     const sc = this.scene;
     if (item.tipo === 'lampada') {
       item.destroy(); // some no mesmo frame
       sc.registry.inc('lampadas', item.valor);
       sc.events.emit('lampada');
+    } else if (item.tipo === 'bola-roxa') {
+      item.destroy();
+      sc.registry.set('coracoesExtra', OBP.CFG.CORACOES_ARMADURA);
+      sc.player.vestirArmadura(true);
+      OBP.Audio.item(); OBP.Voice.falar('item-01');
     } else if (item.tipo === 'check' && !sc.checkpointAtivo) {
       sc.ativarCheckpoint(item);
     } else if (item.tipo === 'saida') {

@@ -86,3 +86,12 @@ OBP.INIMIGOS = {
              vel: 0, grav: 1000, invencivel: true, fere: false },
   raio:    { fam: 'raio', frame: 'proj-raio-solto', vel: 0, grav: 0, invencivel: true },
 };
+// Armadura roxa (adendo 6): +3 corações num contador separado, drenado antes do contador normal. Ao zerar, o herói
+// volta à forma normal sem perder coração normal nenhum. Fica puro aqui para o teste cobrir a ordem da drenagem.
+OBP.CFG.CORACOES_ARMADURA = 3;
+OBP.Armadura = {
+  vestida(extra) { return extra > 0; },
+  dano(coracoes, extra) {
+    return extra > 0 ? { coracoes, extra: extra - 1 } : { coracoes: coracoes - 1, extra: 0 };
+  },
+};

@@ -72,7 +72,7 @@ OBP.Level = class extends Phaser.Scene {
     this.mostrarNome();
     this.debugSoco = this.add.graphics().setDepth(100);
     this.input.keyboard.on('keydown-F1', () => this.alternarDebug());
-    this.registry.set('coracoes', OBP.CFG.CORACOES);
+    this.registry.set('coracoes', this.registry.get('coracoesMax'));
     this.registry.set('prazo', Math.ceil(this.prazoMs / 1000));
     this.scene.launch('Hud');
     this.events.once('shutdown', () => {
@@ -88,6 +88,8 @@ OBP.Level = class extends Phaser.Scene {
     const P = this.m.entidades.find(e => e.ch === 'P');
     const x = this.checkpoint ? this.checkpoint.x : P.col * 32 + 16, y = this.checkpoint ? this.checkpoint.y : (P.lin + 1) * 32;
     this.player = new OBP.Player(this, x, y, this.heroiId);
+    // armadura comprada na loja ou herdada da fase anterior: o registry manda, o sprite obedece
+    if (OBP.Armadura.vestida(this.registry.get('coracoesExtra'))) this.player.vestirArmadura(true);
     this.blocos = new OBP.Blocos(this, this.camada);
     this.itens = new OBP.Itens(this, this.camada);
     this.itens.criarDoMapa(this.m.entidades, this.checkpointAtivo);
@@ -116,14 +118,17 @@ OBP.Level = class extends Phaser.Scene {
   contatoInimigo(e) {
     this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
   }
-  // toque de inimigo ou espinho: 1 coração, hit stop 100 ms, recuo 6 f, shake 4 px por 100 ms, invencível 60 f
+  // toque de inimigo ou espinho: 1 coração, hit stop 100 ms, recuo 6 f, shake 4 px por 100 ms, invencível 60 f.
+  // Com armadura, o coração extra é gasto primeiro e o normal nem é tocado (adendo 6).
   ferirJogador(dir) {
     if (this.morrendo || !this.player.ferir(dir, OBP.CFG.HITSTOP_DANO_MS)) return;
-    this.registry.inc('coracoes', -1);
+    const r = OBP.Armadura.dano(this.registry.get('coracoes'), this.registry.get('coracoesExtra'));
+    this.registry.set({ coracoes: r.coracoes, coracoesExtra: r.extra });
+    if (!OBP.Armadura.vestida(r.extra)) this.player.vestirArmadura(false);
     OBP.Audio.dano();
     this.pararTudo(OBP.CFG.HITSTOP_DANO_MS);
     this.cameras.main.shake(100, new Phaser.Math.Vector2(4 / 640, 4 / 360));
-    if (this.registry.get('coracoes') <= 0) this.matar(); else OBP.Voice.falar('dano-01');
+    if (r.coracoes <= 0) this.matar(); else OBP.Voice.falar('dano-01');
   }
   // soco no inimigo: mata, voa no knockback do herói, hit stop do herói (40 ms tikinho, 60 gilpp)
   socarInimigos(caixa) {
@@ -148,7 +153,7 @@ OBP.Level = class extends Phaser.Scene {
   matar() {
     if (this.morrendo) return;
     this.morrendo = true; this.controle = false;
-    this.registry.set('coracoes', 0);
+    this.registry.set({ coracoes: 0, coracoesExtra: 0 });
     this.registry.inc('vidas', -1);
     this.player.morrer();
     OBP.Audio.morte(); OBP.Voice.falar('morte-01');

@@ -46,6 +46,7 @@ OBP.Blocos = class {
   }
   constructor(scene, camada) {
     this.scene = scene; this.camada = camada;
+    this.perguntasAbertas = 0; // ordem fixa por fase, como no DX (spec 4): o 1º ? da fase é a bola roxa
   }
   // callback do collider herói x camada: cabeçada em '?' (blocked.up) abre o bloco
   cabecada(player, tile) {
@@ -76,7 +77,9 @@ OBP.Blocos = class {
   }
   abrirPergunta(tile) {
     this.camada.putTileAt(OBP.Mapa.USADO, tile.x, tile.y);
-    this.scene.itens.soltarLampada(tile.getCenterX(), tile.getTop() - 8, 2);
+    const x = tile.getCenterX(), y = tile.getTop() - 8;
+    if (this.perguntasAbertas++ === 0) this.scene.itens.soltarBolaRoxa(x, y);
+    else this.scene.itens.soltarLampada(x, y, 2);
     this.scene.events.emit('bloco-quebrado');
   }
   // coluna contígua de R a partir do tile socado, até 3 (spec 4)
