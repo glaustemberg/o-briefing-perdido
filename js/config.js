@@ -95,3 +95,29 @@ OBP.Armadura = {
     return extra > 0 ? { coracoes, extra: extra - 1 } : { coracoes: coracoes - 1, extra: 0 };
   },
 };
+
+// Jokenpo dos chefes (spec 6). Triade: Briefing vence Prazo, Prazo vence Verba, Verba vence Briefing.
+// Puro de proposito: o teste cobre a triade e a sequencia fixa sem precisar do Phaser.
+OBP.JOKENPO = {
+  MAOS: ['briefing', 'prazo', 'verba'],
+  // cada mao vence a seguinte na lista; empate devolve 0, vitoria do jogador 1, derrota -1
+  duelo(meu, dele) {
+    if (meu === dele) return 0;
+    const i = this.MAOS.indexOf(meu), j = this.MAOS.indexOf(dele);
+    if (i < 0 || j < 0) throw new Error('mao invalida: ' + meu + ' x ' + dele);
+    return (i + 1) % 3 === j ? 1 : -1;
+  },
+  // sequencia FIXA por chefe (spec 6): o jogador perde, aprende e ganha na revanche.
+  // O Sobrinho pede verba, depois briefing, depois prazo. Melhor de 3: quem faz 2 pontos leva.
+  SEQUENCIA: { sobrinho: ['verba', 'briefing', 'prazo'] },
+  maoDoChefe(chefe, rodada) {
+    const seq = this.SEQUENCIA[chefe] || this.SEQUENCIA.sobrinho;
+    return seq[rodada % seq.length];
+  },
+  // devolve 'jogador', 'chefe' ou null enquanto ninguem fez 2 pontos
+  vencedor(pontos) {
+    if (pontos.jogador >= 2) return 'jogador';
+    if (pontos.chefe >= 2) return 'chefe';
+    return null;
+  },
+};

@@ -295,6 +295,24 @@ teste('ciclo de projétil por herói, em ordem e sem fim', () => {
   for (const h of [t, g]) for (const n of h.projetil.ciclo) if (!/^proj-/.test(n)) throw new Error(`chave de textura fora do padrão: ${n}`);
 });
 
+// jokenpo do chefe (spec 6): a triade e a sequencia fixa sao puras, entao o teste nao precisa do Phaser
+teste('triade: briefing vence prazo, prazo vence verba, verba vence briefing', () => {
+  const J = OBP.JOKENPO;
+  igual(J.duelo('briefing', 'prazo'), 1); igual(J.duelo('prazo', 'verba'), 1); igual(J.duelo('verba', 'briefing'), 1);
+  igual(J.duelo('prazo', 'briefing'), -1); igual(J.duelo('verba', 'prazo'), -1); igual(J.duelo('briefing', 'verba'), -1);
+  for (const m of J.MAOS) igual(J.duelo(m, m), 0, 'empate');
+  lanca(() => J.duelo('coxinha', 'prazo'), 'mao invalida');
+});
+
+teste('chefe tem sequencia fixa e a partida e melhor de 3', () => {
+  const J = OBP.JOKENPO;
+  igual(J.maoDoChefe('sobrinho', 0), 'verba'); igual(J.maoDoChefe('sobrinho', 1), 'briefing');
+  igual(J.maoDoChefe('sobrinho', 2), 'prazo'); igual(J.maoDoChefe('sobrinho', 3), 'verba', 'repete o ciclo');
+  igual(J.vencedor({ jogador: 1, chefe: 1 }), null, 'ninguem ganhou ainda');
+  igual(J.vencedor({ jogador: 2, chefe: 1 }), 'jogador');
+  igual(J.vencedor({ jogador: 0, chefe: 2 }), 'chefe');
+});
+
 rodar();
 </script>
 </body>
