@@ -40,16 +40,18 @@ OBP.Level = class extends Phaser.Scene {
     OBP.Level.criarTiles(this);
     this.cameras.main.setBackgroundColor(OBP.PAL.ceu);
     // fundo da fase: fica parado na tela e anda pela tilePosition, entao repete para sempre sem acabar no fim do mapa
-    if (this.textures.exists('fundo')) {
-      const alt = this.textures.get('fundo').getSourceImage().height;
-      this.fundo = this.add.tileSprite(0, 0, 640, 360, 'fundo').setOrigin(0).setScrollFactor(0).setDepth(-10);
+    const arte = this.faseId.replace(/[ab]$/, '');   // fase-08a e fase-08b usam a arte de fase-08
+    if (this.textures.exists('fundo-' + arte)) {
+      const alt = this.textures.get('fundo-' + arte).getSourceImage().height;
+      this.fundo = this.add.tileSprite(0, 0, 640, 360, 'fundo-' + arte).setOrigin(0).setScrollFactor(0).setDepth(-10);
       this.fundo.tilePositionY = Math.max(0, alt - 360);   // ancora no pe da parede
     }
     this.map = this.make.tilemap({ data: this.m.dados, tileWidth: 32, tileHeight: 32 });
-    const ts = this.map.addTilesetImage('tiles', 'tiles', 32, 32, 0, 0);
+    const chaveTiles = this.textures.exists('tiles-' + arte) ? 'tiles-' + arte : 'tiles';
+    const ts = this.map.addTilesetImage(chaveTiles, chaveTiles, 32, 32, 0, 0);
     this.camada = this.map.createLayer(0, ts, 0, 0);
     // '#' com outro solido em cima vira parede interna (7); o tile 0 tem rodape claro e so serve de piso exposto
-    if (this.textures.get('tiles').getSourceImage().width >= 256) {
+    if (this.textures.get(chaveTiles).getSourceImage().width >= 256) {
       this.camada.forEachTile(t => {
         if (t.index !== 0) return;
         const acima = this.camada.getTileAt(t.x, t.y - 1);

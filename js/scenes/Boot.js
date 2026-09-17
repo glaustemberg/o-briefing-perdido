@@ -10,13 +10,17 @@ OBP.Boot = class extends Phaser.Scene {
     for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav`);
     // Arte final da fase 1. As texturas provisorias de Level/Item/Enemy so nascem se a chave nao existir,
     // entao carregar aqui com a MESMA chave faz o jogo usar a arte sem mudar logica nenhuma.
+    // um tileset e um fundo por fase do escopo cortado (1 Estudio, 2 Reuniao, 5 Grafica, 8 Torre).
+    // A fase 8 tem dois mapas (08a e 08b) e usa a mesma arte, por isso a chave vem sem a letra.
+    for (const f of ['fase-01', 'fase-02', 'fase-05', 'fase-08']) {
+      this.load.image('tiles-' + f, `assets/tiles/${f}/tileset-leg.png`);
+      this.load.image('fundo-' + f, `assets/fundos/${f}.png`);
+    }
     const T = 'assets/tiles/fase-01/';
-    this.load.image('tiles', T + 'tileset-leg.png');        // 8 tiles na ordem de OBP.Mapa.LEG, 7 = parede interna
     this.load.image('coxinha', T + 'item-coxinha.png');
     this.load.image('check-off', T + 'item-checkpoint-off.png');
     this.load.image('check-on', T + 'item-checkpoint-on.png');
     this.load.image('postit', T + 'inimigo-postit.png');
-    this.load.image('fundo', 'assets/fundos/fase-01.png');
     // M2: formas de armadura, itens, projeteis e os inimigos novos (decisoes 43 a 53)
     this.load.spritesheet('tikinho-armadura', 'assets/sprites/tikinho-armadura/tka-tira.png', { frameWidth: 96, frameHeight: 96 });
     this.load.spritesheet('gilpp-armadura', 'assets/sprites/gilpp-armadura/gpa-tira.png', { frameWidth: 128, frameHeight: 128 });
