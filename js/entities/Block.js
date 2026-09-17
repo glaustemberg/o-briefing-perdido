@@ -1,5 +1,5 @@
 // Blocos são tiles (spec 4 e 9). Estrela quebra com soco e vira 4 quadrantes 16x16 do próprio tile; pergunta abre
-// por cabeçada ou soco e vira o tile usado (no M1 solta saco de 20); reforçado só o gilpp quebra, em coluna de até 3.
+// por cabeçada ou soco e vira o tile usado (solta lâmpadas); reforçado só o gilpp quebra, em coluna de até 3.
 
 // OBP.Pedacos: "sprite explode em 4 quadrantes que giram em passos de 90 graus e somem em 700 ms" (spec 4), num só
 // lugar porque a Task 8 reusa isto para a morte do inimigo em vez de duplicar a mesma conta de ângulo e expiração.
@@ -62,20 +62,20 @@ OBP.Blocos = class {
       else if (t.index === 4 && player.h.quebraReforcado) { player.acertados.add(chave); this.quebrarColuna(t); }
     }
   }
-  quebrar(tile, soltaVerba) {
+  quebrar(tile, soltaLampada) {
     const cx = tile.getCenterX(), cy = tile.getCenterY(), t = this.scene.time.now;
     this.camada.removeTileAt(tile.x, tile.y);
     OBP.Pedacos.spawn(this.scene, cx, cy, 'estrela32');
-    if (soltaVerba) {
+    if (soltaLampada) {
       // 10 ou 20: posição e instante decidem (única aleatoriedade fora do jokenpô)
       const valor = ((tile.x + tile.y + Math.floor(t / 100)) % 2) ? 20 : 10;
-      this.scene.itens.soltarSaco(cx, cy - 16, valor);
+      this.scene.itens.soltarLampada(cx, cy - 16, valor);
     }
     this.scene.events.emit('bloco-quebrado');
   }
   abrirPergunta(tile) {
     this.camada.putTileAt(OBP.Mapa.USADO, tile.x, tile.y);
-    this.scene.itens.soltarSaco(tile.getCenterX(), tile.getTop() - 8, 20);
+    this.scene.itens.soltarLampada(tile.getCenterX(), tile.getTop() - 8, 20);
     this.scene.events.emit('bloco-quebrado');
   }
   // coluna contígua de R a partir do tile socado, até 3 (spec 4)

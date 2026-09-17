@@ -43,7 +43,11 @@ OBP.Select = class extends Phaser.Scene {
     if (e.startAgora || e.puloAgora) {
       this.confirmado = true;
       const id = this.ids[this.sel];
-      this.registry.set({ heroi: id, coracoes: OBP.CFG.CORACOES, verba: 0, vidas: OBP.CFG.VIDAS });
+      this.registry.set({
+        heroi: id, vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0,
+        coracoes: OBP.CFG.CORACOES, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
+        pulosExtra: 0, itemGuardado: null,
+      });
       OBP.Audio.menuConfirmar(); OBP.Voice.init(this, id); OBP.Voice.falar('sel-01');
       this.cartas.forEach((c, i) => { if (i !== this.sel) { c.spr.setTint(OBP.PAL.num(OBP.PAL.rim)); c.spr.y += 2; } });
       this.time.delayedCall(400, () => this.scene.start('Level', { fase: 'fase-01' }));
