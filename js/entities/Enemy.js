@@ -70,9 +70,10 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
       if (this.proximoPulo == null) this.proximoPulo = t + (Math.abs(Math.round(this.x)) % this.t.pulaCada);
       if (t >= this.proximoPulo) {
         b.setVelocityY(-this.t.pula); this.proximoPulo = t + this.t.pulaCada;
-        OBP.Audio.pulinho();
-        // resmungo so perto do heroi (decisao 70): a fase tem 7 abacaxis, sem esse filtro viram uma feira
-        if (Math.abs(this.x - this.scene.player.x) < 220) OBP.VozInimigo.falar(this.scene, 'abacaxi-resmungo', { variantes: 3 });
+        // som e resmungo so perto do heroi (decisao 70): a fase tem 7 abacaxis, sem esse filtro viram uma feira
+        const perto = Math.abs(this.x - this.scene.player.x);
+        if (perto < 340) OBP.Audio.pulinho();
+        if (perto < 220) OBP.VozInimigo.falar(this.scene, 'abacaxi-resmungo', { variantes: 3 });
       }
     }
     b.setVelocityX(this.dir * this.t.vel);
@@ -152,6 +153,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
   }
   morrer(dir, knockback) {
     this.morto = true; this.morreuEm = this.scene.time.now;
+    OBP.Audio.morteInimigo();
     if (this.t.frameMorto) this.setTexture(this.t.frameMorto);
     this.body.setAllowGravity(true); this.body.setGravityY(1000);
     // a nuvem já está no ar: knockback só horizontal, ela despenca (adendo 7)

@@ -1,8 +1,22 @@
 // Efeitos sintetizados (spec 8): OscillatorNode mais GainNode, ruído por AudioBuffer aleatório, sem biblioteca.
 // Sem WebAudio (context ausente) tudo vira no-op.
 OBP.Audio = {
-  ctx: null, semitom: 0, ultimaColeta: -1e9,
-  init(scene) { this.ctx = (scene.sound && scene.sound.context) || null; },
+  ctx: null, semitom: 0, ultimaColeta: -1e9, scene: null,
+  init(scene) { this.ctx = (scene.sound && scene.sound.context) || null; this.scene = scene; },
+  // efeito gravado no Magnific (decisao 75). Devolve false quando o WAV nao existe, e ai o bipe sintetizado
+  // original assume: nenhum som do jogo depende de arquivo para funcionar.
+  // gap: um mesmo efeito nao repete antes disso. Sem ele, 7 abacaxis pulando viram 7 boings por segundo (medido:
+  // 24 disparos em 3,3 s). Dentro do gap devolve TRUE de proposito, senao o bipe entraria como substituto.
+  ultimoSfx: {},
+  sfx(chave, vol = 0.5, gap = 150) {
+    const s = this.scene;
+    if (!s || !s.sys || !s.sys.isActive() || !s.cache.audio.exists(chave)) return false;
+    const t = s.time ? s.time.now : 0;
+    if (t - (this.ultimoSfx[chave] || -1e9) < gap) return true;
+    this.ultimoSfx[chave] = t;
+    s.sound.play(chave, { volume: vol });
+    return true;
+  },
   osc(tipo, f0, f1, ms, vol = 0.2, atraso = 0) {
     if (!this.ctx) return;
     const c = this.ctx, t0 = c.currentTime + atraso, o = c.createOscillator(), g = c.createGain();
@@ -23,7 +37,7 @@ OBP.Audio = {
     s.connect(f).connect(g).connect(c.destination); s.start(t0);
   },
   pulo() { this.osc('square', 300, 700, 90); },
-  soco() { this.osc('square', 180, 90, 60); this.ruido(60, 2000, 400, 0.12); },
+  soco() { if (this.sfx('sfx-soco', 0.35)) return; this.osc('square', 180, 90, 60); this.ruido(60, 2000, 400, 0.12); },
   bloco() { const v = 1 + (Math.random() * 0.1 - 0.05); this.ruido(80, 1200 * v, 300 * v); },
   // 880 e 1320 Hz, 40 ms cada; +1 semitom por coleta consecutiva dentro de 600 ms, até +7
   verba(agoraMs) {
@@ -40,18 +54,20 @@ OBP.Audio = {
   // prazo esgotado: três notas descendo, sem cortar nada (o jogo continua, só muda a cor do contador)
   prazoEsgotado() { [440, 330, 220].forEach((f, i) => this.osc('square', f, f, 160, 0.2, i * 0.16)); },
   // raio da nuvem: descida rápida com ruído agudo por cima (spec 8, mesma receita de osciladores)
-  raio() { this.osc('sawtooth', 1400, 200, 220, 0.18); this.ruido(220, 5000, 1200, 0.12); },
+  raio() { if (this.sfx('sfx-raio', 0.45, 300)) return; this.osc('sawtooth', 1400, 200, 220, 0.18); this.ruido(220, 5000, 1200, 0.12); },
   // explosão da bomba: ruído grave curto com um baixo por baixo
-  explosao() { this.ruido(260, 900, 80, 0.3); this.osc('square', 120, 40, 260, 0.2); },
+  explosao() { if (this.sfx('sfx-explosao', 0.5)) return; this.ruido(260, 900, 80, 0.3); this.osc('square', 120, 40, 260, 0.2); },
   // tiro da armadura: descida curta e seca, para não se confundir com o soco (que é 180 para 90 Hz em 60 ms)
   tiro() { this.osc('square', 900, 300, 70, 0.16); this.ruido(40, 4000, 1500, 0.08); },
   // compra na loja: arpejo do item uma quinta acima, para não se confundir com pegar item no chão (spec 8)
   compra() { [784, 988, 1175].forEach((f, i) => this.osc('triangle', f, f, 50, 0.2, i * 0.05)); },
   // ruídos dos inimigos (decisao 70): cada um com uma assinatura curta, para dar leitura sem depender de voz
-  pulinho() { this.osc('square', 220, 440, 70, 0.12); },          // abacaxi saltando
-  arremesso() { this.ruido(60, 2600, 900, 0.1); },                // a menina jogando a bomba
-  quique() { this.osc('triangle', 600, 300, 50, 0.12); },         // bomba batendo no chão
-  acordar() { this.osc('sawtooth', 90, 140, 260, 0.1); },         // nuvem saindo do sono
+  pulinho() { if (this.sfx('sfx-pulinho', 0.3, 300)) return; this.osc('square', 220, 440, 70, 0.12); },
+  arremesso() { if (this.sfx('sfx-arremesso', 0.35)) return; this.ruido(60, 2600, 900, 0.1); },
+  quique() { if (this.sfx('sfx-quique', 0.4)) return; this.osc('triangle', 600, 300, 50, 0.12); },
+  acordar() { if (this.sfx('sfx-acordar', 0.35, 500)) return; this.osc('sawtooth', 90, 140, 260, 0.1); },
+  // inimigo morrendo no soco ou no projetil: som proprio, que antes nao existia
+  morteInimigo() { if (this.sfx('sfx-morte-inimigo', 0.4)) return; this.ruido(90, 700, 200, 0.18); },
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };

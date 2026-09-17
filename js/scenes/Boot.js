@@ -41,6 +41,9 @@ OBP.Boot = class extends Phaser.Scene {
       this.load.image('ini-' + k, N + 'inimigo-' + k + '.png');
     this.load.image('proj-raio-solto', N + 'proj-raio-solto.png');
     // trilha (decisao 69): as duas faixas ja existiam renderizadas e nenhuma linha do jogo as tocava
+    // efeitos gravados (decisao 75): substituem o bipe sintetizado onde existem
+    for (const k of ['pulinho', 'arremesso', 'quique', 'acordar', 'raio', 'explosao', 'soco', 'morte-inimigo'])
+      this.load.audio('sfx-' + k, `assets/sfx/sfx-${k}.wav`);
     this.load.audio('mus-titulo', 'assets/musicas/titulo.mp3');
     this.load.audio('mus-fase-01', 'assets/musicas/fase-01.mp3');
   }
