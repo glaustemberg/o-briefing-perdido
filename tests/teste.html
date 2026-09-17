@@ -19,6 +19,7 @@
 <script src="../js/data/fase-05.js"></script>
 <script src="../js/data/fase-08a.js"></script>
 <script src="../js/systems/Mapa.js"></script>
+<script src="../js/systems/Save.js"></script>
 <script src="../js/systems/Voice.js"></script>
 <script>
 const T = [], saida = document.getElementById('saida');
@@ -255,6 +256,29 @@ teste('armadura: célula maior, mesma hitbox, pé na última linha da célula', 
   igual(OBP.HEROIS.tikinho.celulaArmadura, 96); igual(OBP.HEROIS.gilpp.celulaArmadura, 128);
   igual(OBP.HEROIS.tikinho.hitbox.h, 52, 'hitbox do tikinho intacta'); igual(OBP.HEROIS.gilpp.hitbox.h, 68);
   igual(OBP.FRAMES_ARMADURA.idle, 0); igual(OBP.FRAMES_ARMADURA.shoot, 5); igual(OBP.FRAMES_ARMADURA.win, 7);
+});
+
+// pontuação e recorde (adendo 2)
+teste('pontuação soma lâmpadas e bônus de tempo, sempre inteira e nunca negativa', () => {
+  igual(OBP.Save.pontuacao(42, 90), 132);
+  igual(OBP.Save.pontuacao(0, 0), 0);
+  igual(OBP.Save.pontuacao(17, 0), 17, 'estourou o prazo, só as lâmpadas');
+  igual(OBP.Save.pontuacao(-5, 10), 10, 'lâmpada negativa não subtrai');
+  igual(OBP.Save.pontuacao(10.9, 5.9), 15, 'trunca os dois');
+});
+teste('recorde: uma chave por fase e por herói, grava só quando supera', () => {
+  igual(OBP.Save.chave('fase-01', 'tikinho'), 'obp.recorde.fase-01.tikinho');
+  const k = OBP.Save.chave('fase-teste', 'tikinho');
+  localStorage.removeItem(k); localStorage.removeItem(OBP.Save.chave('fase-teste', 'gilpp'));
+  igual(OBP.Save.ler('fase-teste', 'tikinho'), 0, 'sem recorde ainda');
+  igual(OBP.Save.gravar('fase-teste', 'tikinho', 120), true, 'primeiro recorde');
+  igual(OBP.Save.ler('fase-teste', 'tikinho'), 120);
+  igual(OBP.Save.gravar('fase-teste', 'tikinho', 120), false, 'empate não é recorde');
+  igual(OBP.Save.gravar('fase-teste', 'tikinho', 119), false, 'pior não grava');
+  igual(OBP.Save.gravar('fase-teste', 'tikinho', 121), true);
+  igual(OBP.Save.ler('fase-teste', 'tikinho'), 121);
+  igual(OBP.Save.ler('fase-teste', 'gilpp'), 0, 'o outro herói tem chave própria');
+  localStorage.removeItem(k);
 });
 
 rodar();
