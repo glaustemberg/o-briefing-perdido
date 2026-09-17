@@ -18,6 +18,20 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.image('check-on', T + 'item-checkpoint-on.png');
     this.load.image('postit', T + 'inimigo-postit.png');
     this.load.image('fundo', 'assets/fundos/fase-01.png');
+    // M2: formas de armadura, itens, projeteis e os inimigos novos (decisoes 43 a 53)
+    this.load.spritesheet('tikinho-armadura', 'assets/sprites/tikinho-armadura/tka-tira.png', { frameWidth: 96, frameHeight: 96 });
+    this.load.spritesheet('gilpp-armadura', 'assets/sprites/gilpp-armadura/gpa-tira.png', { frameWidth: 128, frameHeight: 128 });
+    const I = 'assets/tiles/itens/', N = 'assets/tiles/inimigos/';
+    for (const k of ['lampada', 'lampada-apagada', 'cafe', 'energetico', 'coracao', 'coracao-vazio', 'relogio', 'trofeu'])
+      this.load.image('item-' + k, I + 'item-' + k + '.png');
+    this.load.image('item-bola-roxa', I + 'item-bola-roxa-48.png');       // unico item de 48 px (decisao 52)
+    for (const k of ['sirene', 'camisa', 'calca', 'chapeu', 'raio']) this.load.image('proj-' + k, I + 'proj-' + k + '.png');
+    this.load.image('proj-bomba', I + 'inimigo-bomba.png');
+    this.load.image('ui-seta', I + 'ui-seta.png');
+    for (const k of ['nuvem-a', 'nuvem-dorme', 'nuvem-raio', 'loira-idle', 'loira-a', 'loira-arremessa',
+                     'abacaxi-a', 'abacaxi-b', 'abacaxi-c', 'abacaxi-morto', 'bomba-solta'])
+      this.load.image('ini-' + k, N + 'inimigo-' + k + '.png');
+    this.load.image('proj-raio-solto', N + 'proj-raio-solto.png');
   }
   create() {
     this.registry.set({ heroi: 'tikinho', coracoes: OBP.CFG.CORACOES, verba: 0, vidas: OBP.CFG.VIDAS });
