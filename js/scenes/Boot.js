@@ -7,9 +7,11 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.on('loaderror', f => console.warn('asset ausente:', f.key, f.src));
     this.load.spritesheet('tikinho', 'assets/sprites/tikinho/tk-tira.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('gilpp', 'assets/sprites/gilpp/gp-tira.png', { frameWidth: 96, frameHeight: 96 });
-    for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav`);
-    // falas dos inimigos (decisao 70): canal proprio, ids 'ini-*' que o OBP.VozInimigo procura no cache
+    // o ?v= vale para TODO audio: o arquivo muda de conteudo sem mudar de nome, e sem isso o navegador serve o
+    // velho do cache. A voz do heroi ficou de fora na decisao 77 e por isso o nivelamento nao chegaria ao jogador.
     const V = '?v=' + OBP.CFG.VERSAO_AUDIO;
+    for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav` + V);
+    // falas dos inimigos (decisao 70): canal proprio, ids 'ini-*' que o OBP.VozInimigo procura no cache
     for (const v of ['abacaxi-resmungo-01', 'abacaxi-resmungo-02', 'abacaxi-resmungo-03', 'abacaxi-acerto',
                      'loira-tiro', 'loira-acerto', 'nuvem-raio', 'nuvem-acerto', 'chefe-01', 'chefe-02'])
       this.load.audio('ini-' + v, `assets/vozes/inimigos/ini-${v}.wav` + V);
@@ -44,7 +46,7 @@ OBP.Boot = class extends Phaser.Scene {
     // trilha (decisao 69): as duas faixas ja existiam renderizadas e nenhuma linha do jogo as tocava
     // efeitos gravados (decisao 75): substituem o bipe sintetizado onde existem
     for (const k of ['pulinho', 'arremesso', 'quique', 'acordar', 'raio', 'explosao', 'soco', 'morte-inimigo'])
-      this.load.audio('sfx-' + k, `assets/sfx/sfx-${k}.wav`);
+      this.load.audio('sfx-' + k, `assets/sfx/sfx-${k}.wav` + V);
     this.load.audio('mus-titulo', 'assets/musicas/titulo.mp3');
     this.load.audio('mus-fase-01', 'assets/musicas/fase-01.mp3');
   }

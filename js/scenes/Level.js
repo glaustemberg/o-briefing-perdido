@@ -61,7 +61,7 @@ OBP.Level = class extends Phaser.Scene {
     this.camada.setCollision([0, 1, 2, 3, 4, 6, 7]); // 5 (espinho) não colide
     this.camada.forEachTile(t => { if (t.index === 1) { t.collideDown = false; t.collideLeft = false; t.collideRight = false; } });
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
-    OBP.Musica.tocar(this, 'mus-' + arte, 0.25);   // decisao 69: so a fase 1 tem faixa renderizada, o resto fica mudo
+    OBP.Musica.tocar(this, 'mus-' + arte, 0.18);   // decisao 80: a trilha disputava com a fala do heroi   // decisao 69: so a fase 1 tem faixa renderizada, o resto fica mudo
     this.criarEntidades();
     this.inp = new OBP.Input(this);
     this.cam = new OBP.Camera(this, this.player, this.map.widthInPixels, this.map.heightInPixels);

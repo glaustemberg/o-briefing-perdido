@@ -7,7 +7,7 @@ OBP.CFG = {
   INVENCIVEL_MS: 1000, RECUO_MS: 100, HITSTOP_DANO_MS: 100,
   PROJETEIS_NA_TELA: 3,
   // sobe quando um audio e refeito com o MESMO nome: sem isso o navegador serve o arquivo velho do cache
-  VERSAO_AUDIO: 4,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
+  VERSAO_AUDIO: 5,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
   PHASER_URL: 'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js',
 };
 // Zoom inteiro por pixel físico (spec 2.1): floor(min(larguraFísica/640, alturaFísica/360)), mínimo 1.

@@ -175,7 +175,7 @@ OBP.Select = class extends Phaser.Scene {
       if (apertou) {
         const ctx = this.sound.context;
         if (ctx && ctx.state === 'suspended') ctx.resume();     // gesto que libera o áudio do navegador
-        OBP.Musica.tocar(this, 'mus-titulo');
+        OBP.Musica.tocar(this, 'mus-titulo', 0.3);
         this.estado = 'escolha';
         this.cursor.x = this.barra.x = this.cartas[this.sel].x;
         this.cursor.y = 190 - (this.sel === 1 ? 20 : 0);

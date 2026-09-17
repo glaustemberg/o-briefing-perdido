@@ -64,7 +64,7 @@ OBP.VozInimigo = {
     if (tocando && !prio) return false;
     if (tocando) this.som.stop();
     this.ultima = t; this.porGrupo[grupo] = t;
-    const som = scene.sound.add(id, { volume: 0.9 });
+    const som = scene.sound.add(id, { volume: 0.75 });   // 0,75 deixa o heroi na frente no mix (decisao 80)
     let limpo = false;
     const limpar = () => { if (limpo) return; limpo = true; som.destroy(); if (this.som === som) this.som = null; };
     som.once('complete', limpar); som.once('stop', limpar);
