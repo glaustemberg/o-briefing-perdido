@@ -67,15 +67,16 @@ OBP.Blocos = class {
     this.camada.removeTileAt(tile.x, tile.y);
     OBP.Pedacos.spawn(this.scene, cx, cy, 'estrela32');
     if (soltaLampada) {
-      // 10 ou 20: posição e instante decidem (única aleatoriedade fora do jokenpô)
-      const valor = ((tile.x + tile.y + Math.floor(t / 100)) % 2) ? 20 : 10;
+      // 1 ou 2: posição e instante decidem (única aleatoriedade fora do jokenpô, spec 4). Unidade pequena porque
+      // lâmpada é item contável, não dinheiro fracionado (adendo 1).
+      const valor = ((tile.x + tile.y + Math.floor(t / 100)) % 2) ? 2 : 1;
       this.scene.itens.soltarLampada(cx, cy - 16, valor);
     }
     this.scene.events.emit('bloco-quebrado');
   }
   abrirPergunta(tile) {
     this.camada.putTileAt(OBP.Mapa.USADO, tile.x, tile.y);
-    this.scene.itens.soltarLampada(tile.getCenterX(), tile.getTop() - 8, 20);
+    this.scene.itens.soltarLampada(tile.getCenterX(), tile.getTop() - 8, 2);
     this.scene.events.emit('bloco-quebrado');
   }
   // coluna contígua de R a partir do tile socado, até 3 (spec 4)
