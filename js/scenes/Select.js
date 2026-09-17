@@ -95,7 +95,7 @@ OBP.Select = class extends Phaser.Scene {
     this.aperte = this.add.text(320, 340, 'APERTE START', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5);
     this.aperte.setStroke(P.contorno, 4); this.rodape.setStroke(P.contorno, 4);
 
-    this.inp = new OBP.Input(this);
+    this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
     OBP.Audio.init(this);
     this.estado = 'capa'; this.confirmado = false;
     this.trocaAte = 0; this.windupAte = 0; this.proximoPiscar = 0;

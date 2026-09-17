@@ -90,9 +90,10 @@ OBP.Boss = class extends Phaser.Scene {
     this.aviso = this.add.text(320, 108, 'SETAS ESCOLHEM', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5);
     this.batidaTxt = this.add.text(320, 150, '', OBP.estiloTexto(32, P.branco)).setOrigin(0.5);
 
+    OBP.Musica.tocar(this, 'mus-chefe', OBP.MIX.musicaFase);
     this.pontos = { jogador: 0, chefe: 0 };
     this.rodada = 0;
-    this.inp = new OBP.Input(this);
+    this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
     this.fase = 'espera';     // espera, jo, ken, po, resolve, fim
     this.proximo = 0;
     this.travada = null;      // mão travada no início do "pô"
@@ -179,6 +180,7 @@ OBP.Boss = class extends Phaser.Scene {
     OBP.Voice.falar(ganhou ? 'vitchefe-01' : 'jkp-01');
     this.time.delayedCall(1800, () => {
       const cb = this.aoFim;
+      OBP.Musica.tocar(this, 'mus-fase-08', OBP.MIX.musicaFase);   // devolve a trilha da torre
       this.scene.stop();
       if (cb) cb(ganhou); else this.scene.resume('Level');
     });

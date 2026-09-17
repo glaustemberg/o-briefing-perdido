@@ -30,7 +30,7 @@ OBP.Shop = class extends Phaser.Scene {
     this.txtResumo = this.add.text(320, 268, '', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5);
     this.txtAviso = this.add.text(320, 292, '', OBP.estiloTexto(8, P.coracao)).setOrigin(0.5);
     this.add.text(320, 330, 'CIMA E BAIXO ESCOLHEM   ENTER CONFIRMA', OBP.estiloTexto(8, P.rim)).setOrigin(0.5);
-    this.inp = new OBP.Input(this);
+    this.inp = new OBP.Input(this, ['cima', 'baixo', 'pulo']);
     OBP.Audio.init(this); OBP.Voice.init(this, this.registry.get('heroi'));
     this.atualizar();
   }

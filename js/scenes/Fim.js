@@ -43,7 +43,7 @@ OBP.Fim = class extends Phaser.Scene {
       return f;
     });
 
-    this.inp = new OBP.Input(this);
+    this.inp = new OBP.Input(this, ['pulo']);
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
     OBP.Musica.tocar(this, 'mus-titulo', OBP.MIX.musicaTitulo);
     OBP.Voice.falar('vitchefe-01');

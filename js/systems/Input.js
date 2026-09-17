@@ -13,8 +13,12 @@ OBP.Toque = {
   },
   // zera tudo na troca de cena: um botão apertado no fim de uma fase ficaria preso na seguinte
   limpar() { for (const k in this.estado) this.estado[k] = false; },
-  criar(scene) {
+  // quais: lista de botoes que ESTA cena usa (decisao 83). Antes toda cena desenhava os seis, e na loja quatro
+  // deles nao faziam nada, tapando a lista de itens com dedo em cima.
+  TODOS: ['esq', 'dir', 'cima', 'baixo', 'soco', 'pulo'],
+  criar(scene, quais) {
     if (!this.disponivel(scene)) return;
+    const usar = quais || this.TODOS;
     this.ativo = true;
     this.limpar();
     scene.input.addPointer(3);                 // sem isso o Phaser só enxerga um dedo por vez
@@ -32,16 +36,17 @@ OBP.Toque = {
       return z;
     };
     // colados nas bordas de baixo, para nao tapar o palco nem os nomes: cruz a esquerda, acao a direita
-    botao(28, 312, 48, 44, '<', 'esq', 16);
-    botao(84, 312, 48, 44, '>', 'dir', 16);
-    botao(56, 264, 48, 40, '^', 'cima', 16);
-    botao(140, 312, 48, 44, 'v', 'baixo', 16);
-    botao(540, 288, 60, 56, 'SOCO', 'soco');
-    botao(604, 320, 60, 56, 'PULO', 'pulo');
+    const so = (chave, ...args) => { if (usar.includes(chave)) botao(...args); };
+    so('esq', 28, 312, 48, 44, '<', 'esq', 16);
+    so('dir', 84, 312, 48, 44, '>', 'dir', 16);
+    so('cima', 56, 264, 48, 40, '^', 'cima', 16);
+    so('baixo', 140, 312, 48, 44, 'v', 'baixo', 16);
+    so('soco', 540, 288, 60, 56, 'SOCO', 'soco');
+    so('pulo', 604, 320, 60, 56, 'PULO', 'pulo');
   },
 };
 OBP.Input = class {
-  constructor(scene) {
+  constructor(scene, botoesDeToque) {
     this.scene = scene;
     const k = scene.input.keyboard;
     this.k = {
@@ -52,7 +57,7 @@ OBP.Input = class {
     };
     this.ant = { esq: false, dir: false, pulo: false, soco: false, start: false };
     this.estado = Object.assign({}, OBP.Input.VAZIO);
-    OBP.Toque.criar(scene);
+    OBP.Toque.criar(scene, botoesDeToque);
   }
   ler() {
     const down = ks => ks.some(x => x.isDown);

@@ -47,8 +47,10 @@ OBP.Boot = class extends Phaser.Scene {
     // efeitos gravados (decisao 75): substituem o bipe sintetizado onde existem
     for (const k of ['pulinho', 'arremesso', 'quique', 'acordar', 'raio', 'explosao', 'soco', 'morte-inimigo'])
       this.load.audio('sfx-' + k, `assets/sfx/sfx-${k}.wav` + V);
-    this.load.audio('mus-titulo', 'assets/musicas/titulo.mp3');
-    this.load.audio('mus-fase-01', 'assets/musicas/fase-01.mp3');
+    // trilha: uma por fase mais a do chefe (decisao 83). Todas passam por prepara_musicas.py, que corta em 60 s
+    // e nivela em -18 LUFS, sete decibeis abaixo da voz do heroi.
+    for (const k of ['titulo', 'fase-01', 'fase-02', 'fase-05', 'fase-08', 'chefe'])
+      this.load.audio('mus-' + k, `assets/musicas/${k}.mp3` + V);
   }
   create() {
     // Registry do M2 inteiro declarado num lugar só: chave que nasce undefined vira NaN no primeiro inc()
