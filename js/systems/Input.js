@@ -7,7 +7,8 @@ OBP.Input = class {
     this.k = {
       esq: [k.addKey('LEFT'), k.addKey('A')], dir: [k.addKey('RIGHT'), k.addKey('D')],
       cima: [k.addKey('UP'), k.addKey('W')], baixo: [k.addKey('DOWN'), k.addKey('S')],
-      pulo: [k.addKey('Z'), k.addKey('SPACE')], soco: [k.addKey('X')], start: [k.addKey('ENTER')],
+      // Berg (17/09): pulo no espaco e murro no M. Z e X ficam como alternativa para quem ja pegou o jeito.
+      pulo: [k.addKey('SPACE'), k.addKey('Z')], soco: [k.addKey('M'), k.addKey('X')], start: [k.addKey('ENTER')],
     };
     this.ant = { esq: false, dir: false, pulo: false, soco: false, start: false };
     this.estado = Object.assign({}, OBP.Input.VAZIO);

@@ -22,7 +22,10 @@ function carrega(rel) {
   return { chave, linhas: sandbox.OBP.FASES[chave].mapa, herois: sandbox.OBP.HEROIS };
 }
 
-function criaMundo(linhas) {
+// quebraveis: '*' os dois quebram com soco, 'R' so o gilpp. Passar 'quebra' remove esses tiles do mapa,
+// para descobrir o que o heroi alcanca DEPOIS de abrir caminho no soco.
+function criaMundo(linhas, quebra) {
+  if (quebra) linhas = linhas.map(l => [...l].map(c => quebra.includes(c) ? '.' : c).join(''));
   const alt = linhas.length, larg = linhas[0].length;
   const em = (c, l) => (c < 0 || c >= larg || l < 0 || l >= alt) ? '#' : linhas[l][c];
   return { alt, larg, em,
@@ -80,8 +83,8 @@ function pulos(m, heroi, c0, l0) {
   return [...destinos].map(s => s.split(':').map(Number));
 }
 
-function alcanca(linhas, heroi) {
-  const m = criaMundo(linhas), { h } = heroi.hitbox;
+function alcanca(linhas, heroi, quebra) {
+  const m = criaMundo(linhas, quebra), { h } = heroi.hitbox;
   let ini = null, fim = null;
   linhas.forEach((l, i) => { const p = l.indexOf('P'), x = l.indexOf('X');
     if (p >= 0) ini = [p, i]; if (x >= 0) fim = [x, i]; });
@@ -103,7 +106,7 @@ function alcanca(linhas, heroi) {
       if (!vistos.has(k) && v[0] >= 0 && v[0] < m.larg) { vistos.add(k); fila.push(v); } }
   }
   const ok = [...vistos].some(k => Number(k.split(':')[0]) >= chegada[0] - 1);
-  return { ok, maisLonge, meta: chegada[0] };
+  return { ok, maisLonge, meta: chegada[0], vistos };
 }
 
 const alvos = process.argv.slice(2).length ? process.argv.slice(2)
@@ -116,6 +119,18 @@ for (const rel of alvos) {
     if (r.erro) { console.log(`${chave} ${id}: ERRO ${r.erro}`); falhou = true; continue; }
     if (r.ok) console.log(`${chave} ${id}: ALCANCA a saida`);
     else { console.log(`${chave} ${id}: BLOQUEADO na coluna ${r.maisLonge} (saida na ${r.meta})`); falhou = true; }
+    // itens: uniao do que alcanca andando e do que alcanca depois de quebrar o que o heroi quebra
+    const quebra = herois[id].quebraReforcado ? '*R' : '*';
+    const comSoco = alcanca(linhas, herois[id], quebra);
+    const pes = new Set([...(r.vistos || []), ...(comSoco.vistos || [])]);
+    const perdidos = [];
+    linhas.forEach((l, lin) => [...l].forEach((ch, col) => {
+      if (ch !== '$' && ch !== 'A') return;
+      let achou = false;
+      for (let dc = -1; dc <= 1 && !achou; dc++) for (let dr = 0; dr <= 4 && !achou; dr++) if (pes.has((col + dc) + ':' + (lin + dr))) achou = true;
+      if (!achou) perdidos.push(`(${col},${lin})`);
+    }));
+    if (perdidos.length) { console.log(`${chave} ${id}: ${perdidos.length} itens sem alcance: ${perdidos.join(' ')}`); falhou = true; }
   }
 }
 process.exit(falhou ? 1 : 0);
