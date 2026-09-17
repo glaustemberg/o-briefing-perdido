@@ -12,7 +12,6 @@ OBP.Boot = class extends Phaser.Scene {
     // entao carregar aqui com a MESMA chave faz o jogo usar a arte sem mudar logica nenhuma.
     const T = 'assets/tiles/fase-01/';
     this.load.image('tiles', T + 'tileset-leg.png');        // 8 tiles na ordem de OBP.Mapa.LEG, 7 = parede interna
-    this.load.image('saco', 'assets/tiles/itens/item-lampada.png');   // lampada no lugar do saco de dinheiro (decisao 43)
     this.load.image('coxinha', T + 'item-coxinha.png');
     this.load.image('check-off', T + 'item-checkpoint-off.png');
     this.load.image('check-on', T + 'item-checkpoint-on.png');
@@ -34,7 +33,12 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.image('proj-raio-solto', N + 'proj-raio-solto.png');
   }
   create() {
-    this.registry.set({ heroi: 'tikinho', coracoes: OBP.CFG.CORACOES, verba: 0, vidas: OBP.CFG.VIDAS });
+    // Registry do M2 inteiro declarado num lugar só: chave que nasce undefined vira NaN no primeiro inc()
+    this.registry.set({
+      heroi: 'tikinho', vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0,
+      coracoes: OBP.CFG.CORACOES, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
+      pulosExtra: 0, itemGuardado: null,
+    });
     const fonte = document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => []) : Promise.resolve([]);
     const teto = new Promise(r => setTimeout(r, 2000));
     Promise.race([fonte, teto]).then(() => this.mostrarAperte());

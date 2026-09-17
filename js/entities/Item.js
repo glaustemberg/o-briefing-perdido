@@ -1,5 +1,5 @@
-// Itens (spec 4): saco de verba do mapa (parado) e solto por bloco (pula e cai na camada), checkpoint e coxinha
-// de saida (Task 9). Um grupo so: sem gravidade por padrao, o saco solto liga a sua.
+// Itens (spec 4): lâmpada do mapa (parada) e solta por bloco (pula e cai na camada), checkpoint e coxinha
+// de saida (Task 9). Um grupo so: sem gravidade por padrao, a lâmpada solta liga a sua.
 OBP.Itens = class {
   constructor(scene, camada) {
     this.scene = scene;
@@ -83,27 +83,30 @@ OBP.Itens = class {
     OBP.Itens.criarTexturas(this.scene);
     for (const e of entidades) {
       const x = e.col * 32 + 16, y = e.lin * 32 + 16;
-      if (e.ch === '$') this.novo(x, y, 'saco', { tipo: 'saco', valor: 10 });
+      if (e.ch === '$') this.novo(x, y, 'item-lampada', { tipo: 'lampada', valor: 1 });
       else if (e.ch === 'K') this.novo(x, y, checkpointAtivo ? 'check-on' : 'check-off', { tipo: 'check' });
       else if (e.ch === 'X') this.novo(x, y, 'coxinha', { tipo: 'saida' });
     }
   }
   novo(x, y, textura, dados) {
     const s = this.grupo.create(x, y, textura);
+    // corpo de 20x20 só na lâmpada (32x32, do tamanho do tile): com o corpo padrão de 32x32 ela solta por um
+    // bloco fica presa entre os tiles vizinhos. Checkpoint e coxinha também são 32x32 mas continuam com corpo cheio.
+    if (dados.tipo === 'lampada') s.body.setSize(20, 20).setOffset(6, 6);
     Object.assign(s, dados);
     return s;
   }
-  soltarSaco(x, y, valor) {
-    const s = this.novo(x, y, 'saco', { tipo: 'saco', valor });
+  soltarLampada(x, y, valor) {
+    const s = this.novo(x, y, 'item-lampada', { tipo: 'lampada', valor });
     s.body.setAllowGravity(true); s.body.setGravityY(900); s.body.setVelocity(0, -240);
     return s;
   }
   coletar(player, item) {
     const sc = this.scene;
-    if (item.tipo === 'saco') {
+    if (item.tipo === 'lampada') {
       item.destroy(); // some no mesmo frame
-      sc.registry.inc('verba', item.valor);
-      sc.events.emit('saco');
+      sc.registry.inc('lampadas', item.valor);
+      sc.events.emit('lampada');
     } else if (item.tipo === 'check' && !sc.checkpointAtivo) {
       sc.ativarCheckpoint(item);
     } else if (item.tipo === 'saida') {

@@ -76,7 +76,7 @@ OBP.Level = class extends Phaser.Scene {
       // this.events (sys.events) sobrevive a reinicios da mesma cena; sem isso os listeners de criarEntidades()
       // dobram a cada volta Level -> Select -> Level (ou respawn da Task 8).
       this.events.off('bloco-quebrado');
-      this.events.off('saco');
+      this.events.off('lampada');
     });
   }
   criarEntidades() {
@@ -94,7 +94,7 @@ OBP.Level = class extends Phaser.Scene {
     this.player.on('socou', () => OBP.Audio.soco());
     this.player.on('pousouAlto', () => OBP.Audio.pouso());
     this.events.on('bloco-quebrado', () => { OBP.Audio.bloco(); OBP.Voice.reacaoCada('soco-01', 10); });
-    this.events.on('saco', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
+    this.events.on('lampada', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
   }
   criarInimigos() {
     OBP.Enemy.criarTextura(this);
@@ -157,9 +157,9 @@ OBP.Level = class extends Phaser.Scene {
     this.cameras.main.resetFX();
     this.add.rectangle(320, 180, 640, 360, OBP.PAL.num(OBP.PAL.contorno)).setScrollFactor(0).setDepth(200);
     this.add.text(320, 164, 'ACABOU O JOB', OBP.estiloTexto(16, OBP.PAL.coracao)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(320, 196, `VERBA ${String(this.registry.get('verba')).padStart(5, '0')}`, OBP.estiloTexto(8, OBP.PAL.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    // continue ilimitado: início da fase, 3 vidas, verba 0 (spec 4)
-    this.registry.set({ vidas: OBP.CFG.VIDAS, verba: 0 });
+    this.add.text(320, 196, `LÂMPADAS ${String(this.registry.get('lampadas')).padStart(5, '0')}`, OBP.estiloTexto(8, OBP.PAL.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    // continue ilimitado: início da fase, 3 vidas, lâmpadas 0 (spec 4)
+    this.registry.set({ vidas: OBP.CFG.VIDAS, lampadas: 0 });
     this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null }));
   }
   // hit stop: pausa física e animações por ms; o update devolve cedo enquanto durar
@@ -195,10 +195,10 @@ OBP.Level = class extends Phaser.Scene {
     this.concluida = true; this.controle = false;
     this.registry.set('coracoes', OBP.CFG.CORACOES);
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
-    const P = OBP.PAL, verba = String(this.registry.get('verba')).padStart(5, '0');
+    const P = OBP.PAL, lampadas = String(this.registry.get('lampadas')).padStart(5, '0');
     this.add.rectangle(320, 180, 400, 120, P.num(P.contorno)).setStrokeStyle(2, P.num(P.branco)).setScrollFactor(0).setDepth(200);
     this.add.text(320, 148, 'FASE CONCLUÍDA', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(320, 180, `VERBA ${verba}`, OBP.estiloTexto(16, P.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.add.text(320, 180, `LÂMPADAS ${lampadas}`, OBP.estiloTexto(16, P.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.add.text(320, 208, 'ENTER VOLTA À SELEÇÃO', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.time.delayedCall(600, () => { this.podeSair = true; });
   }

@@ -166,6 +166,17 @@ teste('cada(chave, n) dispara só no múltiplo de n', () => {
   igual(vezes, 2); igual(OBP.VoiceLogic.cada(e, 'moeda', 1), true);
 });
 
+// layout do HUD do M2 (adendo 1 e 2, spec 2.11): ícone de 32 px e 5 dígitos de 16 px por contador, nada encostando
+teste('HUD: corações, lâmpadas, prazo e slot de item não se sobrepõem', () => {
+  const c = OBP.hudCaixas();
+  igual(c.length, 6, 'caixas');
+  igual(c[0].x1, 156, '7 corações terminam em 156');
+  igual(c[2].x0, 224, 'dígitos de lâmpada começam em 224'); igual(c[2].x1, 304, 'borda direita da lâmpada');
+  igual(c[4].x1, 472, 'borda direita do prazo');
+  igual(c[5].x1, 624, 'slot de item termina na margem de 16 px');
+  igual(OBP.hudColide(), null, OBP.hudColide() || '');
+});
+
 rodar();
 </script>
 </body>
