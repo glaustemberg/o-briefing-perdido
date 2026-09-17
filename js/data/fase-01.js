@@ -1,10 +1,10 @@
 // Fase 1: Estúdio, 8h47. Mapa 128x14 copiado da seção 5 da spec (legenda em Mapa.js).
-// M1: os três índices de inimigo viram o Post-it genérico; na M3 a lista vira ['postit', 'notificacao', 'cadeira'].
+// M2: marca 1 vira o abacaxi corredor (adendo 7); marcas 2 e 3 seguem post-it. Na M3 o 3º slot vira 'cadeira'.
 window.OBP = window.OBP || {};
 OBP.FASES = OBP.FASES || {};
 OBP.FASES['fase-01'] = {
   nome: 'ESTÚDIO, 8H47',
-  inimigos: ['postit', 'postit', 'postit'],
+  inimigos: ['abacaxi', 'postit', 'postit'],
   mapa: [
     '...............................................................................................................................#',
     '...............................................................................................................................#',

@@ -15,6 +15,9 @@
 <script src="../js/config.js"></script>
 <script src="../js/data/herois.js"></script>
 <script src="../js/data/fase-01.js"></script>
+<script src="../js/data/fase-02.js"></script>
+<script src="../js/data/fase-05.js"></script>
+<script src="../js/data/fase-08a.js"></script>
 <script src="../js/systems/Mapa.js"></script>
 <script src="../js/systems/Voice.js"></script>
 <script>
@@ -195,6 +198,36 @@ teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 300 s nas d
   igual(OBP.PRAZOS['fase-01'], 180); igual(OBP.PRAZOS['fase-02'], 220); igual(OBP.PRAZOS['fase-05'], 220);
   igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 300, 'as duas metades da fase 8');
 });
+// arquétipos de inimigo do M2 (adendo 7). Sem folha 'inimigos32' nesta arte final (Boot carrega uma imagem por
+// estado), então em vez de OBP.frame() a checagem confere contra a lista real de chaves que o Boot carrega.
+teste('tabela de inimigos: 6 arquétipos, texturas conhecidas e famílias válidas', () => {
+  const fams = ['patrulha', 'nuvem', 'loira', 'bomba', 'raio'];
+  igual(Object.keys(OBP.INIMIGOS).join(','), 'postit,abacaxi,nuvem,loira,bomba,raio', 'arquétipos');
+  // chaves de textura carregadas pelo Boot: 'postit' (M1) + 'ini-*'/'proj-*' (M2, Boot.js)
+  const texturas = ['postit', 'ini-nuvem-a', 'ini-nuvem-dorme', 'ini-nuvem-raio', 'ini-loira-idle', 'ini-loira-a',
+    'ini-loira-arremessa', 'ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c', 'ini-abacaxi-morto',
+    'ini-bomba-solta', 'proj-raio-solto', 'proj-bomba'];
+  for (const [id, t] of Object.entries(OBP.INIMIGOS)) {
+    if (!fams.includes(t.fam)) throw new Error(`${id}: família ${t.fam}`);
+    for (const campo of ['frame', 'frameMorto', 'frameDorme', 'frameAviso', 'frameAlt', 'frameArremessa', 'framePousada']) {
+      if (t[campo] && !texturas.includes(t[campo])) throw new Error(`${id}.${campo}: textura desconhecida ${t[campo]}`);
+    }
+  }
+  igual(OBP.INIMIGOS.abacaxi.vel, 200, 'abacaxi corre a 200 px/s');
+  igual(OBP.INIMIGOS.nuvem.grav, 0, 'nuvem não cai');
+  igual(OBP.INIMIGOS.nuvem.dy, -96, 'nuvem nasce 3 tiles acima da marca do mapa');
+  igual(OBP.INIMIGOS.bomba.fere, false, 'bomba só fere ao explodir');
+  igual(OBP.INIMIGOS.bomba.invencivel, true); igual(OBP.INIMIGOS.raio.invencivel, true);
+});
+// escopo do M2 (decisão do Berg, 17/09): só fases 1, 2, 5 e 8 existem no jogo. As fases 3, 6 e 7 do plano
+// original ficam fora e não recebem nuvem/loira/abacaxi.
+teste('fases em escopo: nuvem em 8a; loira em 2 e 5; abacaxi em 1; post-it do M1 continua na fase 1', () => {
+  const tem = (f, id) => OBP.FASES[f].inimigos.includes(id);
+  igual(tem('fase-08a', 'nuvem'), true, 'nuvem em fase-08a');
+  for (const f of ['fase-02', 'fase-05']) igual(tem(f, 'loira'), true, `loira em ${f}`);
+  igual(tem('fase-01', 'abacaxi'), true, 'abacaxi em fase-01');
+  igual(tem('fase-01', 'postit'), true, 'post-it do M1 continua na fase 1');
+  for (const f of Object.keys(OBP.FASES)) igual(OBP.FASES[f].inimigos.length, 3, `${f}: 3 slots`);
 });
 
 rodar();

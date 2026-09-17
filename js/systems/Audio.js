@@ -39,6 +39,10 @@ OBP.Audio = {
   pouso() { this.ruido(40, 800, 200, 0.15); },
   // prazo esgotado: três notas descendo, sem cortar nada (o jogo continua, só muda a cor do contador)
   prazoEsgotado() { [440, 330, 220].forEach((f, i) => this.osc('square', f, f, 160, 0.2, i * 0.16)); },
+  // raio da nuvem: descida rápida com ruído agudo por cima (spec 8, mesma receita de osciladores)
+  raio() { this.osc('sawtooth', 1400, 200, 220, 0.18); this.ruido(220, 5000, 1200, 0.12); },
+  // explosão da bomba: ruído grave curto com um baixo por baixo
+  explosao() { this.ruido(260, 900, 80, 0.3); this.osc('square', 120, 40, 260, 0.2); },
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };

@@ -101,16 +101,17 @@ OBP.Level = class extends Phaser.Scene {
     this.events.on('lampada', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
   }
   criarInimigos() {
-    OBP.Enemy.criarTextura(this);
     const lista = OBP.FASES[this.faseId].inimigos;
     this.inimigos = this.physics.add.group();
     for (const e of this.m.entidades) {
       if (!'123'.includes(e.ch)) continue;
-      if (lista[Number(e.ch) - 1] !== 'postit') continue; // M1 só conhece o Post-it
-      this.inimigos.add(new OBP.Enemy(this, e.col * 32 + 16, e.lin * 32 + 16));
+      const tipo = lista[Number(e.ch) - 1];
+      if (!OBP.INIMIGOS[tipo]) { console.warn('inimigo do M3 ainda não implementado, pulando:', tipo); continue; }
+      const dy = OBP.INIMIGOS[tipo].dy || 0;
+      this.inimigos.add(new OBP.Enemy(this, e.col * 32 + 16, Math.max(16, e.lin * 32 + 16 + dy), tipo));
     }
     this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto);
-    this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto);
+    this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto && e.fere);
   }
   contatoInimigo(e) {
     this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
@@ -128,7 +129,7 @@ OBP.Level = class extends Phaser.Scene {
   socarInimigos(caixa) {
     const r = new Phaser.Geom.Rectangle(caixa.x, caixa.y, caixa.w, caixa.h), h = this.player.h;
     for (const e of this.inimigos.getChildren()) {
-      if (e.morto || this.player.acertados.has(e)) continue;
+      if (e.morto || e.invencivel || this.player.acertados.has(e)) continue;
       const b = e.body;
       if (Phaser.Geom.Intersects.RectangleToRectangle(r, new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height))) {
         this.player.acertados.add(e);
