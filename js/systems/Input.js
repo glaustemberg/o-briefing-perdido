@@ -1,5 +1,45 @@
-// Um estado por frame unindo teclado (setas/WASD, Z ou espaço pula, X soca, Enter start) e gamepad (spec 9).
-// Bordas (Agora/Soltou) são calculadas aqui para o teclado e o gamepad somarem sem duplicar.
+// Um estado por frame unindo teclado (setas/WASD, Z ou espaço pula, X soca, Enter start), gamepad (spec 9) e,
+// desde a decisão 74, os botões de toque do celular.
+// Bordas (Agora/Soltou) são calculadas aqui para o teclado, o gamepad e o toque somarem sem duplicar.
+
+// Controles de toque: seis botões desenhados DENTRO do canvas de 640x360, então escalam com o jogo e não
+// precisam de HTML nenhum. O estado é global porque cada cena cria os seus e a leitura é sempre a mesma.
+OBP.Toque = {
+  estado: { esq: false, dir: false, cima: false, baixo: false, pulo: false, soco: false },
+  ativo: false,
+  disponivel(scene) {
+    const d = scene.sys.game.device.input;
+    return !!(d.touch || navigator.maxTouchPoints > 0);
+  },
+  // zera tudo na troca de cena: um botão apertado no fim de uma fase ficaria preso na seguinte
+  limpar() { for (const k in this.estado) this.estado[k] = false; },
+  criar(scene) {
+    if (!this.disponivel(scene)) return;
+    this.ativo = true;
+    this.limpar();
+    scene.input.addPointer(3);                 // sem isso o Phaser só enxerga um dedo por vez
+    const P = OBP.PAL, D = 9000;
+    const botao = (x, y, w, h, rotulo, chave, tam = 8) => {
+      const z = scene.add.rectangle(x, y, w, h, P.num(P.branco), 0.16).setScrollFactor(0).setDepth(D)
+        .setStrokeStyle(2, P.num(P.branco), 0.35).setInteractive({ useHandCursor: false });
+      const t = scene.add.text(x, y, rotulo, OBP.estiloTexto(tam, P.branco)).setOrigin(0.5)
+        .setScrollFactor(0).setDepth(D + 1).setAlpha(0.75);
+      const liga = () => { this.estado[chave] = true; z.setFillStyle(P.num(P.moeda), 0.35); };
+      const desliga = () => { this.estado[chave] = false; z.setFillStyle(P.num(P.branco), 0.16); };
+      z.on('pointerdown', liga); z.on('pointerup', desliga);
+      z.on('pointerout', desliga); z.on('pointerupoutside', desliga);
+      scene.events.once('shutdown', () => { desliga(); z.destroy(); t.destroy(); });
+      return z;
+    };
+    // colados nas bordas de baixo, para nao tapar o palco nem os nomes: cruz a esquerda, acao a direita
+    botao(28, 312, 48, 44, '<', 'esq', 16);
+    botao(84, 312, 48, 44, '>', 'dir', 16);
+    botao(56, 264, 48, 40, '^', 'cima', 16);
+    botao(140, 312, 48, 44, 'v', 'baixo', 16);
+    botao(540, 288, 60, 56, 'SOCO', 'soco');
+    botao(604, 320, 60, 56, 'PULO', 'pulo');
+  },
+};
 OBP.Input = class {
   constructor(scene) {
     this.scene = scene;
@@ -12,6 +52,7 @@ OBP.Input = class {
     };
     this.ant = { esq: false, dir: false, pulo: false, soco: false, start: false };
     this.estado = Object.assign({}, OBP.Input.VAZIO);
+    OBP.Toque.criar(scene);
   }
   ler() {
     const down = ks => ks.some(x => x.isDown);
@@ -20,12 +61,14 @@ OBP.Input = class {
     const ex = pad ? pad.leftStick.x : 0, ey = pad ? pad.leftStick.y : 0;
     const e = this.estado;
     e.gamepad = !!pad;
-    const esq = down(this.k.esq) || !!(pad && (pad.left || ex < -0.5));
-    const dir = down(this.k.dir) || !!(pad && (pad.right || ex > 0.5));
-    e.cima = down(this.k.cima) || !!(pad && (pad.up || ey < -0.5));
-    e.baixo = down(this.k.baixo) || !!(pad && (pad.down || ey > 0.5));
-    const pulo = down(this.k.pulo) || !!(pad && pad.A);
-    const soco = down(this.k.soco) || !!(pad && (pad.X || pad.B));
+    const tq = OBP.Toque.estado;
+    const esq = down(this.k.esq) || !!(pad && (pad.left || ex < -0.5)) || tq.esq;
+    const dir = down(this.k.dir) || !!(pad && (pad.right || ex > 0.5)) || tq.dir;
+    e.cima = down(this.k.cima) || !!(pad && (pad.up || ey < -0.5)) || tq.cima;
+    e.baixo = down(this.k.baixo) || !!(pad && (pad.down || ey > 0.5)) || tq.baixo;
+    const pulo = down(this.k.pulo) || !!(pad && pad.A) || tq.pulo;
+    const soco = down(this.k.soco) || !!(pad && (pad.X || pad.B)) || tq.soco;
+    // no celular nao existe Enter: o botao de pulo ja confirma em todo menu, entao start fica so no teclado/pad
     const start = down(this.k.start) || !!(pad && pad.buttons[9] && pad.buttons[9].pressed);
     e.esq = esq; e.dir = dir; e.esqAgora = esq && !this.ant.esq; e.dirAgora = dir && !this.ant.dir;
     e.puloAgora = pulo && !this.ant.pulo; e.puloSegurado = pulo; e.puloSoltou = !pulo && this.ant.pulo;

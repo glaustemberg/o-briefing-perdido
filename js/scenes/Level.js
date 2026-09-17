@@ -131,13 +131,13 @@ OBP.Level = class extends Phaser.Scene {
     // bomba e o unico inimigo letal (decisao 68): encostou, ela explode na hora e o heroi morre, mesmo de armadura
     if (e.tipo === 'bomba') {
       if (!this.player.podeFerir()) return;        // respeita a piscada de invencibilidade, senao mata no respawn
-      OBP.VozInimigo.acertou(this, e.tipo);
+      this.esperaVoz = OBP.VozInimigo.acertou(this, e.tipo);
       e.explodir(this.time.now);
       OBP.Audio.dano();
       this.matar();
       return;
     }
-    if (this.player.podeFerir()) OBP.VozInimigo.acertou(this, e.tipo);
+    if (this.player.podeFerir()) this.esperaVoz = OBP.VozInimigo.acertou(this, e.tipo);
     this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
   }
   // toque de inimigo ou espinho: 1 coração, hit stop 100 ms, recuo 6 f, shake 4 px por 100 ms, invencível 60 f.
@@ -150,7 +150,7 @@ OBP.Level = class extends Phaser.Scene {
     OBP.Audio.dano();
     this.pararTudo(OBP.CFG.HITSTOP_DANO_MS);
     this.cameras.main.shake(100, new Phaser.Math.Vector2(4 / 640, 4 / 360));
-    if (r.coracoes <= 0) this.matar(); else OBP.Voice.falar('dano-01');
+    if (r.coracoes <= 0) this.matar(); else this.falarDoHeroi('dano-01');
   }
   // soco no inimigo: mata, voa no knockback do herói, hit stop do herói (40 ms tikinho, 60 gilpp)
   socarInimigos(caixa) {
@@ -171,6 +171,14 @@ OBP.Level = class extends Phaser.Scene {
     const t = this.camada.getTilesWithinWorldXY(b.x, b.y, b.width, b.height, { isNotEmpty: true }).find(x => x.index === 5);
     if (t) this.ferirJogador(Math.sign(this.player.x - t.getCenterX()) || 1);
   }
+  // quem bateu fala primeiro e o herói responde depois (decisao 71). esperaVoz e zerado no uso: espinho, queda e
+  // prazo nao tem dono, e nesses casos o herói fala na hora.
+  falarDoHeroi(sufixo) {
+    const espera = this.esperaVoz || 0;
+    this.esperaVoz = 0;
+    if (espera > 0) this.time.delayedCall(espera, () => OBP.Voice.falar(sufixo));
+    else OBP.Voice.falar(sufixo);
+  }
   // morte: voa e cai 1,2 s, fade 300 ms, volta ao checkpoint com 3 corações; sem vidas, game over mínimo do M1
   matar() {
     if (this.morrendo) return;
@@ -178,8 +186,11 @@ OBP.Level = class extends Phaser.Scene {
     this.registry.set({ coracoes: 0, coracoesExtra: 0 });
     this.registry.inc('vidas', -1);
     this.player.morrer();
-    OBP.Audio.morte(); OBP.Voice.falar('morte-01');
-    this.time.delayedCall(1200, () => {
+    OBP.Audio.morte();
+    // a queda para o fade espera a fala de quem matou mais a resposta do herói, senão a cena reinicia no meio
+    const espera = this.esperaVoz || 0;
+    this.falarDoHeroi('morte-01');
+    this.time.delayedCall(1200 + espera, () => {
       this.cameras.main.once('camerafadeoutcomplete', () => this.reiniciar());
       this.cameras.main.fadeOut(300, 0, 0, 0);
     });

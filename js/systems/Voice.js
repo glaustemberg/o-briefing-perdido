@@ -69,9 +69,15 @@ OBP.VozInimigo = {
     const limpar = () => { if (limpo) return; limpo = true; som.destroy(); if (this.som === som) this.som = null; };
     som.once('complete', limpar); som.once('stop', limpar);
     this.som = som; som.play();
-    return true;
+    return Math.round((som.totalDuration || 0) * 1000) || 1;   // ms, para quem quiser falar depois
   },
   // quem machucou o herói, na voz de quem machucou: a bomba fala pela menina e o raio pela nuvem
   DONO: { abacaxi: 'abacaxi-acerto', loira: 'loira-acerto', bomba: 'loira-acerto', nuvem: 'nuvem-acerto', raio: 'nuvem-acerto' },
-  acertou(scene, tipo) { const g = this.DONO[tipo]; if (g) this.falar(scene, g, { prioritaria: true }); },
+  // devolve quantos ms o heroi deve esperar antes de responder: quem bateu fala primeiro, o heroi reage depois
+  // (decisao 71, pedido do Berg). Teto de 1,6 s para a reacao nao chegar depois da tela ja ter virado.
+  acertou(scene, tipo) {
+    const g = this.DONO[tipo];
+    const ms = g ? this.falar(scene, g, { prioritaria: true }) : 0;
+    return Math.min(ms || 0, 1600);
+  },
 };
