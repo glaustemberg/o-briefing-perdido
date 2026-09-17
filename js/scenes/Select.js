@@ -1,6 +1,8 @@
 // Seleção (spec 7, versão M1): os dois idles em pedestal, setas escolhem, Enter, Z, espaço ou A confirmam.
 OBP.Select = class extends Phaser.Scene {
   constructor() { super('Select'); }
+  // manter: true chega da loja. Sem isso a Seleção zeraria as lâmpadas e o bônus recém-comprado no confirmar.
+  init(data) { this.manter = !!(data && data.manter); }
   create() {
     const P = OBP.PAL;
     this.cameras.main.setBackgroundColor(P.pretoCamisa);
@@ -43,11 +45,11 @@ OBP.Select = class extends Phaser.Scene {
     if (e.startAgora || e.puloAgora) {
       this.confirmado = true;
       const id = this.ids[this.sel];
-      this.registry.set({
-        heroi: id, vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0,
-        coracoes: OBP.CFG.CORACOES, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
-        pulosExtra: 0, itemGuardado: null,
-      });
+      const base = { heroi: id, coracoes: this.registry.get('coracoesMax') || OBP.CFG.CORACOES };
+      this.registry.set(this.manter ? base : Object.assign(base, {
+        vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0, coracoes: OBP.CFG.CORACOES,
+        coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0, pulosExtra: 0, itemGuardado: null,
+      }));
       OBP.Audio.menuConfirmar(); OBP.Voice.init(this, id); OBP.Voice.falar('sel-01');
       this.cartas.forEach((c, i) => { if (i !== this.sel) { c.spr.setTint(OBP.PAL.num(OBP.PAL.rim)); c.spr.y += 2; } });
       this.time.delayedCall(400, () => this.scene.start('Level', { fase: 'fase-01' }));

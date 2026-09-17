@@ -43,6 +43,8 @@ OBP.Audio = {
   raio() { this.osc('sawtooth', 1400, 200, 220, 0.18); this.ruido(220, 5000, 1200, 0.12); },
   // explosão da bomba: ruído grave curto com um baixo por baixo
   explosao() { this.ruido(260, 900, 80, 0.3); this.osc('square', 120, 40, 260, 0.2); },
+  // compra na loja: arpejo do item uma quinta acima, para não se confundir com pegar item no chão (spec 8)
+  compra() { [784, 988, 1175].forEach((f, i) => this.osc('triangle', f, f, 50, 0.2, i * 0.05)); },
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };

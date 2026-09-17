@@ -170,8 +170,12 @@ OBP.Level = class extends Phaser.Scene {
     this.add.rectangle(320, 180, 640, 360, OBP.PAL.num(OBP.PAL.contorno)).setScrollFactor(0).setDepth(200);
     this.add.text(320, 164, 'ACABOU O JOB', OBP.estiloTexto(16, OBP.PAL.coracao)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.add.text(320, 196, `LÂMPADAS ${String(this.registry.get('lampadas')).padStart(5, '0')}`, OBP.estiloTexto(8, OBP.PAL.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    // continue ilimitado: início da fase, 3 vidas, lâmpadas 0 (spec 4)
-    this.registry.set({ vidas: OBP.CFG.VIDAS, lampadas: 0 });
+    // continue ilimitado: início da fase, 3 vidas, lâmpadas 0 (spec 4). Game over também zera o que foi comprado
+    // na loja (coração permanente, pulo duplo, armadura e item guardado): o continue mantém só o herói.
+    this.registry.set({
+      vidas: OBP.CFG.VIDAS, lampadas: 0, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
+      pulosExtra: 0, itemGuardado: null,
+    });
     this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null, prazoMs: null }));
   }
   // hit stop: pausa física e animações por ms; o update devolve cedo enquanto durar
@@ -206,12 +210,14 @@ OBP.Level = class extends Phaser.Scene {
     if (this.concluida || this.morrendo) return;
     this.concluida = true; this.controle = false;
     this.registry.set('coracoes', OBP.CFG.CORACOES);
+    // bônus de tempo (decisão do Berg, 17/09): sobra de prazo vira lâmpada no mesmo contador, antes da loja
+    this.registry.inc('lampadas', OBP.Relogio.bonus(this.prazoMs / 1000));
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
     const P = OBP.PAL, lampadas = String(this.registry.get('lampadas')).padStart(5, '0');
     this.add.rectangle(320, 180, 400, 120, P.num(P.contorno)).setStrokeStyle(2, P.num(P.branco)).setScrollFactor(0).setDepth(200);
     this.add.text(320, 148, 'FASE CONCLUÍDA', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.add.text(320, 180, `LÂMPADAS ${lampadas}`, OBP.estiloTexto(16, P.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(320, 208, 'ENTER VOLTA À SELEÇÃO', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+    this.add.text(320, 208, 'ENTER VAI À LOJA', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.time.delayedCall(600, () => { this.podeSair = true; });
   }
   // O registry só é escrito quando o segundo inteiro muda: mandar float a 60 Hz dispara changedata 60 vezes por
@@ -232,7 +238,7 @@ OBP.Level = class extends Phaser.Scene {
     }
     const inp = this.inp.ler();
     this.contarPrazo(dt);
-    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start('Select'); return; }
+    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start('Shop', { fase: this.faseId }); return; }
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
     for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
     this.blocos.update(t);

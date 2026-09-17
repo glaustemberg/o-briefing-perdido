@@ -6,7 +6,7 @@
     scale: { mode: Phaser.Scale.NONE, zoom: OBP.zoomInteiro(), autoCenter: Phaser.Scale.CENTER_BOTH },
     physics: { default: 'arcade', arcade: { gravity: { y: 0 }, tileBias: 32, fps: 60, debug: false } },
     input: { gamepad: true },
-    scene: [OBP.Boot, OBP.Select, OBP.Level, OBP.Hud].filter(Boolean),
+    scene: [OBP.Boot, OBP.Select, OBP.Shop, OBP.Level, OBP.Hud].filter(Boolean),
   });
   addEventListener('resize', () => game.scale.setZoom(OBP.zoomInteiro()));
   OBP.game = game;

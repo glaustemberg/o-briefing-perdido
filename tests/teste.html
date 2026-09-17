@@ -19,6 +19,7 @@
 <script src="../js/data/fase-05.js"></script>
 <script src="../js/data/fase-08a.js"></script>
 <script src="../js/systems/Mapa.js"></script>
+<script src="../js/data/loja.js"></script>
 <script src="../js/systems/Voice.js"></script>
 <script>
 const T = [], saida = document.getElementById('saida');
@@ -255,6 +256,50 @@ teste('armadura: célula maior, mesma hitbox, pé na última linha da célula', 
   igual(OBP.HEROIS.tikinho.celulaArmadura, 96); igual(OBP.HEROIS.gilpp.celulaArmadura, 128);
   igual(OBP.HEROIS.tikinho.hitbox.h, 52, 'hitbox do tikinho intacta'); igual(OBP.HEROIS.gilpp.hitbox.h, 68);
   igual(OBP.FRAMES_ARMADURA.idle, 0); igual(OBP.FRAMES_ARMADURA.shoot, 5); igual(OBP.FRAMES_ARMADURA.win, 7);
+});
+
+// loja de fim de fase (adendo 3): 5 itens, preço em lâmpadas, um item por visita
+const lojaEstado = (l) => ({ lampadas: l, coracoesMax: 3, coracoesExtra: 0, pulosExtra: 0, itemGuardado: null });
+teste('loja tem os 5 itens do adendo com os preços do adendo', () => {
+  igual(OBP.LOJA.length, 5, 'itens');
+  igual(OBP.LOJA.map(i => i.id).join(','), 'coracao,pulo-duplo,armadura,cafe,energetico', 'ordem da lista');
+  igual(OBP.Loja.item('coracao').preco, 30); igual(OBP.Loja.item('pulo-duplo').preco, 15);
+  igual(OBP.Loja.item('armadura').preco, 25); igual(OBP.Loja.item('cafe').preco, 10);
+  igual(OBP.Loja.item('energetico').preco, 20);
+  igual(OBP.Loja.item('nao-existe'), null);
+});
+teste('comprar desconta o preço, aplica o bônus e não muta o estado antigo', () => {
+  const e = lojaEstado(100);
+  const r = OBP.Loja.comprar(e, 'armadura');
+  igual(r.ok, true); igual(r.motivo, null);
+  igual(r.estado.lampadas, 75); igual(r.estado.coracoesExtra, 3);
+  igual(e.lampadas, 100, 'o estado de entrada continua intacto'); igual(e.coracoesExtra, 0);
+  igual(OBP.Loja.comprar(lojaEstado(100), 'coracao').estado.coracoesMax, 4);
+  igual(OBP.Loja.comprar(lojaEstado(100), 'pulo-duplo').estado.pulosExtra, 1);
+  igual(OBP.Loja.comprar(lojaEstado(100), 'cafe').estado.itemGuardado, 'cafe');
+  igual(OBP.Loja.comprar(lojaEstado(100), 'energetico').estado.itemGuardado, 'energetico');
+});
+teste('loja recusa por lâmpadas de menos, por já ter e por slot ocupado', () => {
+  igual(OBP.Loja.motivo(lojaEstado(29), 'coracao'), 'LÂMPADAS DE MENOS');
+  igual(OBP.Loja.motivo(lojaEstado(30), 'coracao'), null);
+  igual(OBP.Loja.comprar(lojaEstado(9), 'cafe').ok, false, 'compra bloqueada não acontece');
+  igual(OBP.Loja.comprar(lojaEstado(9), 'cafe').estado.lampadas, 9, 'e não cobra');
+  const comCoracao = Object.assign(lojaEstado(100), { coracoesMax: 4 });
+  igual(OBP.Loja.motivo(comCoracao, 'coracao'), 'JÁ TEM');
+  const armado = Object.assign(lojaEstado(100), { coracoesExtra: 3 });
+  igual(OBP.Loja.motivo(armado, 'armadura'), 'JÁ TEM');
+  const comPulo = Object.assign(lojaEstado(100), { pulosExtra: 1 });
+  igual(OBP.Loja.motivo(comPulo, 'pulo-duplo'), 'JÁ TEM');
+  const comSlot = Object.assign(lojaEstado(100), { itemGuardado: 'cafe' });
+  igual(OBP.Loja.motivo(comSlot, 'energetico'), 'SLOT OCUPADO');
+  igual(OBP.Loja.motivo(lojaEstado(100), 'nao-existe'), 'ITEM DESCONHECIDO');
+});
+// ruling do Berg (pré-voo, 16/09): sem trava de 200 ms o Enter que fecha "FASE CONCLUÍDA" compra sozinho o
+// primeiro item da loja, porque startAgora ainda está true no primeiro frame da nova cena
+teste('loja não aceita confirmação nos primeiros 200 ms depois de abrir (ruling do Berg)', () => {
+  igual(OBP.Loja.podeConfirmar(1000, 1199), false, 'antes de 200 ms');
+  igual(OBP.Loja.podeConfirmar(1000, 1200), true, 'no limite exato');
+  igual(OBP.Loja.podeConfirmar(1000, 1500), true, 'bem depois');
 });
 
 rodar();
