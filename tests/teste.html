@@ -175,6 +175,26 @@ teste('HUD: corações, lâmpadas, prazo e slot de item não se sobrepõem', () 
   igual(c[4].x1, 472, 'borda direita do prazo');
   igual(c[5].x1, 624, 'slot de item termina na margem de 16 px');
   igual(OBP.hudColide(), null, OBP.hudColide() || '');
+// prazo por fase (adendo 2): regressivo em branco, progressivo em vermelho, bônus de lâmpadas por tempo restante
+teste('relógio formata mm:ss, inclusive no overtime e no teto', () => {
+  igual(OBP.Relogio.formatar(180), '03:00'); igual(OBP.Relogio.formatar(0), '00:00');
+  igual(OBP.Relogio.formatar(59.9), '00:59'); igual(OBP.Relogio.formatar(61), '01:01');
+  igual(OBP.Relogio.formatar(-5), '00:05', 'overtime conta para cima');
+  igual(OBP.Relogio.formatar(-125), '02:05'); igual(OBP.Relogio.formatar(99999), '99:59', 'teto');
+  igual(OBP.Relogio.atrasado(0.4), false); igual(OBP.Relogio.atrasado(-0.1), true);
+});
+teste('bônus de tempo: 1 lâmpada a cada 4 s, arredondado para baixo, teto 40, nunca negativo', () => {
+  igual(OBP.Relogio.bonus(7), 1, 'arredonda para baixo, não para o mais próximo');
+  igual(OBP.Relogio.bonus(0), 0);
+  igual(OBP.Relogio.bonus(-30), 0, 'quem estourou o prazo não ganha bônus');
+  igual(OBP.Relogio.bonus(160), 40, 'no limite exato do teto');
+  igual(OBP.Relogio.bonus(220), 40, 'passou do teto, trava em 40');
+});
+teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 300 s nas duas metades', () => {
+  igual(Object.keys(OBP.PRAZOS).length, 5, 'fases com prazo (08 conta como 2 metades)');
+  igual(OBP.PRAZOS['fase-01'], 180); igual(OBP.PRAZOS['fase-02'], 220); igual(OBP.PRAZOS['fase-05'], 220);
+  igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 300, 'as duas metades da fase 8');
+});
 });
 
 rodar();

@@ -56,3 +56,15 @@ OBP.hudColide = function () {
   if (c[c.length - 1].x1 > OBP.CFG.LARG - 16) return 'slot de item passa da margem direita';
   return null;
 };
+OBP.Relogio = {
+  formatar(seg) {
+    const s = Math.min(5999, Math.floor(Math.abs(seg)));
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  },
+  atrasado(seg) { return seg < 0; },
+  // bônus de tempo (decisão do Berg 2026-09-17): 1 lâmpada a cada 4 s restantes, arredondado para baixo, teto 40/fase
+  bonus(seg) { return Math.min(40, Math.max(0, Math.floor(seg / 4))); },
+};
+OBP.PRAZOS = {
+  'fase-01': 180, 'fase-02': 220, 'fase-05': 220, 'fase-08a': 130, 'fase-08b': 170,
+};

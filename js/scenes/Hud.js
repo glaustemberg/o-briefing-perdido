@@ -31,6 +31,8 @@ OBP.Hud = class extends Phaser.Scene {
     this.coracoes = [];
     this.add.image(H.LAMPADA_ICONE_X, H.Y, 'item-lampada').setOrigin(0, 0);
     this.txtLampadas = this.add.text(H.LAMPADA_DIG_DIR, H.Y, '00000', OBP.estiloTexto(16, P.moeda)).setOrigin(1, 0);
+    this.add.image(H.RELOGIO_ICONE_X, H.Y, 'item-relogio').setOrigin(0, 0);
+    this.txtPrazo = this.add.text(H.PRAZO_DIG_DIR, H.Y, '00:00', OBP.estiloTexto(16, P.branco)).setOrigin(1, 0);
     const g = this.add.graphics();
     g.fillStyle(P.num(P.roxo)); g.fillRect(588, 16, 36, 36);
     g.fillStyle(P.num(P.roxoBrilho)); g.fillRect(590, 18, 32, 32);
@@ -38,9 +40,12 @@ OBP.Hud = class extends Phaser.Scene {
     this.desenharCoracoes(this.registry.get('coracoes'));
     this.mostrarLampadas(this.registry.get('lampadas'));
     const aoCoracao = (_p, v) => this.desenharCoracoes(v), aoLampada = (_p, v) => this.mostrarLampadas(v, true);
+    const aoPrazo = (_p, v) => this.mostrarPrazo(v);
+    this.mostrarPrazo(this.registry.get('prazo'));
     this.registry.events.on('changedata-coracoes', aoCoracao);
     this.registry.events.on('changedata-lampadas', aoLampada);
-    this.events.once('shutdown', () => { this.registry.events.off('changedata-coracoes', aoCoracao); this.registry.events.off('changedata-lampadas', aoLampada); });
+    this.registry.events.on('changedata-prazo', aoPrazo);
+    this.events.once('shutdown', () => { this.registry.events.off('changedata-coracoes', aoCoracao); this.registry.events.off('changedata-lampadas', aoLampada); this.registry.events.off('changedata-prazo', aoPrazo); });
   }
   desenharCoracoes(n) {
     this.coracoes.forEach(c => c.destroy());
@@ -50,5 +55,11 @@ OBP.Hud = class extends Phaser.Scene {
   mostrarLampadas(v, nudge = false) {
     this.txtLampadas.setText(String(Math.max(0, v)).padStart(5, '0'));
     if (nudge) { this.txtLampadas.y = OBP.CFG.HUD.Y + 2; this.time.delayedCall(33, () => { this.txtLampadas.y = OBP.CFG.HUD.Y; }); }
+  }
+  // branco enquanto sobra prazo, vermelho no overtime: o texto nunca some, so troca de cor
+  mostrarPrazo(seg) {
+    if (!this.txtPrazo) return;
+    this.txtPrazo.setText(OBP.Relogio.formatar(seg || 0));
+    this.txtPrazo.setColor(OBP.Relogio.atrasado(seg || 0) ? OBP.PAL.coracao : OBP.PAL.branco);
   }
 };

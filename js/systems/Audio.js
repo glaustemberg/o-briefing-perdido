@@ -37,6 +37,8 @@ OBP.Audio = {
   checkpoint() { this.osc('triangle', 660, 660, 40); this.osc('triangle', 990, 990, 40, 0.2, 0.04); },
   item() { [523, 659, 784].forEach((f, i) => this.osc('triangle', f, f, 40, 0.2, i * 0.04)); },
   pouso() { this.ruido(40, 800, 200, 0.15); },
+  // prazo esgotado: três notas descendo, sem cortar nada (o jogo continua, só muda a cor do contador)
+  prazoEsgotado() { [440, 330, 220].forEach((f, i) => this.osc('square', f, f, 160, 0.2, i * 0.16)); },
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
 };

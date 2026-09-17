@@ -5,6 +5,9 @@ OBP.Level = class extends Phaser.Scene {
   init(data) {
     this.faseId = (data && data.fase) || 'fase-01';
     this.checkpoint = (data && data.checkpoint) || null;
+    // o prazo atravessa a morte: voltar ao checkpoint não devolve tempo (senão morrer de propósito vira estratégia)
+    this.prazoMs = (data && data.prazoMs != null) ? data.prazoMs : (OBP.PRAZOS[this.faseId] || 180) * 1000;
+    this.prazoEstourou = this.prazoMs <= 0;
     this.heroiId = this.registry.get('heroi') || 'tikinho';
     this.checkpointAtivo = !!this.checkpoint;
     this.concluida = false; this.podeSair = false;
@@ -70,6 +73,7 @@ OBP.Level = class extends Phaser.Scene {
     this.debugSoco = this.add.graphics().setDepth(100);
     this.input.keyboard.on('keydown-F1', () => this.alternarDebug());
     this.registry.set('coracoes', OBP.CFG.CORACOES);
+    this.registry.set('prazo', Math.ceil(this.prazoMs / 1000));
     this.scene.launch('Hud');
     this.events.once('shutdown', () => {
       this.scene.stop('Hud');
@@ -153,14 +157,14 @@ OBP.Level = class extends Phaser.Scene {
     });
   }
   reiniciar() {
-    if (this.registry.get('vidas') > 0) { this.scene.restart({ fase: this.faseId, checkpoint: this.checkpoint }); return; }
+    if (this.registry.get('vidas') > 0) { this.scene.restart({ fase: this.faseId, checkpoint: this.checkpoint, prazoMs: this.prazoMs }); return; }
     this.cameras.main.resetFX();
     this.add.rectangle(320, 180, 640, 360, OBP.PAL.num(OBP.PAL.contorno)).setScrollFactor(0).setDepth(200);
     this.add.text(320, 164, 'ACABOU O JOB', OBP.estiloTexto(16, OBP.PAL.coracao)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.add.text(320, 196, `LÂMPADAS ${String(this.registry.get('lampadas')).padStart(5, '0')}`, OBP.estiloTexto(8, OBP.PAL.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     // continue ilimitado: início da fase, 3 vidas, lâmpadas 0 (spec 4)
     this.registry.set({ vidas: OBP.CFG.VIDAS, lampadas: 0 });
-    this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null }));
+    this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null, prazoMs: null }));
   }
   // hit stop: pausa física e animações por ms; o update devolve cedo enquanto durar
   pararTudo(ms) {
@@ -202,6 +206,16 @@ OBP.Level = class extends Phaser.Scene {
     this.add.text(320, 208, 'ENTER VOLTA À SELEÇÃO', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.time.delayedCall(600, () => { this.podeSair = true; });
   }
+  // O registry só é escrito quando o segundo inteiro muda: mandar float a 60 Hz dispara changedata 60 vezes por
+  // segundo e o Hud redesenharia o texto à toa.
+  contarPrazo(dt) {
+    if (!this.controle || this.concluida || this.morrendo) return;
+    const antes = Math.ceil(this.prazoMs / 1000);
+    this.prazoMs -= dt;
+    const agora = Math.ceil(this.prazoMs / 1000);
+    if (agora !== antes) this.registry.set('prazo', agora);
+    if (!this.prazoEstourou && this.prazoMs <= 0) { this.prazoEstourou = true; OBP.Audio.prazoEsgotado(); }
+  }
   update(t, dt) {
     if (this.parada > 0) {
       this.parada -= dt;
@@ -209,6 +223,7 @@ OBP.Level = class extends Phaser.Scene {
       return;
     }
     const inp = this.inp.ler();
+    this.contarPrazo(dt);
     if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start('Select'); return; }
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
     for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
