@@ -105,22 +105,27 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
   }
   // menina loira: parada de costas, arremessa uma bomba em arco a cada ESPERA ms (1,7 s desde a decisão 67). Na
   // espera alterna idle/frameAlt (blink lento) pra não ficar estática; frameArremessa é o recuo de 200 ms.
+  // Decisao 76 (Berg): o arco subiu, e a cada 3 bombas seguidas ela cansa e a quarta demora mais que o dobro.
   comoLoira(b, t) {
-    const ESPERA = 1700;
+    const ESPERA = 1700, CANSADA = 3800, LOTE = 3;
+    const espera = () => (this.arremessos > 0 && this.arremessos % LOTE === 0 ? CANSADA : ESPERA);
     b.setVelocityX(0);
-    if (this.proximo < 0) { this.proximo = t + ESPERA; return; }
+    if (this.proximo < 0) { this.arremessos = 0; this.proximo = t + ESPERA; return; }
     this.dir = Math.sign(this.scene.player.x - this.x) || 1;
     if (t < this.proximo) {
-      if (t < this.proximo - (ESPERA - 200)) this.setTexture(this.t.frameArremessa);
+      if (t < this.proximo - (espera() - 200)) this.setTexture(this.t.frameArremessa);
       else this.setTexture(Math.floor(t / 600) % 2 === 0 ? this.t.frame : this.t.frameAlt);
       return;
     }
-    this.proximo = t + ESPERA;
+    this.arremessos++;
+    this.proximo = t + espera();
     OBP.Audio.arremesso();
     OBP.VozInimigo.falar(this.scene, 'loira-tiro');
     const bomba = new OBP.Enemy(this.scene, this.x + this.dir * 12, this.y - 12, 'bomba');
     this.scene.inimigos.add(bomba);
-    bomba.body.setVelocity(this.dir * 140, -260); // arco curto: cai a pouco mais de 2 tiles à frente
+    // arco alto: 380 de subida com gravidade 1000 da 72 px de altura (2,25 tiles) contra os 34 px de antes, e
+    // 114 px de alcance. A bomba passa por cima de mesa e plataforma baixa em vez de bater nelas.
+    bomba.body.setVelocity(this.dir * 150, -380);
   }
   // bomba (decisao 68): voa, quica 3 vezes no chao piscando cada vez mais rapido e explode no terceiro toque.
   // Encostar nela em qualquer instante explode na hora e mata o heroi, e quem trata isso e o Level.

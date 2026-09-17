@@ -9,9 +9,10 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.spritesheet('gilpp', 'assets/sprites/gilpp/gp-tira.png', { frameWidth: 96, frameHeight: 96 });
     for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav`);
     // falas dos inimigos (decisao 70): canal proprio, ids 'ini-*' que o OBP.VozInimigo procura no cache
+    const V = '?v=' + OBP.CFG.VERSAO_AUDIO;
     for (const v of ['abacaxi-resmungo-01', 'abacaxi-resmungo-02', 'abacaxi-resmungo-03', 'abacaxi-acerto',
                      'loira-tiro', 'loira-acerto', 'nuvem-raio', 'nuvem-acerto', 'chefe-01', 'chefe-02'])
-      this.load.audio('ini-' + v, `assets/vozes/inimigos/ini-${v}.wav`);
+      this.load.audio('ini-' + v, `assets/vozes/inimigos/ini-${v}.wav` + V);
     // Arte final da fase 1. As texturas provisorias de Level/Item/Enemy so nascem se a chave nao existir,
     // entao carregar aqui com a MESMA chave faz o jogo usar a arte sem mudar logica nenhuma.
     // um tileset e um fundo por fase do escopo cortado (1 Estudio, 2 Reuniao, 5 Grafica, 8 Torre).

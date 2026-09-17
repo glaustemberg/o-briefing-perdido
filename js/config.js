@@ -5,7 +5,9 @@ OBP.CFG = {
   COYOTE_MS: 100, CORTE: 0.5, TERMINAL: 480, DECOLAGEM: 4, APICE_V: 48,
   CORACOES: 3, VIDAS: 3, VEL_AGACHADO: 0.45, FASE_FINAL: 'fase-08b',   // desliza agachado a 45% da velocidade normal (decisao 53)
   INVENCIVEL_MS: 1000, RECUO_MS: 100, HITSTOP_DANO_MS: 100,
-  PROJETEIS_NA_TELA: 3,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
+  PROJETEIS_NA_TELA: 3,
+  // sobe quando um audio e refeito com o MESMO nome: sem isso o navegador serve o arquivo velho do cache
+  VERSAO_AUDIO: 2,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
   PHASER_URL: 'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js',
 };
 // Zoom inteiro por pixel físico (spec 2.1): floor(min(larguraFísica/640, alturaFísica/360)), mínimo 1.
