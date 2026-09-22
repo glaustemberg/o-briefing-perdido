@@ -9,7 +9,10 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     if (!t) throw new Error(`inimigo desconhecido: ${tipo}`);
     super(scene, x, y, t.frame);
     scene.add.existing(this); scene.physics.add.existing(this);
-    this.tipo = tipo; this.t = t;
+    // a dificuldade escala a tabela do tipo numa cópia: velocidade e intervalo entre pulos (decisão 84)
+    const d = OBP.dif(scene.registry);
+    this.tipo = tipo; this.ritmo = d.ritmo;
+    this.t = Object.assign({}, t, { vel: t.vel && t.vel * d.vel, pulaCada: t.pulaCada && t.pulaCada * d.ritmo });
     // sprite maior que um tile (menina 64, abacaxi 48) cresce para CIMA: o mapa marca o tile do pe, entao o centro
     // sobe metade do excedente e a hitbox fica colada na base da imagem, do mesmo jeito que a de 32x32 (decisao 68).
     const img = scene.textures.get(t.frame).getSourceImage();
@@ -85,7 +88,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     if (this.aviso > 0) {
       this.setTexture(this.t.frameAviso); b.setVelocityX(0);
       if (t >= this.aviso) {
-        this.aviso = 0; this.proximo = t + 1300;
+        this.aviso = 0; this.proximo = t + 1300 * this.ritmo;
         const r = new OBP.Enemy(this.scene, this.x, this.y + 24, 'raio');
         this.scene.inimigos.add(r);
         r.body.setVelocityY(300);
@@ -107,7 +110,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
   // espera alterna idle/frameAlt (blink lento) pra não ficar estática; frameArremessa é o recuo de 200 ms.
   // Decisao 76 (Berg): o arco subiu, e a cada 3 bombas seguidas ela cansa e a quarta demora mais que o dobro.
   comoLoira(b, t) {
-    const ESPERA = 1700, CANSADA = 3800, LOTE = 3;
+    const ESPERA = 1700 * this.ritmo, CANSADA = 3800 * this.ritmo, LOTE = 3;
     const espera = () => (this.arremessos > 0 && this.arremessos % LOTE === 0 ? CANSADA : ESPERA);
     b.setVelocityX(0);
     if (this.proximo < 0) { this.arremessos = 0; this.proximo = t + ESPERA; return; }

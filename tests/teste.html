@@ -176,13 +176,13 @@ teste('cada(chave, n) dispara só no múltiplo de n', () => {
 teste('HUD: corações, lâmpadas, prazo e slot de item não se sobrepõem', () => {
   const c = OBP.hudCaixas();
   igual(c.length, 6, 'caixas');
-  igual(c[0].x1, 156, '7 corações terminam em 156');
+  igual(c[0].x1, 176, '8 corações terminam em 176');
   igual(c[2].x0, 224, 'dígitos de lâmpada começam em 224'); igual(c[2].x1, 304, 'borda direita da lâmpada');
   igual(c[4].x1, 472, 'borda direita do prazo');
   igual(c[5].x1, 624, 'slot de item termina na margem de 16 px');
   igual(OBP.hudColide(), null, OBP.hudColide() || '');
+  igual(OBP.CFG.HUD.CORACAO_MAX, 8, '4 do FACIL mais o permanente mais 3 extras da armadura');
 });
-  igual(OBP.CFG.HUD.CORACAO_MAX, 7, '4 normais com o permanente mais 3 extras da armadura');
 // prazo por fase (adendo 2): regressivo em branco, progressivo em vermelho, bônus de lâmpadas por tempo restante
 teste('relógio formata mm:ss, inclusive no overtime e no teto', () => {
   igual(OBP.Relogio.formatar(180), '03:00'); igual(OBP.Relogio.formatar(0), '00:00');
@@ -203,6 +203,26 @@ teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 230 s nas d
   igual(Object.keys(OBP.PRAZOS).length, 5, 'fases com prazo (08 conta como 2 metades)');
   igual(OBP.PRAZOS['fase-01'], 140); igual(OBP.PRAZOS['fase-02'], 170); igual(OBP.PRAZOS['fase-05'], 170);
   igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 230, 'as duas metades da fase 8');
+});
+// dificuldade (decisao 84): MEDIO tem que ser o jogo de antes, e os outros dois andam cada um para um lado
+teste('dificuldade: medio igual ao CFG, facil mais leve, bomba mais pesada, densidade exata', () => {
+  const D = OBP.DIFICULDADES, reg = (id) => ({ get: () => id });
+  igual(Object.keys(D).join(), 'facil,medio,bomba');
+  igual(D.medio.vidas, OBP.CFG.VIDAS); igual(D.medio.coracoes, OBP.CFG.CORACOES);
+  igual(D.medio.invencivelMs, OBP.CFG.INVENCIVEL_MS);
+  ['prazo', 'vel', 'ritmo', 'densidade'].forEach(k => igual(D.medio[k], 1, `medio.${k}`));
+  igual(OBP.dif(reg('bomba')).id, 'bomba'); igual(OBP.dif(reg(undefined)).id, 'medio', 'sem escolha cai no medio');
+  igual(OBP.dif(null).id, 'medio');
+  igual(D.facil.vidas > D.medio.vidas && D.medio.vidas > D.bomba.vidas, true, 'vidas em ordem');
+  igual(D.facil.vel < 1 && D.bomba.vel > 1 && D.facil.ritmo > 1 && D.bomba.ritmo < 1, true, 'inimigo');
+  const nascem = (dens, n) => Array.from({ length: n }, (_, i) => OBP.nasceInimigo(i, dens)).filter(Boolean).length;
+  igual(nascem(1, 15), 15); igual(nascem(0.6, 15), 9); igual(nascem(0.6, 5), 3);
+  // o FACIL com o coracao da loja e a armadura ainda cabe no HUD
+  igual(D.facil.coracoes + 1 + 3 <= OBP.CFG.HUD.CORACAO_MAX, true, 'coracoes do facil no HUD');
+  const e = { lampadas: 100, coracoesMax: 4, coracoesBase: 4, coracoesExtra: 0, pulosExtra: 0, itemGuardado: null };
+  igual(OBP.Loja.motivo(e, 'coracao'), null, 'facil com 4 base ainda pode comprar o permanente');
+  igual(OBP.Loja.motivo(Object.assign({}, e, { coracoesMax: 5 }), 'coracao'), 'JÁ TEM');
+  igual(OBP.Loja.motivo(Object.assign({}, e, { coracoesMax: 3, coracoesBase: 2 }), 'coracao'), 'JÁ TEM', 'bomba');
 });
 teste('ordem das fases: a loja leva a fase seguinte e a ultima cai na Selecao', () => {
   igual(OBP.ORDEM.join(), 'fase-01,fase-02,fase-05,fase-08a,fase-08b');

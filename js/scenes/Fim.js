@@ -33,6 +33,7 @@ OBP.Fim = class extends Phaser.Scene {
     const n = (v) => String(Math.max(0, v)).padStart(5, '0');
     this.add.text(320, 128, `PONTUAÇÃO ${n(pontos)}`, OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
     this.add.text(320, 156, `RECORDE ${n(recorde)}`, OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
+    this.add.text(320, 174, `MODO ${OBP.dif(r).nome}`, OBP.estiloTexto(8, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
     this.add.text(320, 300, OBP.HEROIS[this.heroiId].nome, OBP.estiloTexto(16, P.branco)).setOrigin(0.5, 0).setStroke(P.contorno, 4);
     this.aperte = this.add.text(320, 340, 'APERTE START', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
 

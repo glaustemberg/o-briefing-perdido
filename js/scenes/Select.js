@@ -1,6 +1,6 @@
 // Capa e seleção numa cena só (decisão 69). O Boot entrega direto para cá: antes o título vivia numa tela de
 // texto puro do Boot que morria no primeiro toque, e a seleção era outra tela preta. Agora é o mesmo lugar em
-// dois estados, 'capa' e 'escolha', com o estúdio da fase 1 de fundo. Direção fechada a partir dos três pareceres:
+// três estados, 'capa', 'dificuldade' (decisão 84) e 'escolha', com o estúdio da fase 1 de fundo. Direção fechada a partir dos três pareceres:
 // fundo claro e cenário real (impeccable), escala 8/16/32 e título em minúsculo (ui-styling), e movimento por
 // passos inteiros com respiração dessincronizada (genjutsu). O primeiro toque também é o gesto que libera o áudio
 // do navegador, e é nele que a música do título entra.
@@ -91,6 +91,18 @@ OBP.Select = class extends Phaser.Scene {
     // no celular o botao de pulo mora nesse canto, entao o selo sobe para nao ficar embaixo do dedo
     if (this.textures.exists('item-bola-roxa')) this.selo = this.add.image(596, OBP.Toque.ativo ? 236 : 332, 'item-bola-roxa').setOrigin(0.5);
 
+    // placas de dificuldade (decisão 84): três placas na faixa entre o título e as cabeças, na linguagem da capa
+    // (roxo escuro, fio de neon, amarelo no escolhido). No estado 'escolha' só a escolhida fica, como lembrete.
+    this.difs = Object.keys(OBP.DIFICULDADES);
+    this.difSel = Math.max(0, this.difs.indexOf(this.registry.get('dificuldade') || 'medio'));
+    this.placas = this.difs.map((id, i) => {
+      const x = 192 + i * 128;
+      const caixa = this.add.rectangle(x, 136, 112, 28, P.num(P.roxoSombra), 0.92);
+      const txt = this.add.text(x, 137, OBP.DIFICULDADES[id].nome, OBP.estiloTexto(16, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
+      return { caixa, txt, x };
+    });
+    this.difDesc = this.add.text(320, 166, '', OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
+
     this.rodape = this.add.text(320, 340, '', OBP.estiloTexto(8, P.branco)).setOrigin(0.5);
     this.aperte = this.add.text(320, 340, 'APERTE START', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5);
     this.aperte.setStroke(P.contorno, 4); this.rodape.setStroke(P.contorno, 4);
@@ -123,7 +135,13 @@ OBP.Select = class extends Phaser.Scene {
   }
 
   atualizar() {
-    const P = OBP.PAL, capa = this.estado === 'capa';
+    const P = OBP.PAL, capa = this.estado !== 'escolha', dif = this.estado === 'dificuldade';
+    this.placas.forEach((p, i) => {
+      const on = i === this.difSel;
+      p.caixa.setVisible(dif || (on && !capa)).setX(dif ? p.x : 320).setStrokeStyle(2, P.num(on ? P.moeda : P.roxoBrilho));
+      p.txt.setVisible(dif || (on && !capa)).setX(dif ? p.x : 320).setColor(on ? P.moeda : P.cinzaClaro);   // rim some no roxo: as 3 têm que ser lidas
+    });
+    this.difDesc.setVisible(dif).setText(OBP.DIFICULDADES[this.difs[this.difSel]].desc);
     this.cartas.forEach((c, i) => {
       const aceso = capa || i === this.sel;
       if (aceso) c.spr.clearTint(); else c.spr.setTint(P.num(P.rim));
@@ -131,8 +149,8 @@ OBP.Select = class extends Phaser.Scene {
     });
     this.barra.setVisible(!capa);
     this.cursor.setVisible(!capa);
-    this.aperte.setVisible(capa);
-    this.rodape.setVisible(!capa).setText(OBP.Toque.ativo
+    this.aperte.setVisible(this.estado === 'capa');
+    this.rodape.setVisible(this.estado !== 'capa').setText(OBP.Toque.ativo
       ? 'TOQUE EM < E > PARA ESCOLHER   PULO CONFIRMA'
       : 'SETAS ESCOLHEM   ENTER CONFIRMA   ESPACO PULA   M SOCA');
   }
@@ -176,6 +194,18 @@ OBP.Select = class extends Phaser.Scene {
         const ctx = this.sound.context;
         if (ctx && ctx.state === 'suspended') ctx.resume();     // gesto que libera o áudio do navegador
         OBP.Musica.tocar(this, 'mus-titulo', OBP.MIX.musicaTitulo);
+        this.estado = 'dificuldade';
+        OBP.Audio.menuConfirmar();
+        this.atualizar();
+      }
+      return;
+    }
+    if (this.estado === 'dificuldade') {
+      const d = (e.dirAgora ? 1 : 0) - (e.esqAgora ? 1 : 0);
+      const novo = Phaser.Math.Clamp(this.difSel + d, 0, this.difs.length - 1);
+      if (novo !== this.difSel) { this.difSel = novo; OBP.Audio.menuMover(); this.atualizar(); }
+      if (apertou) {
+        this.registry.set('dificuldade', this.difs[this.difSel]);
         this.estado = 'escolha';
         this.cursor.x = this.barra.x = this.cartas[this.sel].x;
         this.cursor.y = 190 - (this.sel === 1 ? 20 : 0);
@@ -192,10 +222,11 @@ OBP.Select = class extends Phaser.Scene {
   confirmar(t) {
     this.confirmado = true;
     const id = this.ids[this.sel], alvo = this.cartas[this.sel].spr, outro = this.cartas[1 - this.sel];
-    const base = { heroi: id, coracoes: this.registry.get('coracoesMax') || OBP.CFG.CORACOES };
+    const d = OBP.dif(this.registry);
+    const base = { heroi: id, coracoes: this.registry.get('coracoesMax') || d.coracoes };
     this.registry.set(this.manter ? base : Object.assign(base, {
-      vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0, coracoes: OBP.CFG.CORACOES,
-      coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0, pulosExtra: 0, itemGuardado: null,
+      vidas: d.vidas, lampadas: 0, prazo: 0, coracoes: d.coracoes,
+      coracoesMax: d.coracoes, coracoesExtra: 0, pulosExtra: 0, itemGuardado: null,
     }));
     OBP.Audio.menuConfirmar(); OBP.Voice.init(this, id); OBP.Voice.falar('sel-01');
     // 400 ms, os mesmos de antes: windup, pulo de 12 px em quadros inteiros, pouso. Quem não foi escolhido senta.

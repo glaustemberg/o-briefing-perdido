@@ -6,7 +6,7 @@ OBP.Level = class extends Phaser.Scene {
     this.faseId = (data && data.fase) || 'fase-01';
     this.checkpoint = (data && data.checkpoint) || null;
     // o prazo atravessa a morte: voltar ao checkpoint não devolve tempo (senão morrer de propósito vira estratégia)
-    this.prazoMs = (data && data.prazoMs != null) ? data.prazoMs : (OBP.PRAZOS[this.faseId] || 180) * 1000;
+    this.prazoMs = (data && data.prazoMs != null) ? data.prazoMs : Math.round((OBP.PRAZOS[this.faseId] || 180) * OBP.dif(this.registry).prazo) * 1000;
     this.prazoEstourou = this.prazoMs <= 0;
     this.heroiId = this.registry.get('heroi') || 'tikinho';
     this.checkpointAtivo = !!this.checkpoint;
@@ -110,8 +110,11 @@ OBP.Level = class extends Phaser.Scene {
   criarInimigos() {
     const lista = OBP.FASES[this.faseId].inimigos;
     this.inimigos = this.physics.add.group();
+    const dens = OBP.dif(this.registry).densidade;
+    let n = 0;
     for (const e of this.m.entidades) {
       if (!'123N'.includes(e.ch)) continue;
+      if (!OBP.nasceInimigo(n++, dens)) continue;
       // N e a menina loira, fixa no mapa e fora dos 3 slots da fase (decisao 67): estava no ASCII da spec desde o
       // inicio e nunca nascia, o que deixava a fase 1 com 3 tipos de inimigo em vez dos 4 que o mapa promete.
       const tipo = e.ch === 'N' ? 'loira' : lista[Number(e.ch) - 1];
@@ -128,11 +131,13 @@ OBP.Level = class extends Phaser.Scene {
     }, (p, e) => !e.morto);
   }
   contatoInimigo(e) {
-    // bomba e o unico inimigo letal (decisao 68): encostou, ela explode na hora e o heroi morre, mesmo de armadura
+    // bomba e o unico inimigo letal (decisao 68): encostou, ela explode na hora e o heroi morre, mesmo de armadura.
+    // No FACIL (decisao 84) ela explode do mesmo jeito, mas custa 1 coracao em vez da vida.
     if (e.tipo === 'bomba') {
       if (!this.player.podeFerir()) return;        // respeita a piscada de invencibilidade, senao mata no respawn
       this.esperaVoz = OBP.VozInimigo.acertou(this, e.tipo);
       e.explodir(this.time.now);
+      if (!OBP.dif(this.registry).bombaMata) return this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
       OBP.Audio.dano();
       this.matar();
       return;
@@ -204,7 +209,7 @@ OBP.Level = class extends Phaser.Scene {
     // continue ilimitado: início da fase, 3 vidas, lâmpadas 0 (spec 4). Game over também zera o que foi comprado
     // na loja (coração permanente, pulo duplo, armadura e item guardado): o continue mantém só o herói.
     this.registry.set({
-      vidas: OBP.CFG.VIDAS, lampadas: 0, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
+      vidas: OBP.dif(this.registry).vidas, lampadas: 0, coracoesMax: OBP.dif(this.registry).coracoes, coracoesExtra: 0,
       pulosExtra: 0, itemGuardado: null,
     });
     this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null, prazoMs: null }));

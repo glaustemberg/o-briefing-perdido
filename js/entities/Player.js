@@ -63,7 +63,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
   ferir(dir, atrasoMs) {
     if (!this.podeFerir()) return false;
     const t = this.scene.time.now + atrasoMs;
-    this.recuoAte = t + OBP.CFG.RECUO_MS; this.feridoAte = t + OBP.CFG.RECUO_MS; this.invencivelAte = t + OBP.CFG.INVENCIVEL_MS;
+    this.recuoAte = t + OBP.CFG.RECUO_MS; this.feridoAte = t + OBP.CFG.RECUO_MS; this.invencivelAte = t + OBP.dif(this.scene.registry).invencivelMs;
     this.body.setVelocity(dir * 160, -160);
     this.socoMs = -1;
     return true;

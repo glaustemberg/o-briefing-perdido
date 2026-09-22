@@ -10,13 +10,13 @@ OBP.LOJA = [
 ];
 OBP.Loja = {
   item(id) { return OBP.LOJA.find(i => i.id === id) || null; },
-  // estado: { lampadas, coracoesMax, coracoesExtra, pulosExtra, itemGuardado }. Devolve null quando pode comprar,
+  // estado: { lampadas, coracoesMax, coracoesBase, coracoesExtra, pulosExtra, itemGuardado }. coracoesBase é o da dificuldade. Devolve null quando pode comprar,
   // ou o texto em caixa alta que a cena imprime embaixo da lista.
   motivo(estado, id) {
     const it = this.item(id);
     if (!it) return 'ITEM DESCONHECIDO';
     if (estado.lampadas < it.preco) return 'LÂMPADAS DE MENOS';
-    if (id === 'coracao' && estado.coracoesMax > OBP.CFG.CORACOES) return 'JÁ TEM';
+    if (id === 'coracao' && estado.coracoesMax > (estado.coracoesBase || OBP.CFG.CORACOES)) return 'JÁ TEM';
     if (id === 'pulo-duplo' && estado.pulosExtra > 0) return 'JÁ TEM';
     if (id === 'armadura' && estado.coracoesExtra > 0) return 'JÁ TEM';
     if ((id === 'cafe' || id === 'energetico') && estado.itemGuardado) return 'SLOT OCUPADO';

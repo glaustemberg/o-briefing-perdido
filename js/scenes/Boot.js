@@ -55,7 +55,7 @@ OBP.Boot = class extends Phaser.Scene {
   create() {
     // Registry do M2 inteiro declarado num lugar só: chave que nasce undefined vira NaN no primeiro inc()
     this.registry.set({
-      heroi: 'tikinho', vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0,
+      heroi: 'tikinho', dificuldade: 'medio', vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0,
       coracoes: OBP.CFG.CORACOES, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
       pulosExtra: 0, itemGuardado: null,
     });

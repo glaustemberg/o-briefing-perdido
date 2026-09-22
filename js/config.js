@@ -10,6 +10,21 @@ OBP.CFG = {
   VERSAO_AUDIO: 7,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
   PHASER_URL: 'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js',
 };
+// Dificuldade (decisão 84, pedido do Berg). MÉDIO é o jogo exatamente como estava; os outros dois mexem nas mesmas
+// alavancas: vidas, corações, piscada de invencibilidade, prazo, velocidade dos inimigos, intervalo dos ataques
+// (ritmo multiplica o tempo entre pulos, raios e bombas) e quantos inimigos do mapa nascem.
+OBP.DIFICULDADES = {
+  facil: { id: 'facil', nome: 'FÁCIL', desc: '5 VIDAS, 4 CORAÇÕES, INIMIGO LENTO',
+    vidas: 5, coracoes: 4, invencivelMs: 1500, prazo: 1.4, vel: 0.75, ritmo: 1.5, densidade: 0.6, bombaMata: false },
+  medio: { id: 'medio', nome: 'MÉDIO', desc: 'O BRIEFING COMO ELE É',
+    vidas: 3, coracoes: 3, invencivelMs: 1000, prazo: 1, vel: 1, ritmo: 1, densidade: 1, bombaMata: true },
+  bomba: { id: 'bomba', nome: 'BOMBA', desc: '2 VIDAS, 2 CORAÇÕES, PRAZO CURTO',
+    vidas: 2, coracoes: 2, invencivelMs: 700, prazo: 0.8, vel: 1.25, ritmo: 0.7, densidade: 1, bombaMata: true },
+};
+OBP.dif = (registry) => OBP.DIFICULDADES[registry && registry.get('dificuldade')] || OBP.DIFICULDADES.medio;
+// o n-ésimo inimigo do mapa nasce? Distribui por igual (0,6 mantém 3 de cada 5) e é determinístico, para o
+// playtest de uma fase no FÁCIL ser sempre o mesmo
+OBP.nasceInimigo = (n, densidade) => Math.floor((n + 1) * densidade) > Math.floor(n * densidade);
 // Zoom inteiro por pixel físico (spec 2.1): floor(min(larguraFísica/640, alturaFísica/360)), mínimo 1.
 OBP.zoomFisico = (w = innerWidth, h = innerHeight, dpr = window.devicePixelRatio || 1) =>
   Math.max(1, Math.floor(Math.min(w * dpr / OBP.CFG.LARG, h * dpr / OBP.CFG.ALT)));
@@ -35,7 +50,7 @@ OBP.pixels = function (scene, chave, linhas, cores) {
 // spec (x = 304) e pelo adendo (x = 472) ficam intactas.
 OBP.CFG.HUD = {
   Y: 16, ICONE: 32, DIG_LARG: 16, DIG_N: 5,
-  CORACAO_X: 16, CORACAO_VAO: 20, CORACAO_MAX: 7,
+  CORACAO_X: 16, CORACAO_VAO: 20, CORACAO_MAX: 8,   // FÁCIL: 4 + 1 da loja + 3 da armadura
   LAMPADA_ICONE_X: 188, LAMPADA_DIG_DIR: 304,
   RELOGIO_ICONE_X: 356, PRAZO_DIG_DIR: 472,
   SLOT_X: 588, SLOT_LADO: 36,

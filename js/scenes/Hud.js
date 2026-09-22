@@ -56,7 +56,7 @@ OBP.Hud = class extends Phaser.Scene {
       this.registry.events.off('changedata-prazo', aoPrazo);
     });
   }
-  // até 4 normais (3 mais o coração permanente da loja) e até 3 extras da armadura: 7 no total, 16 + 7x20 = 156 px
+  // até 5 normais (4 do FÁCIL mais o coração permanente da loja) e até 3 extras da armadura: 8 no total, 16 + 8x20 = 176 px
   desenharCoracoes() {
     const H = OBP.CFG.HUD;
     const n = this.registry.get('coracoes'), max = this.registry.get('coracoesMax') || OBP.CFG.CORACOES;

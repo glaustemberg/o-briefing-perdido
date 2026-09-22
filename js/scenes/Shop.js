@@ -8,7 +8,7 @@ OBP.Shop = class extends Phaser.Scene {
   estado() {
     const r = this.registry;
     return {
-      lampadas: r.get('lampadas'), coracoesMax: r.get('coracoesMax'), coracoesExtra: r.get('coracoesExtra'),
+      lampadas: r.get('lampadas'), coracoesMax: r.get('coracoesMax'), coracoesBase: OBP.dif(r).coracoes, coracoesExtra: r.get('coracoesExtra'),
       pulosExtra: r.get('pulosExtra'), itemGuardado: r.get('itemGuardado'),
     };
   }
