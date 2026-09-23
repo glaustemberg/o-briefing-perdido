@@ -62,6 +62,8 @@ OBP.Shop = class extends Phaser.Scene {
 
     this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
+    // o gilpp responde ao tikinho na primeira copa da partida (gp-sel-02 nunca tocava, revisao 21b)
+    if (this.heroiId === 'gilpp' && this.faseId === OBP.ORDEM[0]) this.time.delayedCall(1400, () => OBP.Voice.falar('sel-02'));
     this.atualizar();
     this.cameras.main.fadeIn(250, 0, 0, 0);
   }

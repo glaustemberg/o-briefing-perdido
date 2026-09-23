@@ -103,7 +103,7 @@ OBP.Itens = class {
     return s;
   }
   soltarCarimbo(x, y) {
-    const s = this.novo(x, y, 'item-carimbo', { tipo: 'carimbo' });
+    const s = this.novo(x, y, 'item-carimbo', { tipo: 'carimbo', deBloco: true });
     s.body.setAllowGravity(true); s.body.setGravityY(900); s.body.setVelocity(0, -240);
     return s;
   }
@@ -133,7 +133,9 @@ OBP.Itens = class {
       const inv = sc.registry.get('inventario') || [];
       if (OBP.Inventario.quantos(inv, 'carimbo') >= OBP.Loja.MAX_POR_ITEM) return;
       sc.registry.set('inventario', inv.concat(['carimbo']));
-      OBP.Audio.item(); OBP.Voice.reacaoCada('item-01', 100);
+      OBP.Audio.item();
+      if (item.deBloco) OBP.Voice.falar(OBP.FALA.arquivo[sc.registry.get('heroi')] || 'item-01');   // "tudo menos finalizar em PPT" (decisao 89)
+      else OBP.Voice.reacaoCada('item-01', 100);
     } else if (item.tipo === 'check' && !sc.checkpointAtivo) {
       sc.ativarCheckpoint(item);
     } else if (item.tipo === 'saida') {

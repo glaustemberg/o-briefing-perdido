@@ -72,7 +72,11 @@ OBP.Level = class extends Phaser.Scene {
     this.parada = 0; this.controle = false; this.morrendo = false; this.chefeVencido = false;
     // iris de entrada simplificada em fade (300 ms); a fala de inicio toca no primeiro frame de controle
     this.cameras.main.once('camerafadeincomplete', () => {
-      if (this.faseId === 'chefe') { this.scene.launch('Boss'); return; }   // o jokenpo abre por cima da arena (decisao 85)
+      if (this.faseId === 'chefe') {   // o jokenpo abre por cima da arena (decisao 85), depois da fala ao ver o Sobrinho (decisao 89)
+        OBP.Voice.falar(OBP.FALA.verChefe[this.registry.get('heroi')] || 'extra-01');
+        this.time.delayedCall(900, () => this.scene.launch('Boss'));
+        return;
+      }
       this.controle = true;
       if (this.checkpoint) this.player.invencivelAte = this.time.now + 1000;   // renascer sem levar porrada na hora (revisao 2)
       OBP.Voice.falar(this.checkpoint ? 'inicio-01' : 'inicio-' + (OBP.FALA_INICIO[this.faseId] || 'f1'));   // revisao 4: cada fase tem a sua fala
@@ -115,17 +119,22 @@ OBP.Level = class extends Phaser.Scene {
     this.events.on('caveira', () => { OBP.Audio.acordar(); OBP.VozInimigo.falar(this, 'fantasma-sai', { prioritaria: true }); });
     this.events.on('lampada', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
   }
-  // adereços de cenário (decisão 88): a cada 9 colunas, onde o chão é reto e livre por duas linhas, um objeto da
-  // agência fica atrás dos tiles e na frente do fundo, para a tela ter três planos (fundo a 0,4, adereço e tiles a 1)
+  // adereços de cenário (decisão 88): a cada 7 colunas, em qualquer piso (chão ou tábua) reto e livre por duas
+  // linhas, um objeto da agência fica atrás dos tiles e na frente do fundo, para a tela ter três planos (fundo a
+  // 0,4, adereço e tiles a 1). Decisão 89: também nos andares da torre e nas plataformas, com o passo deslocado
+  // por linha para adereços de andares vizinhos não ficarem alinhados.
   criarAderecos() {
     const tipos = ['planta', 'bebedouro', 'quadro', 'luminaria'].filter(k => this.textures.exists('prop-' + k));
-    const mapa = OBP.FASES[this.faseId].mapa, chao = mapa.length - 1;
-    if (!tipos.length || chao < 3) return;
+    const mapa = OBP.FASES[this.faseId].mapa;
+    if (!tipos.length) return;
     let n = 0;
-    for (let c = 3; c < mapa[0].length - 3; c += 7) {
-      const livre = [c, c + 1].every(x => mapa[chao][x] === '#' && mapa[chao - 1][x] === '.' && mapa[chao - 2][x] === '.');
-      if (!livre) continue;
-      this.add.image(c * 32 + 32, chao * 32, 'prop-' + tipos[n++ % tipos.length]).setOrigin(0.5, 1).setDepth(-5);
+    for (let r = 3; r < mapa.length; r++) {
+      if (mapa.length > mapa[0].length && r % 6 !== 5) continue;   // torre: um andar sim, outro nao
+      for (let c = 3 + (r % 3) * 2; c < mapa[0].length - 3; c += 7) {
+        const livre = [c, c + 1].every(x => '#='.includes(mapa[r][x]) && mapa[r - 1][x] === '.' && mapa[r - 2][x] === '.');
+        if (!livre) continue;
+        this.add.image(c * 32 + 32, r * 32, 'prop-' + tipos[n++ % tipos.length]).setOrigin(0.5, 1).setDepth(-5);
+      }
     }
   }
   criarInimigos() {
@@ -145,7 +154,7 @@ OBP.Level = class extends Phaser.Scene {
     }
     // a arena do chefe (decisao 85) nao tem marca no mapa: o Sobrinho nasce fixo a direita e o jokenpo abre por cima
     if (this.faseId === 'chefe') { OBP.Chefe.criarTexturas(this); this.chefe = new OBP.Chefe(this, 496, 320); this.inimigos.add(this.chefe); }
-    this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto && !e.t.atravessa);   // o fantasma atravessa parede
+    this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto && !(e.t && e.t.atravessa));   // o fantasma atravessa parede (o Chefe nao tem tabela t)
     this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto && e.fere);
     // projétil mata inimigo comum em 1 acerto, igual ao soco (adendo 6); hazard invencível só consome o projétil
     this.physics.add.overlap(this.projeteis.grupo, this.inimigos, (p, e) => {
@@ -226,7 +235,7 @@ OBP.Level = class extends Phaser.Scene {
     this.pararTudo(200);
     const P = OBP.PAL, txt = this.add.text(p.x, p.y - 80, 'CTRL+Z!', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4).setDepth(150);
     this.time.delayedCall(900, () => txt.destroy());
-    OBP.Audio.compra(); OBP.Voice.falar('extra-01');
+    OBP.Audio.compra(); OBP.Voice.falar(OBP.FALA.ctrlz[this.registry.get('heroi')] || 'extra-01');
     return true;
   }
   matar() {
