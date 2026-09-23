@@ -109,6 +109,13 @@ OBP.Select = class extends Phaser.Scene {
 
     this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
     OBP.Audio.init(this);
+    // atalho de teste (pedido do Berg, 23/09): ?fase=chefe na URL, F2 no teclado ou 3 toques no selo entram direto
+    // na fase escolhida, com o heroi e a dificuldade da capa. Nao muda nada para quem joga normal.
+    const pedida = new URLSearchParams(location.search).get('fase');
+    this.faseInicial = OBP.FASES[pedida] ? pedida : 'fase-01';
+    const atalho = () => { this.faseInicial = 'chefe'; this.rodape.setText('ATALHO: COMEÇA NA FASE DO CHEFE'); OBP.Audio.menuConfirmar(); };
+    this.input.keyboard.on('keydown-F2', atalho);
+    if (this.selo) { let toques = 0; this.selo.setInteractive().on('pointerdown', () => { if (++toques >= 3) atalho(); }); }
     this.estado = 'capa'; this.confirmado = false;
     this.trocaAte = 0; this.windupAte = 0; this.proximoPiscar = 0;
     this.respirar();
@@ -236,6 +243,6 @@ OBP.Select = class extends Phaser.Scene {
     this.time.delayedCall(120, () => { if (outro) outro.spr.setFrame(OBP.FRAMES.crouch); });
     this.time.delayedCall(330, () => { alvo.setFrame(OBP.FRAMES.idle); OBP.Audio.pouso(); });
     this.time.delayedCall(220, () => this.cameras.main.fadeOut(180, 0, 0, 0));
-    this.time.delayedCall(400, () => { OBP.Musica.parar(this); this.scene.start('Level', { fase: 'fase-01' }); });
+    this.time.delayedCall(400, () => { OBP.Musica.parar(this); this.scene.start('Level', { fase: this.faseInicial }); });
   }
 };
