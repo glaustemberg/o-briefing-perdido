@@ -34,6 +34,9 @@ OBP.HEROIS = {
       // chefe (decisao 90): variedade por momento
       'tk-cinicio-01', 'tk-cinicio-02', 'tk-cinicio-03', 'tk-cganha-01', 'tk-cganha-02', 'tk-cganha-03', 'tk-cperde-02', 'tk-cperde-03',
       'tk-cvence-01', 'tk-cvence-02', 'tk-ccabeca-01', 'tk-ccabeca-02', 'tk-cbatata-01', 'tk-cbatata-02', 'tk-dano-c1', 'tk-dano-c2',
+      // introducao, loja por item e Control Z (decisao 93)
+      'tk-intro-01', 'tk-intro-02', 'tk-intro-03', 'tk-intro-04', 'tk-loja-coracao', 'tk-loja-pulo', 'tk-loja-armadura', 'tk-loja-cafe',
+      'tk-loja-energetico', 'tk-loja-carimbo', 'tk-loja-ctrlz', 'tk-ctrlz-01',
     ],
   },
   gilpp: {
@@ -54,6 +57,9 @@ OBP.HEROIS = {
       // chefe (decisao 90): variedade por momento
       'gp-cinicio-01', 'gp-cinicio-02', 'gp-cinicio-03', 'gp-cganha-01', 'gp-cganha-02', 'gp-cganha-03', 'gp-cperde-02', 'gp-cperde-03',
       'gp-cvence-01', 'gp-cvence-02', 'gp-ccabeca-01', 'gp-ccabeca-02', 'gp-cbatata-01', 'gp-cbatata-02', 'gp-dano-c1', 'gp-dano-c2',
+      // introducao, loja por item e Control Z (decisao 93)
+      'gp-intro-01', 'gp-intro-02', 'gp-intro-03', 'gp-intro-04', 'gp-loja-coracao', 'gp-loja-pulo', 'gp-loja-armadura', 'gp-loja-cafe',
+      'gp-loja-energetico', 'gp-loja-carimbo', 'gp-loja-ctrlz', 'gp-ctrlz-01',
     ],
   },
 };

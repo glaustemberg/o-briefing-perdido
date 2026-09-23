@@ -58,7 +58,7 @@ OBP.Shop = class extends Phaser.Scene {
       ? 'TOQUE < > PARA ANDAR   PULO COMPRA   NA FASE: TROCA E USA'
       : 'SETAS ANDAM   ESPAÇO COMPRA   NA FASE: B TROCA O ITEM, N USA', OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
     this.txtAviso = this.add.text(320, 300, '', OBP.estiloTexto(8, P.coracao)).setOrigin(0.5).setStroke(P.contorno, 4);
-    this.avisoAte = 0; this.criadoEm = this.time.now; this.falou = false;
+    this.avisoAte = 0; this.criadoEm = this.time.now; this.falou = false; this.saindo = false;   // BUG ate a decisao 93: sem zerar, a porta nao abria na segunda copa
 
     this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
@@ -142,7 +142,7 @@ OBP.Shop = class extends Phaser.Scene {
     }
     this.registry.set(r.estado);
     OBP.Audio.compra();
-    if (!this.falou) { this.falou = true; OBP.Voice.falar('loja-01'); }
+    OBP.Voice.falar('loja-' + ({ 'pulo-duplo': 'pulo' }[l.it.id] || l.it.id));   // uma fala por item (decisao 93)
     // o item voa da prateleira ate o heroi e some; a prateleira continua com o item (a copa nao esvazia)
     const voa = this.add.image(l.x, l.y, c.icone.texture.key).setOrigin(0.5);
     this.tweens.add({ targets: voa, x: this.heroi.x, y: this.chao - 60, duration: 200, onComplete: () => voa.destroy() });

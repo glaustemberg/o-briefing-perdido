@@ -64,10 +64,13 @@ OBP.Boss = class extends Phaser.Scene {
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
     OBP.Musica.tocar(this, 'mus-jokenpo', OBP.MIX.musicaFase);
 
-    const cam = this.L.cameras.main;
-    this.hx = Math.round(this.heroi.x - cam.scrollX); this.hy = Math.round(this.heroi.y - cam.scrollY);
-    this.cx = Math.round(this.chefe.x - cam.scrollX); this.cy = Math.round(this.chefe.y - cam.scrollY);
-    const topoH = this.hy - this.heroi.height + (this.heroi.height === 96 ? 14 : 2), topoC = this.cy - 96 + 14;
+    // decisao 93 (Berg: "os personagens maiores na tela"): os sprites da fase somem e copias em escala 2 entram
+    // nos dois lados, com o pe no chao da arena (y 320); voltam a aparecer quando o Level retoma
+    this.heroi.setVisible(false); this.chefe.setVisible(false);
+    this.heroiG = this.add.sprite(160, 320, this.heroi.texture.key, this.heroi.frames().idle).setScale(2).setOrigin(0.5, 1).setFlipX(this.heroi.flipX);
+    this.chefeG = this.add.sprite(480, 320, 'sobrinho', 0).setScale(2).setOrigin(0.5, 1).setFlipX(this.chefe.flipX);
+    this.hx = 160; this.hy = 320; this.cx = 480; this.cy = 320;
+    const topoH = 320 - this.heroi.height * 2 + (this.heroi.height === 96 ? 28 : 4), topoC = 320 - 96 * 2 + 28;
 
     // nomes e bolinhas de ponto embaixo, como o "ALEX" com as bolinhas do original
     const nome = (x, txt) => this.add.text(x, 64, txt, OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
@@ -94,7 +97,7 @@ OBP.Boss = class extends Phaser.Scene {
     this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
     this.B = B; this.sel = 1; this.rodada = 0; this.pontos = { jogador: 0, chefe: 0 };
     this.fase = 'espera'; this.proximo = 0; this.travada = null; this.piscar = 0;
-    this.chefe.setFrame(0); this.heroi.setFrame(this.heroi.frames().idle);
+    this.chefeG.setFrame(0); this.heroiG.setFrame(this.heroi.frames().idle);
     this.mostrarMao();
   }
 
@@ -133,7 +136,7 @@ OBP.Boss = class extends Phaser.Scene {
       this.corte('KEN', P.laranja, 350); OBP.Audio.menuMover();
       // tell com blefe: mostra uma mão errada por 200 ms e depois a verdadeira, como a bola de telepatia
       const real = J.maoDoChefe('sobrinho', this.rodada), blefe = J.MAOS.find(m => m !== real);
-      this.balaoChefe(blefe); this.chefe.setFrame(1);
+      this.balaoChefe(blefe); this.chefeG.setFrame(1);
       this.time.delayedCall(200, () => { if (this.fase === 'ken') this.balaoChefe(real); });
     } else if (this.fase === 'ken') {
       this.fase = 'po'; this.proximo = t + B;
@@ -144,7 +147,7 @@ OBP.Boss = class extends Phaser.Scene {
       this.resolver(t);
     } else if (this.fase === 'resultado') {
       this.resultado.setVisible(false); this.balaoChefe(null);
-      this.heroi.setFrame(this.heroi.frames().idle); this.chefe.setFrame(0);
+      this.heroiG.setFrame(this.heroi.frames().idle); this.chefeG.setFrame(0);
       const v = J.vencedor(this.pontos);
       if (v) return this.terminar(v);
       this.rodada++; this.fase = 'escolha'; this.proximo = t + 3 * B; this.travada = null;
@@ -163,8 +166,8 @@ OBP.Boss = class extends Phaser.Scene {
     if (this.fase !== 'po') return;
     const m = OBP.JOKENPO.maoDoChefe('sobrinho', this.rodada);
     this.travada = this.mao(this.sel);
-    this.heroi.setFrame(this.heroi.frames().punch);
-    this.chefe.setFrame(OBP.JOKENPO.QUADRO[m]); this.balaoChefe(m);
+    this.heroiG.setFrame(this.heroi.frames().punch);
+    this.chefeG.setFrame(OBP.JOKENPO.QUADRO[m]); this.balaoChefe(m);
     OBP.Audio.soco();
   }
   resolver(t) {
@@ -173,11 +176,11 @@ OBP.Boss = class extends Phaser.Scene {
     this.fase = 'resultado'; this.proximo = t + 2 * this.B;
     if (r > 0) {
       this.pontos.jogador++; this.resultado.setText('BOA!').setColor(P.moeda);
-      this.chefe.setFrame(5); OBP.Audio.dano(); OBP.Voice.falarUma(['cganha-01', 'cganha-02', 'cganha-03']);
+      this.chefeG.setFrame(5); OBP.Audio.dano(); OBP.Voice.falarUma(['cganha-01', 'cganha-02', 'cganha-03']);
       this.cameras.main.shake(83, new Phaser.Math.Vector2(2 / 640, 2 / 360));
     } else if (r < 0) {
       this.pontos.chefe++; this.resultado.setText('PERDEU').setColor(P.coracao);
-      this.chefe.setFrame(7); this.heroi.setFrame(this.heroi.frames().hurt); OBP.Audio.bloco();
+      this.chefeG.setFrame(7); this.heroiG.setFrame(this.heroi.frames().hurt); OBP.Audio.bloco();
       OBP.VozInimigo.falar(this, 'chefe', { variantes: 2, prioritaria: true });
       this.time.delayedCall(900, () => OBP.Voice.falarUma(['jkp-01', 'cperde-02', 'cperde-03']));   // o heroi responde depois do Sobrinho
     } else { this.resultado.setText('EMPATE').setColor(P.cinzaClaro); OBP.Audio.menuMover(); }
@@ -191,11 +194,11 @@ OBP.Boss = class extends Phaser.Scene {
     this.resultado.setText(ganhou ? 'VENCEU O JOKENPÔ!' : 'REPROVADO').setColor(ganhou ? P.moeda : P.coracao).setVisible(true);
     if (ganhou) OBP.Voice.falarUma(['cvence-01', 'cvence-02']);
     this.aviso.setText(ganhou ? 'AGORA ELE VAI ATACAR' : 'ISSO CUSTA UM CORAÇÃO');
-    this.chefe.setFrame(ganhou ? 5 : 7); this.heroi.setFrame(ganhou ? this.heroi.frames().idle : this.heroi.frames().hurt);
+    this.chefeG.setFrame(ganhou ? 5 : 7); this.heroiG.setFrame(ganhou ? this.heroi.frames().idle : this.heroi.frames().hurt);
     this.balaoH.setVisible(false); this.maoH.setVisible(false); this.rotuloH.setVisible(false);
     this.time.delayedCall(1500, () => {
       const L = this.L;
-      this.scene.resume('Level');
+      this.heroi.setVisible(true); this.chefe.setVisible(true); this.scene.resume('Level');
       OBP.Voice.init(L, this.heroiId); OBP.Audio.init(L);   // senao a luta inteira toca bipe (revisao 14)
       if (ganhou) {
         OBP.Musica.tocar(L, 'mus-chefe', OBP.MIX.musicaFase);

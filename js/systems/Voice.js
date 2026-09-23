@@ -16,7 +16,7 @@ OBP.VoiceLogic = {
   criar() { return { ultimaReacao: -1e9, ultimaUrgente: -1e9, contagens: {} }; },
   classe(id) {
     if (/-(dano|morte)-/.test(id)) return 'urgente';
-    if (/-(inicio|check|vitfase|vitchefe|jkp|sel|loja|cinicio|cvence)-/.test(id)) return 'garantida';
+    if (/-(inicio|check|vitfase|vitchefe|jkp|sel|loja|cinicio|cvence|intro|ctrlz)-/.test(id)) return 'garantida';
     return 'reacao';
   },
   decidir(e, id, agora) {

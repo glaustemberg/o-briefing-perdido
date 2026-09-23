@@ -243,6 +243,6 @@ OBP.Select = class extends Phaser.Scene {
     this.time.delayedCall(120, () => { if (outro) outro.spr.setFrame(OBP.FRAMES.crouch); });
     this.time.delayedCall(330, () => { alvo.setFrame(OBP.FRAMES.idle); OBP.Audio.pouso(); });
     this.time.delayedCall(220, () => this.cameras.main.fadeOut(180, 0, 0, 0));
-    this.time.delayedCall(400, () => { OBP.Musica.parar(this); this.scene.start('Shop', { fase: this.faseInicial }); });   // a loja abre ANTES da fase (decisao 86)
+    this.time.delayedCall(400, () => { OBP.Musica.parar(this); this.scene.start(this.faseInicial === OBP.ORDEM[0] ? 'Intro' : 'Shop', { fase: this.faseInicial }); });   // fase 1 abre pela introducao, sem copa (decisao 93); as outras pela loja (decisao 86)
   }
 };
