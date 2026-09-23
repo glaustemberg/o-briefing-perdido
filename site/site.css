@@ -19,7 +19,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;   /* clip, nao hidden: hidden faz o body virar o rolador e quebra o position: sticky da abertura */
   scroll-behavior: smooth;
 }
 
@@ -89,6 +89,12 @@ a:focus-visible {
 #abertura {
   position: relative;
   min-height: 100dvh;
+}
+
+/* a parte visivel da abertura; com a rolagem (decisao 92) ela fica presa no topo enquanto a secao rola */
+.abertura-fixo {
+  position: relative;
+  height: 100dvh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -96,6 +102,23 @@ a:focus-visible {
   justify-content: center;
   padding: clamp(32px, 6vh, 80px) clamp(24px, 7vw, 120px) 32px;
 }
+
+body.com-rolagem #abertura { height: 420dvh; }
+body.com-rolagem .abertura-fixo { position: sticky; top: 0; }
+body.com-rolagem .abertura-img { animation: none; }
+body.com-rolagem .abertura-conteudo { animation: none; }   /* o fill-mode both da entrada prendia opacity: 1 e vencia o fade por --p */
+.rolagem-canvas { position: absolute; inset: 0; z-index: 1; display: none; }
+body.com-rolagem .rolagem-canvas { display: block; }
+body.com-rolagem .abertura-conteudo,
+body.com-rolagem .abertura-dica { opacity: calc(1 - var(--p, 0) * 8); }
+#abertura.rolando .abertura-conteudo { pointer-events: none; }
+/* a tela e a legenda dentro da abertura fixa: so aparecem no fim do video */
+.tela.na-abertura { z-index: 3; opacity: 0; pointer-events: none; transition: opacity 300ms ease; }
+.tela.na-abertura.visivel { opacity: 1; pointer-events: auto; }
+.mesa-legenda.na-abertura { z-index: 3; opacity: 0; transition: opacity 300ms ease; }
+.mesa-legenda.na-abertura.visivel { opacity: 1; }
+body.tela-cheia .tela.na-abertura { opacity: 1; pointer-events: auto; }
+#mesa.escondida { display: none; }
 
 .abertura-img-wrap {
   position: absolute;
@@ -120,7 +143,7 @@ a:focus-visible {
 
 .abertura-conteudo {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   text-align: left;
   max-width: min(640px, 44vw);   /* na faixa de 1440 px o titulo quebra em duas linhas e nao encosta no tikinho */
   margin-bottom: 8vh;
@@ -166,7 +189,7 @@ a:focus-visible {
 
 .abertura-dica {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   left: 0;
   right: 0;
   bottom: 24px;
@@ -177,7 +200,7 @@ a:focus-visible {
 
 /* em pe (celular): texto no alto, centralizado, e os bonecos embaixo */
 @media (orientation: portrait) {
-  #abertura { align-items: center; justify-content: flex-start; }
+  .abertura-fixo { align-items: center; justify-content: flex-start; }
   .abertura-conteudo { text-align: center; margin-bottom: 0; max-width: 640px; }
   .abertura-eyebrow { justify-content: center; }
   .abertura-img { background-position: center bottom; transform-origin: 50% 100%; }
@@ -192,20 +215,15 @@ a:focus-visible {
 /* mesa */
 
 #mesa {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
+  position: relative;
   background: var(--bg);
-  padding: 32px 0;
 }
 
+/* a mesa cobre a janela inteira (a mesma geometria do canvas da rolagem); a .tela e posicionada por JS */
 .mesa {
   position: relative;
-  aspect-ratio: 1376 / 768;
-  width: min(100vw, calc(100vh * 1376 / 768));
+  width: 100vw;
+  height: 100dvh;
   background-image: url("mesa.jpg");
   background-size: cover;
   background-position: center;
@@ -296,12 +314,16 @@ a:focus-visible {
 }
 
 .mesa-legenda {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
   color: var(--secundario);
   font-size: 14px;
   text-align: center;
-  max-width: 480px;
   padding: 0 16px;
   margin: 0;
+  text-shadow: 0 1px 8px rgba(0,0,0,.8);
 }
 
 /* tela cheia: mesmo elemento .tela vira camada fixa */
@@ -333,8 +355,6 @@ body.tela-cheia .botao-sair {
 
 @media (max-width: 768px), (orientation: portrait) {
   .mesa {
-    aspect-ratio: 768 / 1376;
-    width: min(100vw, calc(100vh * 768 / 1376));
     background-image: url("mesa-mobile.jpg");
   }
 

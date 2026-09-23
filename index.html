@@ -13,9 +13,11 @@
 <body>
 
 <section id="abertura">
+ <div class="abertura-fixo">
   <div class="abertura-img-wrap" id="abertura-img-wrap" aria-hidden="true">
     <div class="abertura-img"></div>
   </div>
+  <canvas id="rolagem-canvas" class="rolagem-canvas" aria-hidden="true"></canvas>
 
   <div class="abertura-conteudo">
     <div class="abertura-eyebrow">
@@ -28,6 +30,7 @@
   </div>
 
   <p class="abertura-dica">role para ver a mesa</p>
+ </div>
 </section>
 
 <section id="mesa">
@@ -66,6 +69,8 @@
   </footer>
 </section>
 
+<script>window.__QUADROS = 72;</script>
 <script src="site/site.js" defer></script>
+<script src="site/rolagem.js" defer></script>
 </body>
 </html>

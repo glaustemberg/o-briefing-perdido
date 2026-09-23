@@ -25,12 +25,37 @@
 
   if (btnJogar && mesaSecao) {
     btnJogar.addEventListener('click', function () {
-      mesaSecao.scrollIntoView({ behavior: reduzMovimento ? 'auto' : 'smooth', block: 'start' });
+      if (document.body.classList.contains('com-rolagem')) {
+        window.scrollTo({ top: abertura.offsetHeight - window.innerHeight, behavior: 'smooth' });   // roda o video ate a mesa
+      } else {
+        mesaSecao.scrollIntoView({ behavior: reduzMovimento ? 'auto' : 'smooth', block: 'start' });
+      }
     });
   }
 
-  /* mesa: ligar o jogo e tela cheia */
+  /* mesa: a tela do monitor sobre o retangulo verde do render, com a imagem cobrindo a janela (cover) */
   var tela = document.getElementById('tela');
+  var mesaEl = document.querySelector('.mesa');
+  var TELAS = {
+    mesa:  { left: 29.65, top: 19.27, width: 40.70, height: 41.28, w: 1376, h: 768 },
+    movel: { left: 7.29,  top: 27.40, width: 85.42, height: 28.12, w: 768,  h: 1376 }
+  };
+  function posicionaTela() {
+    if (!tela || !mesaEl || document.body.classList.contains('tela-cheia')) return;
+    var t = mqMobile.matches ? TELAS.movel : TELAS.mesa;
+    var cont = tela.parentElement || mesaEl;   // na rolagem a tela mora na abertura fixa
+    var W = cont.clientWidth, H = cont.clientHeight;
+    var esc = Math.max(W / t.w, H / t.h), dw = t.w * esc, dh = t.h * esc;
+    var ox = (W - dw) / 2, oy = (H - dh) / 2, f = 0.4;   // 0,4% de folga por lado esconde a franja verde
+    tela.style.left = (ox + (t.left - f) / 100 * dw).toFixed(1) + 'px';
+    tela.style.top = (oy + (t.top - f) / 100 * dh).toFixed(1) + 'px';
+    tela.style.width = ((t.width + 2 * f) / 100 * dw).toFixed(1) + 'px';
+    tela.style.height = ((t.height + 2 * f) / 100 * dh).toFixed(1) + 'px';
+  }
+  function limpaTela() { if (tela) { tela.style.left = tela.style.top = tela.style.width = tela.style.height = ''; } }
+  posicionaTela();
+  window.posicionaTela = posicionaTela;
+  window.addEventListener('resize', posicionaTela);
   var jogoCaixa = document.getElementById('jogo-caixa');
   var standby = document.getElementById('standby');
   var btnLigar = document.getElementById('btn-ligar');
@@ -71,6 +96,7 @@
 
   function enterTelaCheia() {
     document.body.classList.add('tela-cheia');
+    limpaTela();
     ajustarTamanhoJogo();
     try {
       var p = document.documentElement.requestFullscreen();
@@ -91,6 +117,7 @@
     document.body.classList.remove('tela-cheia');
     jogoCaixa.style.width = '';
     jogoCaixa.style.height = '';
+    posicionaTela();
     if (document.fullscreenElement) {
       try {
         var p = document.exitFullscreen();
