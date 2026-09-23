@@ -85,7 +85,7 @@ OBP.Boss = class extends Phaser.Scene {
 
     // corte de tela: faixa colorida com a batida em 48 px, e o resultado da rodada em 16 px
     this.faixa = this.add.rectangle(320, 180, 640, 100, P.num(P.moeda), 0.92).setVisible(false);
-    this.grande = this.add.text(320, 180, '', OBP.estiloTexto(48, P.branco)).setOrigin(0.5).setStroke(P.contorno, 8).setVisible(false);
+    this.grande = this.add.text(320, 180, '', OBP.estiloTexto(32, P.branco)).setOrigin(0.5).setStroke(P.contorno, 6).setVisible(false);
     this.resultado = this.add.text(320, 168, '', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4).setVisible(false);
     this.aviso = this.add.text(320, 340, '', OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
     this.aperte = this.add.text(320, 168, OBP.Toque.ativo ? 'APERTE PULO' : 'APERTE ESPAÇO', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
@@ -117,7 +117,7 @@ OBP.Boss = class extends Phaser.Scene {
   update(t) {
     const e = this.inp.ler(), B = this.B, P = OBP.PAL, J = OBP.JOKENPO;
     if (this.fase === 'fim') return;
-    const podeTrocar = this.fase === 'espera' || this.fase === 'escolha' || this.fase === 'jo' || this.fase === 'ken';
+    const podeTrocar = this.fase === 'espera' || this.fase === 'escolha' || this.fase === 'jo' || this.fase === 'ken' || (this.fase === 'po' && !this.travada);
     if (podeTrocar) { if (e.esqAgora) this.mover(-1); if (e.dirAgora) this.mover(1); }
 
     if (this.fase === 'espera') {
@@ -147,7 +147,7 @@ OBP.Boss = class extends Phaser.Scene {
       this.heroi.setFrame(this.heroi.frames().idle); this.chefe.setFrame(0);
       const v = J.vencedor(this.pontos);
       if (v) return this.terminar(v);
-      this.rodada++; this.fase = 'escolha'; this.proximo = t + 3 * B;
+      this.rodada++; this.fase = 'escolha'; this.proximo = t + 3 * B; this.travada = null;
       this.aviso.setText('ESCOLHA A MÃO');
     }
   }
@@ -194,7 +194,7 @@ OBP.Boss = class extends Phaser.Scene {
     this.time.delayedCall(1500, () => {
       const L = this.L;
       this.scene.resume('Level');
-      OBP.Voice.init(L, this.heroiId);
+      OBP.Voice.init(L, this.heroiId); OBP.Audio.init(L);   // senao a luta inteira toca bipe (revisao 14)
       if (ganhou) {
         OBP.Musica.tocar(L, 'mus-chefe', OBP.MIX.musicaFase);
         L.controle = true; L.chefe.iniciarLuta();

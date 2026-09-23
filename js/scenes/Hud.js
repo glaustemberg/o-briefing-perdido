@@ -25,33 +25,6 @@ OBP.Hud = class extends Phaser.Scene {
       '..................',
       '..................',
     ], { '#': P.roxoBrilho, 'o': P.branco });
-    // icones provisorios dos consumiveis novos (decisao 86), ate a arte final: carimbo APROVADO e tecla Ctrl+Z
-    OBP.pixels(scene, 'item-carimbo', [
-      '................................', '......####################......', '.....#rrrrrrrrrrrrrrrrrrrr#.....',
-      '....#rrrrrrrrrrrrrrrrrrrrrr#....', '....#rrbbbbrrbbbbrrbbbbrrrr#....', '....#rrbrrbrrbrrrrrbrrbrrrr#....',
-      '....#rrbrrbrrbbbbrrbbbbrrrr#....', '....#rrbrrbrrbrrrrrbrrrrrrr#....', '....#rrbbbbrrbrrrrrbrrrrrrr#....',
-      '....#rrrrrrrrrrrrrrrrrrrrrr#....', '....#rrrrrrrrrrrrrrrrrrrrrr#....', '.....#rrrrrrrrrrrrrrrrrrrr#.....',
-      '......####################......', '..........#........#............', '..........#........#............',
-      '.........############...........', '.........#oooooooooo#...........', '.........#oooooooooo#...........',
-      '.........############...........', '................................', '................................',
-      '................................', '................................', '................................',
-      '................................', '................................', '................................',
-      '................................', '................................', '................................',
-      '................................', '................................',
-    ], { '#': P.contorno, 'r': P.roxo, 'b': P.branco, 'o': P.cinzaClaro });
-    OBP.pixels(scene, 'item-ctrlz', [
-      '................................', '....########################....', '...#cccccccccccccccccccccccc#...',
-      '...#cccccccccccccccccccccccc#...', '...#cc##cc####cc##cc##cccccc#...', '...#cc##cc##cccc##cc##cccccc#...',
-      '...#cc##cc##cccc##cc##cccccc#...', '...#cc##cc##cccc##cc##cccccc#...', '...#cc##cc####cc##cc##cccccc#...',
-      '...#cccccccccccccccccccccccc#...', '...#cccccccccccccccccccccccc#...', '...#ccccccc########ccccccccc#...',
-      '...#cccccccccccc##cccccccccc#...', '...#ccccccccccc##ccccccccccc#...', '...#cccccccccc##cccccccccccc#...',
-      '...#ccccccc########ccccccccc#...', '...#cccccccccccccccccccccccc#...', '....########################....',
-      '................................', '................................', '................................',
-      '................................', '................................', '................................',
-      '................................', '................................', '................................',
-      '................................', '................................', '................................',
-      '................................', '................................',
-    ], { '#': P.contorno, 'c': P.cinzaClaro });
   }
   create() {
     OBP.Hud.criarTexturas(this);
@@ -70,6 +43,9 @@ OBP.Hud = class extends Phaser.Scene {
     this.itemQtd = this.add.text(620, 46, '', OBP.estiloTexto(8, P.moeda)).setOrigin(1, 1).setStroke(P.contorno, 3);
     this.barraEfeito = this.add.rectangle(590, 55, 32, 3, P.num(P.moeda)).setOrigin(0, 0).setVisible(false);
     this.desenharItem();
+    // vidas (revisao 10): nunca apareciam em tela nenhuma
+    this.txtVidas = this.add.text(H.CORACAO_X, 54, '', OBP.estiloTexto(8, P.branco)).setOrigin(0, 0).setStroke(P.contorno, 3);
+    this.mostrarVidas();
     this.desenharCoracoes();
     this.mostrarLampadas(this.registry.get('lampadas'));
     const aoCoracao = () => this.desenharCoracoes(), aoLampada = (_p, v) => this.mostrarLampadas(v, true);
@@ -80,10 +56,12 @@ OBP.Hud = class extends Phaser.Scene {
     this.registry.events.on('changedata-coracoesMax', aoCoracao);
     this.registry.events.on('changedata-lampadas', aoLampada);
     this.registry.events.on('changedata-prazo', aoPrazo);
-    const aoItem = () => this.desenharItem();
+    const aoItem = () => this.desenharItem(), aoVidas = () => this.mostrarVidas();
+    this.registry.events.on('changedata-vidas', aoVidas);
     this.registry.events.on('changedata-inventario', aoItem);
     this.registry.events.on('changedata-itemSel', aoItem);
     this.events.once('shutdown', () => {
+      this.registry.events.off('changedata-vidas', aoVidas);
       this.registry.events.off('changedata-inventario', aoItem);
       this.registry.events.off('changedata-itemSel', aoItem);
       this.registry.events.off('changedata-coracoes', aoCoracao);
@@ -100,10 +78,12 @@ OBP.Hud = class extends Phaser.Scene {
     const extra = this.registry.get('coracoesExtra') || 0;
     this.coracoes.forEach(c => c.destroy());
     this.coracoes = [];
-    const por = (i, chave) => this.coracoes.push(this.add.image(H.CORACAO_X + i * H.CORACAO_VAO, H.Y, chave).setOrigin(0, 0));
+    // a arte do coracao tem 32 px e o vao e de 20: em escala 0,5 (inteira, sem serrilhar) ela vira 16 e cabe (revisao 6)
+    const por = (i, chave) => this.coracoes.push(this.add.image(H.CORACAO_X + i * H.CORACAO_VAO, H.Y + 8, chave).setOrigin(0, 0).setScale(chave === 'coracao-extra' ? 1 : 0.5));
     for (let i = 0; i < max; i++) por(i, i < n ? 'item-coracao' : 'item-coracao-vazio');
     for (let i = 0; i < extra; i++) por(max + i, 'coracao-extra');
   }
+  mostrarVidas() { this.txtVidas.setText(`VIDAS ${this.registry.get('vidas') || 0}`); }
   desenharItem() {
     const s = OBP.Inventario.selecionado(this.registry.get('inventario') || [], this.registry.get('itemSel') || 0);
     this.itemIcone.setVisible(!!s); this.itemQtd.setText(s && s.n > 1 ? 'x' + s.n : '');

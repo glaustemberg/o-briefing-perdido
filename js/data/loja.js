@@ -5,19 +5,19 @@
 window.OBP = window.OBP || {};
 OBP.LOJA = [
   { id: 'coracao',    nome: 'CORAÇÃO PERMANENTE', preco: 30, resumo: 'UM CORAÇÃO A MAIS, PARA SEMPRE' },
-  { id: 'pulo-duplo', nome: 'PULO DUPLO',          preco: 15, resumo: 'SEGUNDO PULO NO AR, SÓ NESTA FASE' },
+  { id: 'pulo-duplo', nome: 'PULO DUPLO',          preco: 15, resumo: 'SEGUNDO PULO NO AR, PARA SEMPRE' },
   { id: 'armadura',   nome: 'ARMADURA ROXA',       preco: 25, resumo: 'TRÊS CORAÇÕES EXTRAS E TIRO' },
   { id: 'cafe',       nome: 'CAFÉ',                preco: 10, resumo: 'VELOCIDADE 1,4X POR 10 S', consumivel: true },
   { id: 'energetico', nome: 'ENERGÉTICO',          preco: 20, resumo: 'VELOCIDADE 1,4X POR 25 S', consumivel: true },
   { id: 'carimbo',    nome: 'CARIMBO APROVADO',    preco: 20, resumo: 'INVENCÍVEL POR 8 S', consumivel: true },
-  { id: 'ctrlz',      nome: 'CTRL+Z',              preco: 40, resumo: 'UMA VIDA A MAIS', consumivel: true },
+  { id: 'ctrlz',      nome: 'CTRL+Z',              preco: 40, resumo: 'DESFAZ UMA MORTE, SOZINHO', consumivel: true },
 ];
 // o que cada consumivel faz quando o heroi usa (N). ms: duracao do efeito; 'vida' e instantaneo.
 OBP.EFEITOS = {
   cafe:       { tipo: 'velocidade', fator: 1.4, ms: 10000 },
   energetico: { tipo: 'velocidade', fator: 1.4, ms: 25000 },
   carimbo:    { tipo: 'invencivel', ms: 8000 },
-  ctrlz:      { tipo: 'vida' },
+  ctrlz:      { tipo: 'desfazer', passivo: true },   // dispara sozinho na morte: nao entra no ciclo do B nem no N
 };
 OBP.Loja = {
   MAX_POR_ITEM: 3,   // teto por consumivel no inventario
@@ -52,14 +52,20 @@ OBP.Loja = {
 // Inventario em jogo: lista de ids (repetidos contam como unidades) e um indice selecionado. O HUD mostra o
 // selecionado com a quantidade; B avanca para o proximo id DIFERENTE, N consome uma unidade do selecionado.
 OBP.Inventario = {
+  // so os itens que se usam com N: o Ctrl+Z e passivo e fica de fora do ciclo
+  ativos(inv) { return (inv || []).filter(id => !(OBP.EFEITOS[id] && OBP.EFEITOS[id].passivo)); },
   // ids distintos na ordem em que apareceram, com a contagem
   resumo(inv) {
     const ordem = [];
+    inv = this.ativos(inv);
     for (const id of inv || []) if (!ordem.includes(id)) ordem.push(id);
     return ordem.map(id => ({ id, n: inv.filter(x => x === id).length }));
   },
   selecionado(inv, sel) { const r = this.resumo(inv); return r.length ? r[sel % r.length] : null; },
   proximo(inv, sel) { const n = this.resumo(inv).length; return n ? (sel + 1) % n : 0; },
+  quantos(inv, id) { return (inv || []).filter(x => x === id).length; },
+  // tira uma unidade de um id qualquer (o Ctrl+Z na morte usa isto); null se nao tem
+  gastar(inv, id) { const i = (inv || []).indexOf(id); return i < 0 ? null : inv.slice(0, i).concat(inv.slice(i + 1)); },
   // devolve null sem item; senao { id, inventario, sel } com uma unidade a menos e a selecao ajustada
   usar(inv, sel) {
     const s = this.selecionado(inv, sel);

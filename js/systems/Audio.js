@@ -73,24 +73,8 @@ OBP.Audio = {
   // inimigo morrendo no soco ou no projetil: som proprio, que antes nao existia
   morteInimigo() { if (this.sfx('sfx-morte-inimigo', 0.4)) return; this.ruido(90, 700, 200, 0.18); },
   menuMover() { this.osc('square', 1200, 1200, 30, 0.1); },
+  recusa() { this.osc('square', 220, 160, 90, 0.12); },   // loja diz nao (parecer 3: recusa nao e o som de apanhar)
   menuConfirmar() { this.osc('square', 800, 1200, 80, 0.15); },
-};
-// Trilha (decisao 69). Uma faixa por vez; pedir a que ja esta tocando nao reinicia, senao cada respawn recomecava
-// a musica da fase. Faixa que nao esta no cache e ignorada em silencio, para nao derrubar a cena.
-OBP.Musica = {
-  atual: null, som: null,
-  tocar(scene, chave, volume = 0.35) {
-    if (this.atual === chave && this.som && this.som.isPlaying) return;
-    if (!scene.cache.audio.exists(chave)) return;
-    this.parar();
-    this.som = scene.sound.add(chave, { loop: true, volume });
-    this.som.play();
-    this.atual = chave;
-  },
-  parar() {
-    if (this.som) { this.som.stop(); this.som.destroy(); }
-    this.som = null; this.atual = null;
-  },
 };
 // Trilha (decisao 69): as duas faixas ja existiam renderizadas em 03-assets/musicas e nenhuma linha do jogo as
 // tocava. Uma faixa por vez; pedir a que ja esta tocando nao reinicia, que e o que acontecia a cada respawn.

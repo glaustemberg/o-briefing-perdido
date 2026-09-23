@@ -86,6 +86,7 @@ OBP.Itens = class {
       if (e.ch === '$') this.novo(x, y, 'item-lampada', { tipo: 'lampada', valor: 1 });
       else if (e.ch === 'K') this.novo(x, y, checkpointAtivo ? 'check-on' : 'check-off', { tipo: 'check' });
       else if (e.ch === 'X') this.novo(x, y, 'coxinha', { tipo: 'saida' });
+      else if (e.ch === 'A') this.novo(x, y, 'item-carimbo', { tipo: 'carimbo' });   // carimbo APROVADO do mapa (revisao 8)
     }
   }
   novo(x, y, textura, dados) {
@@ -122,6 +123,12 @@ OBP.Itens = class {
       sc.registry.set('coracoesExtra', OBP.CFG.CORACOES_ARMADURA);
       sc.player.vestirArmadura(true);
       OBP.Audio.item(); OBP.Voice.falar('item-01');
+    } else if (item.tipo === 'carimbo') {
+      // vai para o inventario, para usar com N quando quiser; no teto de 3 o carimbo fica no chao
+      const inv = sc.registry.get('inventario') || [];
+      if (OBP.Inventario.quantos(inv, 'carimbo') >= OBP.Loja.MAX_POR_ITEM) return;
+      sc.registry.set('inventario', inv.concat(['carimbo']));
+      OBP.Audio.item(); OBP.Voice.reacaoCada('item-01', 100);
     } else if (item.tipo === 'check' && !sc.checkpointAtivo) {
       sc.ativarCheckpoint(item);
     } else if (item.tipo === 'saida') {

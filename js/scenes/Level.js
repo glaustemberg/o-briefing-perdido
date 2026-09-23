@@ -61,16 +61,18 @@ OBP.Level = class extends Phaser.Scene {
     this.camada.setCollision([0, 1, 2, 3, 4, 6, 7]); // 5 (espinho) não colide
     this.camada.forEachTile(t => { if (t.index === 1) { t.collideDown = false; t.collideLeft = false; t.collideRight = false; } });
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
-    OBP.Musica.tocar(this, 'mus-' + arte, OBP.MIX.musicaFase);   // decisao 80: a trilha disputava com a fala   // decisao 69: so a fase 1 tem faixa renderizada, o resto fica mudo
+    // uma faixa por fase (decisao 83). Na arena do chefe quem abre a trilha e o jokenpo (achado 20 da revisao)
+    if (this.faseId !== 'chefe') OBP.Musica.tocar(this, 'mus-' + arte, OBP.MIX.musicaFase);
     this.criarEntidades();
-    this.inp = new OBP.Input(this);
+    this.inp = new OBP.Input(this, ['esq', 'dir', 'baixo', 'soco', 'pulo', 'item', 'usar']);   // sem o ^ que nao faz nada na fase (revisao 18)
     this.cam = new OBP.Camera(this, this.player, this.map.widthInPixels, this.map.heightInPixels);
     this.parada = 0; this.controle = false; this.morrendo = false; this.chefeVencido = false;
     // iris de entrada simplificada em fade (300 ms); a fala de inicio toca no primeiro frame de controle
     this.cameras.main.once('camerafadeincomplete', () => {
       if (this.faseId === 'chefe') { this.scene.launch('Boss'); return; }   // o jokenpo abre por cima da arena (decisao 85)
       this.controle = true;
-      OBP.Voice.falar(this.checkpoint ? 'inicio-01' : 'inicio-f1');
+      if (this.checkpoint) this.player.invencivelAte = this.time.now + 1000;   // renascer sem levar porrada na hora (revisao 2)
+      OBP.Voice.falar(this.checkpoint ? 'inicio-01' : 'inicio-' + (OBP.FALA_INICIO[this.faseId] || 'f1'));   // revisao 4: cada fase tem a sua fala
     });
     this.cameras.main.fadeIn(300, 0, 0, 0);
     this.mostrarNome();
@@ -134,6 +136,7 @@ OBP.Level = class extends Phaser.Scene {
     }, (p, e) => !e.morto);
   }
   contatoInimigo(e) {
+    if (this.concluida) return;   // fase fechada nao leva mais porrada (revisao 3)
     // bomba e o unico inimigo letal (decisao 68): encostou, ela explode na hora e o heroi morre, mesmo de armadura.
     // No FACIL (decisao 84) ela explode do mesmo jeito, mas custa 1 coracao em vez da vida.
     if (e.tipo === 'bomba') {
@@ -143,6 +146,11 @@ OBP.Level = class extends Phaser.Scene {
       if (!OBP.dif(this.registry).bombaMata) return this.ferirJogador(Math.sign(this.player.x - e.x) || 1);
       OBP.Audio.dano();
       this.matar();
+      return;
+    }
+    // carimbo APROVADO (decisao 86): enquanto vale, encostar mata o inimigo comum, como a estrela do Mario
+    if (this.time.now < (this.player.carimboAte || 0)) {
+      if (!e.invencivel && e.tipo !== 'chefe') { e.morrer(Math.sign(e.x - this.player.x) || 1, this.player.h.knockback); this.pararTudo(40); }
       return;
     }
     if (this.player.podeFerir()) this.esperaVoz = OBP.VozInimigo.acertou(this, e.tipo);
@@ -175,6 +183,7 @@ OBP.Level = class extends Phaser.Scene {
   }
   // espinho (tile 5) não colide: fere por sobreposição com a hitbox do herói
   checarEspinhos() {
+    if (this.concluida) return;
     const b = this.player.body;
     const t = this.camada.getTilesWithinWorldXY(b.x, b.y, b.width, b.height, { isNotEmpty: true }).find(x => x.index === 5);
     if (t) this.ferirJogador(Math.sign(this.player.x - t.getCenterX()) || 1);
@@ -188,10 +197,25 @@ OBP.Level = class extends Phaser.Scene {
     else OBP.Voice.falar(sufixo);
   }
   // morte: voa e cai 1,2 s, fade 300 ms, volta ao checkpoint com 3 corações; sem vidas, game over mínimo do M1
+  // Ctrl+Z (decisao 86): dispara sozinho na morte. Volta o heroi ao ultimo chao seguro com os coracoes cheios.
+  desfazer() {
+    const inv = OBP.Inventario.gastar(this.registry.get('inventario') || [], 'ctrlz');
+    if (!inv || this.morrendo) return false;
+    const p = this.player, s = this.ultimoChao || { x: p.x, y: p.y };
+    this.registry.set({ inventario: inv, coracoes: this.registry.get('coracoesMax') });
+    p.x = s.x; p.y = s.y; p.body.reset(s.x, s.y); p.body.setVelocity(0, 0);
+    p.invencivelAte = this.time.now + 1500; p.socoMs = -1;
+    this.pararTudo(200);
+    const P = OBP.PAL, txt = this.add.text(p.x, p.y - 80, 'CTRL+Z!', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4).setDepth(150);
+    this.time.delayedCall(900, () => txt.destroy());
+    OBP.Audio.compra(); OBP.Voice.falar('extra-01');
+    return true;
+  }
   matar() {
     if (this.morrendo) return;
+    if (this.desfazer()) return;
     this.morrendo = true; this.controle = false;
-    this.registry.set({ coracoes: 0, coracoesExtra: 0 });
+    this.registry.set({ coracoes: 0, coracoesExtra: 0, efeito: null });   // o efeito morre com o heroi (revisao 9)
     this.registry.inc('vidas', -1);
     this.player.morrer();
     OBP.Audio.morte();
@@ -264,6 +288,10 @@ OBP.Level = class extends Phaser.Scene {
     else if (ef.tipo === 'invencivel') this.player.carimboAte = t + ef.ms;
     else if (ef.tipo === 'vida') this.registry.inc('vidas', 1);
     this.registry.set('efeito', { id: r.id, ate: ef.ms ? t + ef.ms : 0, desde: t });
+    // o gole: o icone sobe da cabeca do heroi e some, com um hit stop curto (parecer 3)
+    const ic = this.add.image(this.player.x, this.player.y - this.player.height - 4, 'item-' + r.id).setOrigin(0.5).setDepth(150);
+    this.tweens.add({ targets: ic, y: ic.y - 12, duration: 150, delay: 50, onComplete: () => ic.destroy() });
+    this.pararTudo(50);
     OBP.Audio.item(); OBP.Voice.reacaoCada('item-01', 100);
   }
   // vida do chefe (decisao 85): placa abaixo do HUD, a direita, uma batata por acerto que ainda falta
@@ -281,7 +309,7 @@ OBP.Level = class extends Phaser.Scene {
   concluir() {
     if (this.concluida || this.morrendo) return;
     this.concluida = true; this.controle = false;
-    this.registry.set('coracoes', this.registry.get('coracoesMax'));
+    this.registry.set({ coracoes: this.registry.get('coracoesMax'), efeito: null });
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
     this.bonus = OBP.Relogio.bonus(this.prazoMs / 1000);
     this.pontos = OBP.Save.pontuacao(this.registry.get('lampadas'), this.bonus);
@@ -295,7 +323,8 @@ OBP.Level = class extends Phaser.Scene {
     linha(164, `BÔNUS DE TEMPO ${n(this.bonus)}`, 8, P.branco);
     linha(188, `PONTUAÇÃO ${n(this.pontos)}`, 16, P.moeda);
     linha(212, this.recorde ? 'NOVO RECORDE' : `RECORDE ${n(OBP.Save.ler(this.faseId, this.heroiId))}`, 8, this.recorde ? P.verdeClaro : P.cinzaClaro);
-    linha(240, this.faseId === 'chefe' ? 'ENTER FECHA O JOB' : 'ENTER VAI À LOJA', 8, P.cinzaClaro);
+    const tecla = OBP.Toque.ativo ? 'PULO' : 'ENTER';
+    linha(240, this.faseId === 'chefe' ? `${tecla} FECHA O JOB` : `${tecla} VAI À COPA`, 8, P.cinzaClaro);
     this.time.delayedCall(600, () => { this.podeSair = true; });
   }
   // O registry só é escrito quando o segundo inteiro muda: mandar float a 60 Hz dispara changedata 60 vezes por
@@ -328,6 +357,7 @@ OBP.Level = class extends Phaser.Scene {
     const caixa = this.player.socoCaixa();
     if (caixa) { this.blocos.socar(caixa, this.player); this.socarInimigos(caixa); }
     this.checarEspinhos();
+    if (this.player.body.blocked.down && this.player.y < this.map.heightInPixels - 8) this.ultimoChao = { x: this.player.x, y: this.player.y };   // para o Ctrl+Z
     if (this.player.y > this.map.heightInPixels + 64) this.matar(); // buraco mata direto
     this.desenharDebug(caixa);
   }

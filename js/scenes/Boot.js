@@ -29,6 +29,9 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.image('tiles-chefe', 'assets/tiles/fase-08/tileset-leg.png');
     for (const k of ['pedra', 'papel', 'tesoura']) this.load.image('jkp-' + k, 'assets/tiles/itens/jkp-' + k + '.png');
     this.load.image('sob-cabeca', 'assets/sprites/sobrinho/sob-cabeca.png');
+    // copa (decisao 86): fundo da loja e os icones dos itens que nao tinham arte
+    this.load.image('fundo-copa', 'assets/fundos/copa.png');
+    for (const k of ['carimbo', 'ctrlz', 'pulo-duplo', 'armadura']) this.load.image('item-' + k, 'assets/tiles/itens/item-' + k + '.png');
     this.load.image('sob-corpo', 'assets/sprites/sobrinho/sob-corpo.png');
     const T = 'assets/tiles/fase-01/';
     this.load.image('coxinha', T + 'item-coxinha.png');
@@ -37,7 +40,7 @@ OBP.Boot = class extends Phaser.Scene {
     // M2: formas de armadura, itens, projeteis e os inimigos novos (decisoes 43 a 53)
     this.load.spritesheet('tikinho-armadura', 'assets/sprites/tikinho-armadura/tka-tira.png', { frameWidth: 96, frameHeight: 96 });
     this.load.spritesheet('gilpp-armadura', 'assets/sprites/gilpp-armadura/gpa-tira.png', { frameWidth: 128, frameHeight: 128 });
-    // chefe final: 8 poses de 96 px (idle, provoca, briefing, prazo, verba, dano, derrotado, ri)
+    // chefe final: 8 poses de 96 px (idle, provoca, pedra, papel, tesoura, dano, derrotado, ri), ver OBP.JOKENPO.QUADRO
     this.load.spritesheet('sobrinho', 'assets/sprites/sobrinho/sob-tira.png', { frameWidth: 96, frameHeight: 96 });
     const I = 'assets/tiles/itens/', N = 'assets/tiles/inimigos/';
     for (const k of ['lampada', 'lampada-apagada', 'cafe', 'energetico', 'coracao', 'coracao-vazio', 'relogio', 'trofeu'])

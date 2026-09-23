@@ -15,7 +15,7 @@ OBP.Toque = {
   limpar() { for (const k in this.estado) this.estado[k] = false; },
   // quais: lista de botoes que ESTA cena usa (decisao 83). Antes toda cena desenhava os seis, e na loja quatro
   // deles nao faziam nada, tapando a lista de itens com dedo em cima.
-  TODOS: ['esq', 'dir', 'cima', 'baixo', 'soco', 'pulo'],
+  TODOS: ['esq', 'dir', 'cima', 'baixo', 'soco', 'pulo', 'item', 'usar'],
   criar(scene, quais) {
     if (!this.disponivel(scene)) return;
     const usar = quais || this.TODOS;
@@ -43,6 +43,8 @@ OBP.Toque = {
     so('baixo', 140, 312, 48, 44, 'v', 'baixo', 16);
     so('soco', 540, 288, 60, 56, 'SOCO', 'soco');
     so('pulo', 604, 320, 60, 56, 'PULO', 'pulo');
+    so('item', 540, 224, 56, 40, 'TROCA', 'item');
+    so('usar', 604, 256, 56, 40, 'USA', 'usar');
   },
 };
 OBP.Input = class {

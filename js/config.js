@@ -88,9 +88,11 @@ OBP.PRAZOS = {
   'fase-01': 140, 'fase-02': 170, 'fase-05': 170, 'fase-08a': 100, 'fase-08b': 130, 'chefe': 300,
 };
 // Ordem das fases do escopo cortado (decisão 63): Estúdio, Reunião, Gráfica e as duas metades da Torre. Terminar
-// uma leva à seguinte pela loja; a última cai na Seleção, que é onde uma partida nova começa.
+// uma leva à seguinte pela copa (loja); a última, a arena do chefe, fecha na tela de fim (decisão 82).
 OBP.ORDEM = ['fase-01', 'fase-02', 'fase-05', 'fase-08a', 'fase-08b', 'chefe'];   // 'chefe' e a arena (decisao 85)
 OBP.proximaFase = (id) => OBP.ORDEM[OBP.ORDEM.indexOf(id) + 1] || null;
+// qual fala gravada de inicio toca em cada fase (revisao 4: antes toda fase tocava a da fase 1)
+OBP.FALA_INICIO = { 'fase-01': 'f1', 'fase-02': 'f2', 'fase-05': 'f5', 'fase-08a': 'f8', 'fase-08b': 'f8' };
 // Arquétipos de inimigo (spec 4 e adendo 7). Fica aqui, e não em Enemy.js, porque tests/teste.html carrega este
 // arquivo sem o Phaser e Enemy.js não pode ser carregado (estende Phaser.Physics.Arcade.Sprite).
 // fam: qual comportamento o update roda. grav: gravidade do corpo (0 = flutua). dy: deslocamento em px do ponto

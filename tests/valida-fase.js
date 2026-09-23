@@ -62,8 +62,7 @@ function validaArquivo(caminhoRelativo) {
     }
 
     // caracteres permitidos: LEG + ENTIDADES + '.'
-    // esteiras '>' '<' e bolha 'o' sao da legenda da spec (fases 4 e 5), mesmo antes de entrarem no Mapa.js
-    const permitidos = new Set([...Object.keys(OBP.Mapa.LEG), ...OBP.Mapa.ENTIDADES.split(''), '.', '>', '<', 'o']);
+    const permitidos = new Set([...Object.keys(OBP.Mapa.LEG), ...OBP.Mapa.ENTIDADES.split(''), '.']);   // '>' '<' 'o' viram buraco (decisao 82)
     fase.mapa.forEach((linha, lin) => {
       [...linha].forEach((ch, col) => {
         if (!permitidos.has(ch)) erros.push(`caractere '${ch}' invalido em col ${col} lin ${lin}`);

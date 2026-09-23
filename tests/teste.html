@@ -368,7 +368,7 @@ teste('chefe tem sequencia fixa e a partida e melhor de 3', () => {
 const lojaEstado = (l) => ({ lampadas: l, coracoesMax: 3, coracoesExtra: 0, pulosExtra: 0, inventario: [] });
 teste('loja tem os 5 itens do adendo mais os 2 consumiveis da decisao 86, com os precos', () => {
   igual(OBP.LOJA.length, 7, 'itens');
-  igual(OBP.LOJA.map(i => i.id).join(','), 'coracao,pulo-duplo,armadura,cafe,energetico', 'ordem da lista');
+  igual(OBP.LOJA.map(i => i.id).join(','), 'coracao,pulo-duplo,armadura,cafe,energetico,carimbo,ctrlz', 'ordem da lista');
   igual(OBP.Loja.item('coracao').preco, 30); igual(OBP.Loja.item('pulo-duplo').preco, 15);
   igual(OBP.Loja.item('armadura').preco, 25); igual(OBP.Loja.item('cafe').preco, 10);
   igual(OBP.Loja.item('energetico').preco, 20);
@@ -403,14 +403,16 @@ teste('loja recusa por lâmpadas de menos, por já ter e por slot ocupado', () =
 // inventario (decisao 86): B troca entre ids distintos, N consome uma unidade do selecionado
 teste('inventario: resumo por id, troca circular com B e consumo com N', () => {
   const I = OBP.Inventario, inv = ['cafe', 'carimbo', 'cafe', 'ctrlz'];
-  igual(I.resumo(inv).map(r => r.id + r.n).join(), 'cafe2,carimbo1,ctrlz1');
-  igual(I.selecionado(inv, 0).id, 'cafe'); igual(I.selecionado(inv, 1).id, 'carimbo'); igual(I.selecionado(inv, 3).id, 'cafe', 'indice circular');
-  igual(I.proximo(inv, 2), 0, 'depois do ultimo volta ao primeiro'); igual(I.proximo([], 0), 0);
+  igual(I.resumo(inv).map(r => r.id + r.n).join(), 'cafe2,carimbo1', 'ctrl+z e passivo, fica fora do ciclo');
+  igual(I.selecionado(inv, 0).id, 'cafe'); igual(I.selecionado(inv, 1).id, 'carimbo'); igual(I.selecionado(inv, 2).id, 'cafe', 'indice circular');
+  igual(I.proximo(inv, 1), 0, 'depois do ultimo volta ao primeiro'); igual(I.proximo([], 0), 0);
+  igual(I.gastar(inv, 'ctrlz').join(), 'cafe,carimbo,cafe'); igual(I.gastar(['cafe'], 'ctrlz'), null); igual(I.quantos(inv, 'cafe'), 2);
   const u = I.usar(inv, 0); igual(u.id, 'cafe'); igual(u.inventario.join(), 'carimbo,cafe,ctrlz'); igual(u.sel, 0);
-  const u2 = I.usar(['ctrlz'], 0); igual(u2.inventario.length, 0); igual(u2.sel, 0);
+  igual(I.usar(['ctrlz'], 0), null, 'so ctrl+z: nada para usar com N');
+  const u2 = I.usar(['cafe'], 0); igual(u2.inventario.length, 0); igual(u2.sel, 0);
   igual(I.usar([], 0), null, 'sem item nao usa');
   const u3 = I.usar(['cafe', 'carimbo'], 1); igual(u3.id, 'carimbo'); igual(u3.sel, 0, 'selecao volta a caber');
-  igual(OBP.EFEITOS.cafe.ms, 10000); igual(OBP.EFEITOS.energetico.ms, 25000); igual(OBP.EFEITOS.carimbo.ms, 8000); igual(OBP.EFEITOS.ctrlz.tipo, 'vida');
+  igual(OBP.EFEITOS.cafe.ms, 10000); igual(OBP.EFEITOS.energetico.ms, 25000); igual(OBP.EFEITOS.carimbo.ms, 8000); igual(OBP.EFEITOS.ctrlz.passivo, true);
   igual(OBP.LOJA.filter(i => i.consumivel).length, 4, 'quatro consumiveis');
 });
 // ruling do Berg (pré-voo, 16/09): sem trava de 200 ms o Enter que fecha "FASE CONCLUÍDA" compra sozinho o

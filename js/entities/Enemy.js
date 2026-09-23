@@ -83,7 +83,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     this.setFlipX(this.dir > 0);
     if (this.t.frames) this.setTexture(this.t.frames[Math.floor(t / 120) % this.t.frames.length]);
   }
-  // nuvem: flutua no alto, persegue o herói em x, para em cima dele, avisa 500 ms e solta o raio; 2 s de descanso
+  // nuvem: flutua no alto, persegue o herói em x, para em cima dele, avisa 500 ms e solta o raio; 1,3 s de descanso
   comoNuvem(b, t) {
     if (this.aviso > 0) {
       this.setTexture(this.t.frameAviso); b.setVelocityX(0);
@@ -99,6 +99,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     if (this.proximo > 0 && t < this.proximo) { this.setTexture(this.t.frameDorme); b.setVelocityX(0); return; }
     this.setTexture(this.t.frame);
     const dx = this.scene.player.x - this.x;
+    if (Math.abs(dx) > 480) { b.setVelocityX(0); return; }   // so persegue quem esta perto (revisao 7)
     if (Math.abs(dx) < 8) {
       b.setVelocityX(0); this.aviso = t + 500;   // 500 ms de tell, igual ao dos chefes (spec 6)
       OBP.Audio.acordar();
@@ -113,6 +114,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     const ESPERA = 1700 * this.ritmo, CANSADA = 3800 * this.ritmo, LOTE = 3;
     const espera = () => (this.arremessos > 0 && this.arremessos % LOTE === 0 ? CANSADA : ESPERA);
     b.setVelocityX(0);
+    if (Math.abs(this.scene.player.x - this.x) > 520) { this.setTexture(this.t.frame); return; }   // fora da tela nao arremessa (revisao 7)
     if (this.proximo < 0) { this.arremessos = 0; this.proximo = t + ESPERA; return; }
     this.dir = Math.sign(this.scene.player.x - this.x) || 1;
     if (t < this.proximo) {
@@ -144,7 +146,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
         this.noChao = true; this.quiques++;
         this.setTexture(this.t.framePousada);
         b.setVelocityX(b.velocity.x * 0.6);          // perde embalo a cada toque em vez de parar seco
-        OBP.Audio.quique();
+        if (Math.abs(this.x - this.scene.player.x) < 400) OBP.Audio.quique();
         if (this.quiques >= this.t.quiquesAteExplodir) return this.explodir(t);
       }
     } else this.noChao = false;

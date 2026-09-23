@@ -25,7 +25,7 @@ OBP.Fim = class extends Phaser.Scene {
     this.add.text(320, 82, 'A TORRE ENTREGOU O JOB', OBP.estiloTexto(8, P.branco)).setOrigin(0.5);
 
     // o herói em pose de vitória, no mesmo chão da capa
-    this.heroi = this.add.sprite(320, 288, this.heroiId, OBP.FRAMES.win).setOrigin(0.5, 1);
+    this.heroi = this.add.sprite(320, 288, this.heroiId, OBP.FRAMES.jump).setOrigin(0.5, 1);   // a tira normal nao tem quadro de vitoria: o pulo le como comemoracao (revisao 16)
     this.add.ellipse(320, 289, 140, 24, P.num(P.roxoBrilho), 0.3).setDepth(-1);
 
     const pontos = r.get('lampadas') || 0;
@@ -35,7 +35,7 @@ OBP.Fim = class extends Phaser.Scene {
     this.add.text(320, 156, `RECORDE ${n(recorde)}`, OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
     this.add.text(320, 174, `MODO ${OBP.dif(r).nome}`, OBP.estiloTexto(8, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
     this.add.text(320, 300, OBP.HEROIS[this.heroiId].nome, OBP.estiloTexto(16, P.branco)).setOrigin(0.5, 0).setStroke(P.contorno, 4);
-    this.aperte = this.add.text(320, 340, 'APERTE START', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
+    this.aperte = this.add.text(320, 340, OBP.Toque.ativo ? 'TOQUE EM PULO' : 'APERTE ESPAÇO', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4);
 
     this.faiscas = Array.from({ length: 14 }, () => {
       const f = this.add.rectangle(Phaser.Math.Between(8, 632), Phaser.Math.Between(120, 340), 2, 2,

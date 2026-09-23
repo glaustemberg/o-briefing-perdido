@@ -104,7 +104,7 @@ OBP.Select = class extends Phaser.Scene {
     this.difDesc = this.add.text(320, 166, '', OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
 
     this.rodape = this.add.text(320, 340, '', OBP.estiloTexto(8, P.branco)).setOrigin(0.5);
-    this.aperte = this.add.text(320, 340, 'APERTE START', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5);
+    this.aperte = this.add.text(320, 340, OBP.Toque.ativo ? 'TOQUE NA TELA' : 'APERTE ESPAÇO', OBP.estiloTexto(8, P.moeda)).setOrigin(0.5);
     this.aperte.setStroke(P.contorno, 4); this.rodape.setStroke(P.contorno, 4);
 
     this.inp = new OBP.Input(this, ['esq', 'dir', 'pulo']);
@@ -159,7 +159,7 @@ OBP.Select = class extends Phaser.Scene {
     this.aperte.setVisible(this.estado === 'capa');
     this.rodape.setVisible(this.estado !== 'capa').setText(OBP.Toque.ativo
       ? 'TOQUE EM < E > PARA ESCOLHER   PULO CONFIRMA'
-      : 'SETAS ESCOLHEM   ENTER CONFIRMA   ESPACO PULA   M SOCA');
+      : 'SETAS ESCOLHEM   ENTER CONFIRMA   ESPAÇO PULA   M SOCA');
   }
 
   // a troca de herói anda em 6 passos de 32 px, 20 ms cada: tween contínuo em zoom inteiro deixa a posição

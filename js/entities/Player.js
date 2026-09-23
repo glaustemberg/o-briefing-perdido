@@ -14,6 +14,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     this.ajustarCorpo(); // hitbox centrada no pé (spec 2.5), com o offset saindo da célula em uso
     this.ultChao = -1e9; this.ultAperto = -1e9; this.pausaRest = 0; this.pausou = false; this.cortou = false;
     this.socoMs = -1; this.acertados = new Set();
+    this.pulosNoAr = 0;   // pulo duplo da loja (decisao 86): um pulo extra por subida
     this.feridoAte = 0; this.recuoAte = 0; this.invencivelAte = 0; this.quedaDe = yPe;
     this.criarAnims();
   }
@@ -107,7 +108,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (noChao) {
       this.ultChao = t;
       if (this.estado === 'ar') { if (this.quedaDe !== null && this.y - this.quedaDe > 64) this.emit('pousouAlto'); this.estado = 'chao'; }
-      this.pausou = false; this.cortou = false; this.pausaRest = 0; this.quedaDe = null;
+      this.pausou = false; this.cortou = false; this.pausaRest = 0; this.quedaDe = null; this.pulosNoAr = 0;
     } else if (this.estado === 'chao') { this.estado = 'ar'; this.quedaDe = this.y; }
     if (!noChao && this.quedaDe !== null) this.quedaDe = Math.min(this.quedaDe, this.y);
     const travado = t < this.recuoAte;
@@ -128,6 +129,12 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (!travado && socoLivre && F.podePular(t, this.ultChao, this.ultAperto, h)) {
       b.setVelocityY(-h.v0); this.y -= OBP.CFG.DECOLAGEM; // decolagem já 4 px no ar
       this.ultChao = -1e9; this.ultAperto = -1e9; this.socoMs = -1; this.estado = 'ar';
+      this.pausou = false; this.cortou = false; this.quedaDe = this.y;
+      this.emit('pulou');
+    }
+    // pulo duplo (loja): no ar, sem coyote valendo, um segundo impulso igual ao primeiro, uma vez por subida
+    else if (inp.puloAgora && !travado && !noChao && this.pulosNoAr < (this.scene.registry.get('pulosExtra') || 0) && t - this.ultChao > OBP.CFG.COYOTE_MS) {
+      b.setVelocityY(-h.v0); this.pulosNoAr++; this.ultAperto = -1e9; this.socoMs = -1;
       this.pausou = false; this.cortou = false; this.quedaDe = this.y;
       this.emit('pulou');
     }
@@ -166,7 +173,7 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     if (this.socoMs >= 0) { this.anims.stop(); this.setFrame(F.punch); return; }
     // a tira de armadura não tem quadro de queda: o de pulo cobre subida e descida
     if (!noChao) { this.anims.stop(); this.setFrame(this.armadura ? F.jump : (b.velocity.y < 0 ? F.jump : F.fall)); return; }
-    if (Math.abs(b.velocity.x) > 8) this.play(`${this.animPrefixo()}-andar`, true);
+    if (Math.abs(b.velocity.x) > 8) { this.play(`${this.animPrefixo()}-andar`, true); this.anims.timeScale = this.fatorVel(t); }   // cafe: o pe acompanha
     else { this.anims.stop(); this.setFrame(F.idle); }
   }
 };
