@@ -23,6 +23,13 @@ OBP.Boot = class extends Phaser.Scene {
       this.load.image('tiles-' + f, `assets/tiles/${f}/tileset-leg.png`);
       this.load.image('fundo-' + f, `assets/fundos/${f}.png`);
     }
+    // arena do chefe (decisao 85): fundo proprio, o tileset da torre com outra chave, as maos do jokenpo e o
+    // Sobrinho em pedacos (a cabeca que voa e o corpo que fica)
+    this.load.image('fundo-chefe', 'assets/fundos/chefe.png');
+    this.load.image('tiles-chefe', 'assets/tiles/fase-08/tileset-leg.png');
+    for (const k of ['pedra', 'papel', 'tesoura']) this.load.image('jkp-' + k, 'assets/tiles/itens/jkp-' + k + '.png');
+    this.load.image('sob-cabeca', 'assets/sprites/sobrinho/sob-cabeca.png');
+    this.load.image('sob-corpo', 'assets/sprites/sobrinho/sob-corpo.png');
     const T = 'assets/tiles/fase-01/';
     this.load.image('coxinha', T + 'item-coxinha.png');
     this.load.image('check-off', T + 'item-checkpoint-off.png');
@@ -49,7 +56,7 @@ OBP.Boot = class extends Phaser.Scene {
       this.load.audio('sfx-' + k, `assets/sfx/sfx-${k}.wav` + V);
     // trilha: uma por fase mais a do chefe (decisao 83). Todas passam por prepara_musicas.py, que corta em 60 s
     // e nivela em -18 LUFS, sete decibeis abaixo da voz do heroi.
-    for (const k of ['titulo', 'fase-01', 'fase-02', 'fase-05', 'fase-08', 'chefe'])
+    for (const k of ['titulo', 'fase-01', 'fase-02', 'fase-05', 'fase-08', 'chefe', 'jokenpo'])
       this.load.audio('mus-' + k, `assets/musicas/${k}.mp3` + V);
   }
   create() {

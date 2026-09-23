@@ -15,6 +15,7 @@
 <script src="../js/config.js"></script>
 <script src="../js/data/herois.js"></script>
 <script src="../js/data/fase-01.js"></script>
+<script src="../js/data/fase-chefe.js"></script>
 <script src="../js/data/fase-02.js"></script>
 <script src="../js/data/fase-05.js"></script>
 <script src="../js/data/fase-08a.js"></script>
@@ -200,7 +201,7 @@ teste('bônus de tempo: 1 lâmpada a cada 4 s, arredondado para baixo, teto 40, 
 });
 // prazos apertados na decisao 67: o bonus de lampada e min(40, seg/4), entao cortar tempo tambem encarece a loja
 teste('tabela de prazos: as 4 fases do escopo atual, e a fase 8 soma 230 s nas duas metades', () => {
-  igual(Object.keys(OBP.PRAZOS).length, 5, 'fases com prazo (08 conta como 2 metades)');
+  igual(Object.keys(OBP.PRAZOS).length, 6, 'fases com prazo (08 conta como 2 metades, mais a arena do chefe)');
   igual(OBP.PRAZOS['fase-01'], 140); igual(OBP.PRAZOS['fase-02'], 170); igual(OBP.PRAZOS['fase-05'], 170);
   igual(OBP.PRAZOS['fase-08a'] + OBP.PRAZOS['fase-08b'], 230, 'as duas metades da fase 8');
 });
@@ -224,8 +225,22 @@ teste('dificuldade: medio igual ao CFG, facil mais leve, bomba mais pesada, dens
   igual(OBP.Loja.motivo(Object.assign({}, e, { coracoesMax: 5 }), 'coracao'), 'JÁ TEM');
   igual(OBP.Loja.motivo(Object.assign({}, e, { coracoesMax: 3, coracoesBase: 2 }), 'coracao'), 'JÁ TEM', 'bomba');
 });
+// arena do chefe (decisao 85): uma tela fechada, sem saida, e as maos do jokenpo com a regra de sempre
+teste('arena do chefe: 20x11 fechada, heroi a esquerda, sem saida, e briefing e papel, prazo e pedra, verba e tesoura', () => {
+  const m = OBP.Mapa.parse(OBP.FASES['chefe'].mapa);
+  igual(m.dados.length, 11, 'linhas'); igual(m.dados[0].length, 20, 'colunas');
+  igual(m.dados[10].every(v => v === 0), true, 'chao inteiro na ultima linha');
+  igual(m.dados.every(l => l[0] === 0 && l[19] === 0), true, 'paredes dos dois lados');
+  igual(!!m.entidades.find(e => e.ch === 'P'), true, 'tem P'); igual(!!m.entidades.find(e => e.ch === 'X'), false, 'nao tem X');
+  const J = OBP.JOKENPO;
+  igual(J.MAO.briefing, 'papel'); igual(J.MAO.prazo, 'pedra'); igual(J.MAO.verba, 'tesoura');
+  igual(J.duelo('briefing', 'prazo'), 1, 'papel vence pedra'); igual(J.duelo('prazo', 'verba'), 1, 'pedra vence tesoura');
+  igual(J.duelo('verba', 'briefing'), 1, 'tesoura vence papel'); igual(J.duelo('verba', 'verba'), 0, 'empate');
+  igual(OBP.CHEFE.VIDA_CABECA + OBP.CHEFE.VIDA_CORPO, 7, 'vida total do Sobrinho');
+  igual(OBP.CFG.FASE_FINAL, 'chefe'); igual(OBP.proximaFase('fase-08b'), 'chefe', 'a torre leva a arena');
+});
 teste('ordem das fases: a loja leva a fase seguinte e a ultima cai na Selecao', () => {
-  igual(OBP.ORDEM.join(), 'fase-01,fase-02,fase-05,fase-08a,fase-08b');
+  igual(OBP.ORDEM.join(), 'fase-01,fase-02,fase-05,fase-08a,fase-08b,chefe');
   igual(OBP.proximaFase('fase-01'), 'fase-02'); igual(OBP.proximaFase('fase-08a'), 'fase-08b');
   igual(OBP.proximaFase(OBP.CFG.FASE_FINAL), null, 'depois da ultima nao tem proxima');
   igual(OBP.ORDEM[OBP.ORDEM.length - 1], OBP.CFG.FASE_FINAL, 'a ultima da ordem e a fase do chefe');

@@ -68,6 +68,7 @@ OBP.Level = class extends Phaser.Scene {
     this.parada = 0; this.controle = false; this.morrendo = false; this.chefeVencido = false;
     // iris de entrada simplificada em fade (300 ms); a fala de inicio toca no primeiro frame de controle
     this.cameras.main.once('camerafadeincomplete', () => {
+      if (this.faseId === 'chefe') { this.scene.launch('Boss'); return; }   // o jokenpo abre por cima da arena (decisao 85)
       this.controle = true;
       OBP.Voice.falar(this.checkpoint ? 'inicio-01' : 'inicio-f1');
     });
@@ -122,6 +123,8 @@ OBP.Level = class extends Phaser.Scene {
       const dy = OBP.INIMIGOS[tipo].dy || 0;
       this.inimigos.add(new OBP.Enemy(this, e.col * 32 + 16, Math.max(16, e.lin * 32 + 16 + dy), tipo));
     }
+    // a arena do chefe (decisao 85) nao tem marca no mapa: o Sobrinho nasce fixo a direita e o jokenpo abre por cima
+    if (this.faseId === 'chefe') { OBP.Chefe.criarTexturas(this); this.chefe = new OBP.Chefe(this, 496, 320); this.inimigos.add(this.chefe); }
     this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto);
     this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto && e.fere);
     // projétil mata inimigo comum em 1 acerto, igual ao soco (adendo 6); hazard invencível só consome o projétil
@@ -233,6 +236,8 @@ OBP.Level = class extends Phaser.Scene {
   }
   mostrarNome() {
     const t = this.add.text(320, 120, OBP.FASES[this.faseId].nome, OBP.estiloTexto(16, OBP.PAL.branco)).setOrigin(0.5).setScrollFactor(0).setDepth(150);
+    // na arena o Level pausa sob o jokenpo e o relogio para com ele: o nome some no proprio relogio da cena de cima
+    this.nomeFase = t;
     this.time.delayedCall(1500, () => t.destroy());
   }
   ativarCheckpoint(item) {
@@ -243,19 +248,20 @@ OBP.Level = class extends Phaser.Scene {
   }
   // coxinha (spec 4): fecha a fase, coracoes cheios, fala de vitoria; os segundos que sobraram viram lampadas
   // (1 s = 1 lampada, adendo 2) e a pontuacao da corrida e comparada com o recorde da dupla fase mais heroi.
-  // Na ultima fase a saida nao conclui: chama o chefe. So depois de vencer o jokenpo a fase fecha.
-  // Perder custa uma vida e devolve o controle no mesmo lugar, para a revanche comecar na hora.
-  chamarChefe() {
-    this.controle = false;
-    this.scene.launch('Boss', { chefe: 'sobrinho', heroi: this.heroiId, aoFim: (ganhou) => {
-      if (ganhou) { this.chefeVencido = true; this.concluir(); return; }
-      this.registry.set('vidas', this.registry.get('vidas') - 1);
-      this.reiniciar();   // com vida sobrando volta ao checkpoint, sem vida mostra ACABOU O JOB
-    } });
+  // vida do chefe (decisao 85): placa abaixo do HUD, a direita, uma batata por acerto que ainda falta
+  vidaChefe(vida, max) {
+    const P = OBP.PAL;
+    if (!this.placaChefe) {
+      this.placaChefe = this.add.rectangle(528, 66, 200, 22, P.num(P.contorno), 0.8).setScrollFactor(0).setDepth(150);
+      this.add.text(436, 66, 'SOBRINHO', OBP.estiloTexto(8, P.branco)).setOrigin(0, 0.5).setScrollFactor(0).setDepth(151);
+      this.batatasChefe = [];
+    }
+    this.batatasChefe.forEach(b => b.destroy());
+    this.batatasChefe = Array.from({ length: max }, (_, i) =>
+      this.add.image(516 + i * 16, 66, 'proj-batata').setOrigin(0.5).setAlpha(i < vida ? 1 : 0.2).setScrollFactor(0).setDepth(151));
   }
   concluir() {
     if (this.concluida || this.morrendo) return;
-    if (this.faseId === OBP.CFG.FASE_FINAL && !this.chefeVencido) return this.chamarChefe();
     this.concluida = true; this.controle = false;
     this.registry.set('coracoes', this.registry.get('coracoesMax'));
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
@@ -266,12 +272,12 @@ OBP.Level = class extends Phaser.Scene {
     const P = OBP.PAL, n = v => String(Math.max(0, v)).padStart(5, '0');
     const linha = (y, txt, tam, cor) => this.add.text(320, y, txt, OBP.estiloTexto(tam, cor)).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     this.add.rectangle(320, 180, 460, 160, P.num(P.contorno)).setStrokeStyle(2, P.num(P.branco)).setScrollFactor(0).setDepth(200);
-    linha(118, 'FASE CONCLUÍDA', 16, P.moeda);
+    linha(118, this.faseId === 'chefe' ? 'BRIEFING RECUPERADO' : 'FASE CONCLUÍDA', 16, P.moeda);
     linha(146, `LÂMPADAS ${n(this.pontos - this.bonus)}`, 8, P.branco);
     linha(164, `BÔNUS DE TEMPO ${n(this.bonus)}`, 8, P.branco);
     linha(188, `PONTUAÇÃO ${n(this.pontos)}`, 16, P.moeda);
     linha(212, this.recorde ? 'NOVO RECORDE' : `RECORDE ${n(OBP.Save.ler(this.faseId, this.heroiId))}`, 8, this.recorde ? P.verdeClaro : P.cinzaClaro);
-    linha(240, 'ENTER VAI À LOJA', 8, P.cinzaClaro);
+    linha(240, this.faseId === 'chefe' ? 'ENTER FECHA O JOB' : 'ENTER VAI À LOJA', 8, P.cinzaClaro);
     this.time.delayedCall(600, () => { this.podeSair = true; });
   }
   // O registry só é escrito quando o segundo inteiro muda: mandar float a 60 Hz dispara changedata 60 vezes por
@@ -292,7 +298,7 @@ OBP.Level = class extends Phaser.Scene {
     }
     const inp = this.inp.ler();
     this.contarPrazo(dt);
-    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start('Shop', { fase: this.faseId }); return; }
+    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start(this.faseId === 'chefe' ? 'Fim' : 'Shop', { fase: this.faseId }); return; }
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
     for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
     this.blocos.update(t);

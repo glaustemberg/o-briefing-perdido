@@ -3,7 +3,7 @@ window.OBP = window.OBP || {};
 OBP.CFG = {
   LARG: 640, ALT: 360, TILE: 32,
   COYOTE_MS: 100, CORTE: 0.5, TERMINAL: 480, DECOLAGEM: 4, APICE_V: 48,
-  CORACOES: 3, VIDAS: 3, VEL_AGACHADO: 0.45, FASE_FINAL: 'fase-08b',   // desliza agachado a 45% da velocidade normal (decisao 53)
+  CORACOES: 3, VIDAS: 3, VEL_AGACHADO: 0.45, FASE_FINAL: 'chefe',   // desliza agachado a 45% da velocidade normal (decisao 53)
   INVENCIVEL_MS: 1000, RECUO_MS: 100, HITSTOP_DANO_MS: 100,
   PROJETEIS_NA_TELA: 3,
   // sobe quando um audio e refeito com o MESMO nome: sem isso o navegador serve o arquivo velho do cache
@@ -84,11 +84,11 @@ OBP.Relogio = {
   bonus(seg) { return Math.min(40, Math.max(0, Math.floor(seg / 4))); },
 };
 OBP.PRAZOS = {
-  'fase-01': 140, 'fase-02': 170, 'fase-05': 170, 'fase-08a': 100, 'fase-08b': 130,
+  'fase-01': 140, 'fase-02': 170, 'fase-05': 170, 'fase-08a': 100, 'fase-08b': 130, 'chefe': 300,
 };
 // Ordem das fases do escopo cortado (decisão 63): Estúdio, Reunião, Gráfica e as duas metades da Torre. Terminar
 // uma leva à seguinte pela loja; a última cai na Seleção, que é onde uma partida nova começa.
-OBP.ORDEM = ['fase-01', 'fase-02', 'fase-05', 'fase-08a', 'fase-08b'];
+OBP.ORDEM = ['fase-01', 'fase-02', 'fase-05', 'fase-08a', 'fase-08b', 'chefe'];   // 'chefe' e a arena (decisao 85)
 OBP.proximaFase = (id) => OBP.ORDEM[OBP.ORDEM.indexOf(id) + 1] || null;
 // Arquétipos de inimigo (spec 4 e adendo 7). Fica aqui, e não em Enemy.js, porque tests/teste.html carrega este
 // arquivo sem o Phaser e Enemy.js não pode ser carregado (estende Phaser.Physics.Arcade.Sprite).
@@ -121,8 +121,13 @@ OBP.Armadura = {
 
 // Jokenpo dos chefes (spec 6). Triade: Briefing vence Prazo, Prazo vence Verba, Verba vence Briefing.
 // Puro de proposito: o teste cobre a triade e a sequencia fixa sem precisar do Phaser.
+// A luta do chefe (decisao 85): 120 BPM, 3 socos na cabeca e 4 no corpo, 3 batatas por rodada
+OBP.CHEFE = { BATIDA_MS: 500, VIDA_CABECA: 3, VIDA_CORPO: 4, BATATAS: 3 };
 OBP.JOKENPO = {
   MAOS: ['briefing', 'prazo', 'verba'],
+  // a mao de cada palavra (decisao 85): briefing e papel, prazo e pedra, verba e tesoura (a verba corta o briefing)
+  MAO: { briefing: 'papel', prazo: 'pedra', verba: 'tesoura' },
+  QUADRO: { briefing: 3, prazo: 2, verba: 4 },   // quadro do Sobrinho mostrando a mao (sob-tira: 2 pedra, 3 papel, 4 tesoura)
   // cada mao vence a seguinte na lista; empate devolve 0, vitoria do jogador 1, derrota -1
   duelo(meu, dele) {
     if (meu === dele) return 0;
