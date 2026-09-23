@@ -64,13 +64,16 @@ OBP.Boss = class extends Phaser.Scene {
     OBP.Audio.init(this); OBP.Voice.init(this, this.heroiId);
     OBP.Musica.tocar(this, 'mus-jokenpo', OBP.MIX.musicaFase);
 
-    // decisao 93 (Berg: "os personagens maiores na tela"): os sprites da fase somem e copias em escala 2 entram
-    // nos dois lados, com o pe no chao da arena (y 320); voltam a aparecer quando o Level retoma
-    this.heroi.setVisible(false); this.chefe.setVisible(false);
-    this.heroiG = this.add.sprite(160, 320, this.heroi.texture.key, this.heroi.frames().idle).setScale(2).setOrigin(0.5, 1).setFlipX(this.heroi.flipX);
-    this.chefeG = this.add.sprite(480, 320, 'sobrinho', 0).setScale(2).setOrigin(0.5, 1).setFlipX(this.chefe.flipX);
-    this.hx = 160; this.hy = 320; this.cx = 480; this.cy = 320;
-    const topoH = 320 - this.heroi.height * 2 + (this.heroi.height === 96 ? 28 : 4), topoC = 320 - 96 * 2 + 28;
+    // decisao 93 (Berg: "os personagens maiores e tudo proporcional"): a camera da fase aproxima em zoom 2 no meio
+    // dos dois, e cenario e personagens crescem juntos. O heroi vem para perto do Sobrinho, como no Alex Kidd.
+    const cam = this.L.cameras.main, Z = 2; this.zoomAnterior = cam.zoom;
+    this.heroi.x = this.chefe.x - 176; this.heroi.setFlipX(false); if (this.heroi.body) this.heroi.body.reset(this.heroi.x, this.heroi.y);
+    cam.setZoom(Z); cam.centerOn((this.heroi.x + this.chefe.x) / 2, this.heroi.y - 60);
+    cam.preRender();   // aplica o clamp dos limites do mapa antes de converter as posicoes para a tela
+    const telaX = x => Math.round((x - cam.worldView.x) * Z), telaY = y => Math.round((y - cam.worldView.y) * Z);
+    this.heroiG = this.heroi; this.chefeG = this.chefe;   // os proprios sprites da fase, vistos pela camera aproximada
+    this.hx = telaX(this.heroi.x); this.hy = telaY(this.heroi.y); this.cx = telaX(this.chefe.x); this.cy = telaY(this.chefe.y);
+    const topoH = this.hy - this.heroi.height * Z + (this.heroi.height === 96 ? 14 : 2) * Z, topoC = this.cy - 96 * Z + 14 * Z;
 
     // nomes e bolinhas de ponto embaixo, como o "ALEX" com as bolinhas do original
     const nome = (x, txt) => this.add.text(x, 64, txt, OBP.estiloTexto(8, P.branco)).setOrigin(0.5).setStroke(P.contorno, 4);
@@ -198,7 +201,7 @@ OBP.Boss = class extends Phaser.Scene {
     this.balaoH.setVisible(false); this.maoH.setVisible(false); this.rotuloH.setVisible(false);
     this.time.delayedCall(1500, () => {
       const L = this.L;
-      this.heroi.setVisible(true); this.chefe.setVisible(true); this.scene.resume('Level');
+      L.cameras.main.setZoom(this.zoomAnterior); this.scene.resume('Level');   // a camera volta ao normal para a luta
       OBP.Voice.init(L, this.heroiId); OBP.Audio.init(L);   // senao a luta inteira toca bipe (revisao 14)
       if (ganhou) {
         OBP.Musica.tocar(L, 'mus-chefe', OBP.MIX.musicaFase);
