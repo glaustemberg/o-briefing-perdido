@@ -60,6 +60,7 @@ OBP.Blocos = class {
       if (player.acertados.has(chave)) continue;
       if (t.index === 2) { player.acertados.add(chave); this.quebrar(t, true); }
       else if (t.index === 3) { player.acertados.add(chave); this.abrirPergunta(t); }
+      else if (t.index === 8) { player.acertados.add(chave); this.quebrarCaveira(t); }
       else if (t.index === 4 && player.h.quebraReforcado) { player.acertados.add(chave); this.quebrarColuna(t); }
     }
   }
@@ -79,8 +80,18 @@ OBP.Blocos = class {
     this.camada.putTileAt(OBP.Mapa.USADO, tile.x, tile.y);
     const x = tile.getCenterX(), y = tile.getTop() - 8;
     if (this.perguntasAbertas++ === 0) this.scene.itens.soltarBolaRoxa(x, y);
+    else if (this.perguntasAbertas === 3) this.scene.itens.soltarCarimbo(x, y);   // o 3o ? da fase guarda o carimbo (decisao 88)
     else this.scene.itens.soltarLampada(x, y, 2);
     this.scene.events.emit('bloco-quebrado');
+  }
+  // bloco caveira (decisao 88, o skull block do Alex Kidd): quebra como a estrela, mas em vez de lampada solta o
+  // fantasma da revisao, que persegue o heroi e ninguem mata. O jogador aprende a nao socar a caveira, ou a correr.
+  quebrarCaveira(tile) {
+    const cx = tile.getCenterX(), cy = tile.getCenterY();
+    this.camada.removeTileAt(tile.x, tile.y);
+    OBP.Pedacos.spawn(this.scene, cx, cy, 'estrela32');
+    this.scene.inimigos.add(new OBP.Enemy(this.scene, cx, cy - 8, 'fantasma'));
+    this.scene.events.emit('bloco-quebrado'); this.scene.events.emit('caveira');
   }
   // coluna contígua de R a partir do tile socado, até 3 (spec 4)
   quebrarColuna(tile) {

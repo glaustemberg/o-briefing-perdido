@@ -73,7 +73,7 @@ OBP.VozInimigo = {
   },
   // quem machucou o herói, na voz de quem machucou: a bomba fala pela menina e o raio pela nuvem
   DONO: { abacaxi: 'abacaxi-acerto', loira: 'loira-acerto', bomba: 'loira-acerto', nuvem: 'nuvem-acerto', raio: 'nuvem-acerto',
-         chefe: 'chefe', cabeca: 'chefe', batata: 'chefe' },
+         chefe: 'chefe', cabeca: 'chefe', batata: 'chefe', fantasma: 'fantasma-acerto' },
   // devolve quantos ms o heroi deve esperar antes de responder: quem bateu fala primeiro, o heroi reage depois
   // (decisao 71, pedido do Berg). Teto de 1,6 s para a reacao nao chegar depois da tela ja ter virado.
   acertou(scene, tipo) {

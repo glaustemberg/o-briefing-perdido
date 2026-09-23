@@ -69,10 +69,10 @@ teste('fase 1 mede 128x14 e devolve dados e entidades', () => {
   igual(m.larg, 128, 'larg'); igual(m.alt, 14, 'alt');
   igual(m.dados.length, 14, 'linhas'); igual(m.dados[0].length, 128, 'colunas');
 });
-teste('fase 1 tem 16 estrelas, 3 perguntas, 3 reforçados, 6 espinhos e chão sólido', () => {
+teste('fase 1 tem 27 estrelas, 2 caveiras, 3 perguntas, 3 reforçados, 6 espinhos e chão sólido', () => {
   const m = OBP.Mapa.parse(OBP.FASES['fase-01'].mapa);
   const conta = i => m.dados.flat().filter(v => v === i).length;
-  igual(conta(2), 16, 'estrelas'); igual(conta(3), 3, 'perguntas'); igual(conta(4), 3, 'reforçados'); igual(conta(5), 6, 'espinhos');
+  igual(conta(2), 27, 'estrelas (16 + 11 das formações da decisão 88)'); igual(conta(8), 2, 'caveiras'); igual(conta(3), 3, 'perguntas'); igual(conta(4), 3, 'reforçados'); igual(conta(5), 6, 'espinhos');
   igual(m.dados[13][0], 0, 'chão'); igual(m.dados[12][127], 0, 'parede direita');
   igual(m.dados[4][90], 1, 'one-way'); igual(m.dados[10][70], 4, 'R'); igual(m.dados[9][24], 3, '? 1');
 });
@@ -88,6 +88,8 @@ teste('fase 1 tem 16 sacos, 13 inimigos, P em (2,12), K em (66,12), X em (124,12
   igual(de('P')[0].col, 2); igual(de('P')[0].lin, 12); igual(de('K')[0].col, 66); igual(de('X')[0].col, 124);
   igual(de('A').length, 1, 'carimbo'); igual(de('N').length, 2, 'meninas loiras');
   igual(m.dados[12][2], -1, 'entidade vira -1 no tilemap');
+  igual(OBP.Mapa.parse(['P.C']).dados[0][2], 8, 'C e o bloco caveira, tile 8 (decisao 88)');
+  igual(OBP.INIMIGOS.fantasma.atravessa, true); igual(OBP.INIMIGOS.fantasma.invencivel, true);
 });
 teste('parser rejeita largura desigual, mapa vazio e mapa sem P', () => {
   lanca(() => OBP.Mapa.parse(['#.', '###']), 'largura');
@@ -247,16 +249,16 @@ teste('ordem das fases: a loja leva a fase seguinte e a ultima cai na Selecao', 
 });
 // arquétipos de inimigo do M2 (adendo 7). Sem folha 'inimigos32' nesta arte final (Boot carrega uma imagem por
 // estado), então em vez de OBP.frame() a checagem confere contra a lista real de chaves que o Boot carrega.
-teste('tabela de inimigos: 5 arquétipos, texturas conhecidas e famílias válidas', () => {
-  const fams = ['patrulha', 'nuvem', 'loira', 'bomba', 'raio'];
-  igual(Object.keys(OBP.INIMIGOS).join(','), 'abacaxi,nuvem,loira,bomba,raio', 'arquétipos');   // post-it saiu na decisao 70
+teste('tabela de inimigos: 6 arquétipos, texturas conhecidas e famílias válidas', () => {
+  const fams = ['patrulha', 'nuvem', 'loira', 'bomba', 'raio', 'fantasma'];
+  igual(Object.keys(OBP.INIMIGOS).join(','), 'abacaxi,nuvem,loira,bomba,raio,fantasma', 'arquétipos');   // post-it saiu na decisao 70, fantasma entrou na 88
   // chaves de textura carregadas pelo Boot ('ini-*' e 'proj-*', Boot.js)
   const texturas = ['ini-nuvem-a', 'ini-nuvem-dorme', 'ini-nuvem-raio', 'ini-loira-idle', 'ini-loira-a',
     'ini-loira-arremessa', 'ini-abacaxi-a', 'ini-abacaxi-b', 'ini-abacaxi-c', 'ini-abacaxi-morto',
-    'ini-bomba-solta', 'proj-raio-solto', 'proj-bomba'];
+    'ini-bomba-solta', 'proj-raio-solto', 'proj-bomba', 'ini-fantasma-a', 'ini-fantasma-b', 'ini-fantasma-c'];
   for (const [id, t] of Object.entries(OBP.INIMIGOS)) {
     if (!fams.includes(t.fam)) throw new Error(`${id}: família ${t.fam}`);
-    for (const campo of ['frame', 'frameMorto', 'frameDorme', 'frameAviso', 'frameAlt', 'frameArremessa', 'framePousada']) {
+    for (const campo of ['frame', 'frameMorto', 'frameDorme', 'frameAviso', 'frameAlt', 'frameArremessa', 'framePousada', 'frameGrita']) {
       if (t[campo] && !texturas.includes(t[campo])) throw new Error(`${id}.${campo}: textura desconhecida ${t[campo]}`);
     }
   }

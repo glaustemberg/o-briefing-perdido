@@ -51,6 +51,7 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     else if (this.t.fam === 'nuvem') this.comoNuvem(b, t);
     else if (this.t.fam === 'loira') this.comoLoira(b, t);
     else if (this.t.fam === 'bomba') this.comoBomba(b, t);
+    else if (this.t.fam === 'fantasma') this.comoFantasma(b, t);
     else if (this.t.fam === 'raio' && (b.blocked.down || this.y > this.scene.map.heightInPixels)) this.destroy();
   }
   // post-it e abacaxi: andam, invertem na parede e na beirada; o abacaxi pula buraco pequeno em vez de virar.
@@ -82,6 +83,23 @@ OBP.Enemy = class extends Phaser.Physics.Arcade.Sprite {
     b.setVelocityX(this.dir * this.t.vel);
     this.setFlipX(this.dir > 0);
     if (this.t.frames) this.setTexture(this.t.frames[Math.floor(t / 120) % this.t.frames.length]);
+  }
+  // fantasma da revisao (decisao 88): 300 ms de susto parado ao sair do bloco, depois persegue o heroi nos dois
+  // eixos a 110 px/s (o heroi anda a 208, da para fugir), com um bob em seno. Some sozinho depois de `dura` ms
+  // (escalado pelo ritmo da dificuldade) ou quando o heroi ja esta a mais de 720 px, como o fantasma do Alex Kidd.
+  comoFantasma(b, t) {
+    if (this.nasceu === undefined) { this.nasceu = t; this.setDepth(20); }
+    const p = this.scene.player, dx = p.x - this.x, dy = (p.y - 16) - this.y, vivo = t - this.nasceu;
+    if (vivo > this.t.dura * this.ritmo || Math.abs(dx) > 720) {
+      this.alpha -= 0.06; b.setVelocity(0, -20);
+      if (this.alpha <= 0) this.destroy();
+      return;
+    }
+    if (vivo < 300) { b.setVelocity(0, -40); this.setTexture(this.t.frameGrita); return; }
+    this.dir = Math.sign(dx) || 1; this.setFlipX(this.dir > 0);
+    const v = this.t.vel;
+    b.setVelocity(Phaser.Math.Clamp(dx * 2, -v, v), Phaser.Math.Clamp(dy * 2, -v * 0.7, v * 0.7) + Math.sin(vivo / 160) * 40);
+    this.setTexture(this.t.frames[Math.floor(vivo / 200) % 2]);
   }
   // nuvem: flutua no alto, persegue o herói em x, para em cima dele, avisa 500 ms e solta o raio; 1,3 s de descanso
   comoNuvem(b, t) {

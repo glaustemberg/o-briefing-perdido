@@ -13,7 +13,7 @@ OBP.Boot = class extends Phaser.Scene {
     for (const id of ['tikinho', 'gilpp']) for (const v of OBP.HEROIS[id].vozes) this.load.audio(v, `assets/vozes/${id}/${v}.wav` + V);
     // falas dos inimigos (decisao 70): canal proprio, ids 'ini-*' que o OBP.VozInimigo procura no cache
     for (const v of ['abacaxi-resmungo-01', 'abacaxi-resmungo-02', 'abacaxi-resmungo-03', 'abacaxi-acerto',
-                     'loira-tiro', 'loira-acerto', 'nuvem-raio', 'nuvem-acerto', 'chefe-01', 'chefe-02'])
+                     'loira-tiro', 'loira-acerto', 'nuvem-raio', 'nuvem-acerto', 'chefe-01', 'chefe-02', 'fantasma-sai', 'fantasma-acerto'])
       this.load.audio('ini-' + v, `assets/vozes/inimigos/ini-${v}.wav` + V);
     // Arte final da fase 1. As texturas provisorias de Level/Item/Enemy so nascem se a chave nao existir,
     // entao carregar aqui com a MESMA chave faz o jogo usar a arte sem mudar logica nenhuma.
@@ -50,9 +50,10 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.image('proj-bomba', I + 'inimigo-bomba.png');
     this.load.image('ui-seta', I + 'ui-seta.png');
     for (const k of ['nuvem-a', 'nuvem-dorme', 'nuvem-raio', 'loira-idle', 'loira-a', 'loira-arremessa',
-                     'abacaxi-a', 'abacaxi-b', 'abacaxi-c', 'abacaxi-morto', 'bomba-solta'])
+                     'abacaxi-a', 'abacaxi-b', 'abacaxi-c', 'abacaxi-morto', 'bomba-solta', 'fantasma-a', 'fantasma-b', 'fantasma-c'])
       this.load.image('ini-' + k, N + 'inimigo-' + k + '.png');
     this.load.image('proj-raio-solto', N + 'proj-raio-solto.png');
+    for (const k of ['planta', 'bebedouro', 'quadro', 'luminaria']) this.load.image('prop-' + k, `assets/tiles/cenario/prop-${k}.png`);   // adereços (decisão 88)
     // trilha (decisao 69): as duas faixas ja existiam renderizadas e nenhuma linha do jogo as tocava
     // efeitos gravados (decisao 75): substituem o bipe sintetizado onde existem
     for (const k of ['pulinho', 'arremesso', 'quique', 'acordar', 'raio', 'explosao', 'soco', 'morte-inimigo'])

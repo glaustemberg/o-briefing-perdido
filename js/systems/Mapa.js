@@ -2,7 +2,7 @@
 // caracteres de entidade voltam numa lista para o Level instanciar sprites em (col*32, lin*32).
 window.OBP = window.OBP || {};
 OBP.Mapa = {
-  LEG: { '#': 0, '=': 1, '*': 2, '?': 3, 'R': 4, '^': 5 },
+  LEG: { '#': 0, '=': 1, '*': 2, '?': 3, 'R': 4, '^': 5, 'C': 8 },   // C: bloco caveira (decisao 88), solta o fantasma; 7 e a parede interna
   USADO: 6,
   ENTIDADES: 'PKXNA$o123D',
   parse(linhas) {

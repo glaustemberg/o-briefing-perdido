@@ -102,6 +102,11 @@ OBP.Itens = class {
     s.body.setAllowGravity(true); s.body.setGravityY(900); s.body.setVelocity(0, -240);
     return s;
   }
+  soltarCarimbo(x, y) {
+    const s = this.novo(x, y, 'item-carimbo', { tipo: 'carimbo' });
+    s.body.setAllowGravity(true); s.body.setGravityY(900); s.body.setVelocity(0, -240);
+    return s;
+  }
   // Bola roxa com a marca da dot. (decisão 52): a única peça fora da grade de 32, 48x48 com corpo 40x40 centrado.
   // Origem no pé para a bola descansar no chão do tile em vez de flutuar meio tile acima dele.
   soltarBolaRoxa(x, y) {

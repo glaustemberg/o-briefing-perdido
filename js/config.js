@@ -111,6 +111,9 @@ OBP.INIMIGOS = {
   bomba:   { fam: 'bomba', frame: 'proj-bomba', framePousada: 'ini-bomba-solta',
              vel: 0, grav: 1000, invencivel: true, quique: 0.55, quiquesAteExplodir: 3 },
   raio:    { fam: 'raio', frame: 'proj-raio-solto', vel: 0, grav: 0, invencivel: true },
+  // fantasma da revisao (decisao 88): nasce do bloco caveira, atravessa parede, ninguem mata; some em 9 s ou longe
+  fantasma: { fam: 'fantasma', frame: 'ini-fantasma-a', frames: ['ini-fantasma-a', 'ini-fantasma-b'], frameGrita: 'ini-fantasma-c',
+              vel: 110, grav: 0, invencivel: true, atravessa: true, dura: 9000, corpo: [24, 28] },
 };
 // Armadura roxa (adendo 6): +3 corações num contador separado, drenado antes do contador normal. Ao zerar, o herói
 // volta à forma normal sem perder coração normal nenhum. Fica puro aqui para o teste cobrir a ordem da drenagem.

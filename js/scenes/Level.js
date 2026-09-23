@@ -12,7 +12,7 @@ OBP.Level = class extends Phaser.Scene {
     this.checkpointAtivo = !!this.checkpoint;
     this.concluida = false; this.podeSair = false;
   }
-  // 7 tiles de 32 em uma textura 224x32, na ordem de OBP.Mapa.LEG mais o usado (6). Só retângulos: sem anti-aliasing.
+  // 9 tiles de 32 em uma textura 288x32, na ordem de OBP.Mapa.LEG mais o usado (6), a parede interna (7) e a caveira (8). Só retângulos: sem anti-aliasing.
   static criarTiles(scene) {
     if (scene.textures.exists('tiles')) return;
     const P = OBP.PAL, n = P.num, g = scene.make.graphics({ add: false });
@@ -32,7 +32,10 @@ OBP.Level = class extends Phaser.Scene {
     for (let k = 0; k < 4; k++) { const x = 160 + k * 8; r(x, 28, 8, 4, P.cinzaClaro); r(x + 1, 24, 6, 4, P.cinzaClaro); r(x + 2, 20, 4, 4, P.cinzaClaro); r(x + 3, 16, 2, 4, P.branco); }
     // 6 pergunta usada
     bloco(6, P.cabeloGil, P.rim);
-    g.generateTexture('tiles', 224, 32); g.destroy();
+    // 7 parede interna: terra lisa. 8 caveira: caixa clara com dois olhos e a boca
+    r(224, 0, 32, 32, P.terra);
+    bloco(8, P.branco, P.contorno); r(256 + 9, 9, 5, 5, P.contorno); r(256 + 18, 9, 5, 5, P.contorno); r(256 + 12, 19, 8, 3, P.contorno);
+    g.generateTexture('tiles', 288, 32); g.destroy();
   }
   create() {
     const fase = OBP.FASES[this.faseId];
@@ -55,7 +58,7 @@ OBP.Level = class extends Phaser.Scene {
       this.camada.forEachTile(t => {
         if (t.index !== 0) return;
         const acima = this.camada.getTileAt(t.x, t.y - 1);
-        if (acima && [0, 2, 3, 4, 6, 7].includes(acima.index)) t.index = 7;
+        if (acima && [0, 2, 3, 4, 6, 7, 8].includes(acima.index)) t.index = 7;
       });
     }
     this.camada.setCollision([0, 1, 2, 3, 4, 6, 7]); // 5 (espinho) não colide
@@ -85,7 +88,7 @@ OBP.Level = class extends Phaser.Scene {
       this.scene.stop('Hud');
       // this.events (sys.events) sobrevive a reinicios da mesma cena; sem isso os listeners de criarEntidades()
       // dobram a cada volta Level -> Select -> Level (ou respawn da Task 8).
-      this.events.off('bloco-quebrado');
+      this.events.off('bloco-quebrado'); this.events.off('caveira');
       this.events.off('lampada');
     });
   }
@@ -96,6 +99,7 @@ OBP.Level = class extends Phaser.Scene {
     this.player = new OBP.Player(this, x, y, this.heroiId);
     // armadura comprada na loja ou herdada da fase anterior: o registry manda, o sprite obedece
     if (OBP.Armadura.vestida(this.registry.get('coracoesExtra'))) this.player.vestirArmadura(true);
+    this.criarAderecos();
     this.blocos = new OBP.Blocos(this, this.camada);
     this.itens = new OBP.Itens(this, this.camada);
     this.itens.criarDoMapa(this.m.entidades, this.checkpointAtivo);
@@ -108,7 +112,21 @@ OBP.Level = class extends Phaser.Scene {
     this.player.on('atirou', () => { if (this.projeteis.lancar(this.player)) OBP.Audio.tiro(); });
     this.player.on('pousouAlto', () => OBP.Audio.pouso());
     this.events.on('bloco-quebrado', () => { OBP.Audio.bloco(); OBP.Voice.reacaoCada('soco-01', 10); });
+    this.events.on('caveira', () => { OBP.Audio.acordar(); OBP.VozInimigo.falar(this, 'fantasma-sai', { prioritaria: true }); });
     this.events.on('lampada', () => { OBP.Audio.verba(this.time.now); OBP.Voice.reacaoCada('moeda-01', 50); });
+  }
+  // adereços de cenário (decisão 88): a cada 9 colunas, onde o chão é reto e livre por duas linhas, um objeto da
+  // agência fica atrás dos tiles e na frente do fundo, para a tela ter três planos (fundo a 0,4, adereço e tiles a 1)
+  criarAderecos() {
+    const tipos = ['planta', 'bebedouro', 'quadro', 'luminaria'].filter(k => this.textures.exists('prop-' + k));
+    const mapa = OBP.FASES[this.faseId].mapa, chao = mapa.length - 1;
+    if (!tipos.length || chao < 3) return;
+    let n = 0;
+    for (let c = 3; c < mapa[0].length - 3; c += 7) {
+      const livre = [c, c + 1].every(x => mapa[chao][x] === '#' && mapa[chao - 1][x] === '.' && mapa[chao - 2][x] === '.');
+      if (!livre) continue;
+      this.add.image(c * 32 + 32, chao * 32, 'prop-' + tipos[n++ % tipos.length]).setOrigin(0.5, 1).setDepth(-5);
+    }
   }
   criarInimigos() {
     const lista = OBP.FASES[this.faseId].inimigos;
@@ -127,7 +145,7 @@ OBP.Level = class extends Phaser.Scene {
     }
     // a arena do chefe (decisao 85) nao tem marca no mapa: o Sobrinho nasce fixo a direita e o jokenpo abre por cima
     if (this.faseId === 'chefe') { OBP.Chefe.criarTexturas(this); this.chefe = new OBP.Chefe(this, 496, 320); this.inimigos.add(this.chefe); }
-    this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto);
+    this.physics.add.collider(this.inimigos, this.camada, null, (e) => !e.morto && !e.t.atravessa);   // o fantasma atravessa parede
     this.physics.add.overlap(this.player, this.inimigos, (p, e) => this.contatoInimigo(e), (p, e) => !e.morto && !p.morto && e.fere);
     // projétil mata inimigo comum em 1 acerto, igual ao soco (adendo 6); hazard invencível só consome o projétil
     this.physics.add.overlap(this.projeteis.grupo, this.inimigos, (p, e) => {

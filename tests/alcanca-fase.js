@@ -10,7 +10,7 @@ const TILE = 32;
 // A esteira saiu do escopo e os marcadores > e < viraram chao (decisao 82). Eles NAO voltam para esta lista:
 // nao estao em OBP.Mapa.LEG, entao no jogo viram BURACO, e trata-los como solido aqui foi o que escondeu 12
 // tiles de chao inexistentes no comeco da fase 5.
-const SOLIDO = '#*?R';        // bloqueiam dos quatro lados
+const SOLIDO = '#*?RC';        // bloqueiam dos quatro lados
 const PLATAF = '=';           // atravessa de baixo, pousa em cima
 const PERIGO = '^';           // espinho: nao pisa
 
@@ -131,7 +131,7 @@ for (const rel of alvos) {
     if (r.ok) console.log(`${chave} ${id}: ALCANCA a saida`);
     else { console.log(`${chave} ${id}: BLOQUEADO na coluna ${r.maisLonge} (saida na ${r.meta})`); falhou = true; }
     // itens: uniao do que alcanca andando e do que alcanca depois de quebrar o que o heroi quebra
-    const quebra = herois[id].quebraReforcado ? '*R' : '*';
+    const quebra = herois[id].quebraReforcado ? '*RC' : '*C';
     const comSoco = alcanca(linhas, herois[id], quebra);
     const pes = new Set([...(r.vistos || []), ...(comSoco.vistos || [])]);
     const perdidos = [];
