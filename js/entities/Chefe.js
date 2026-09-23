@@ -101,7 +101,7 @@ OBP.Chefe = class extends Phaser.Physics.Arcade.Sprite {
     this.vida--; s.vidaChefe(this.vida, this.vidaTotal());
     OBP.Audio.dano(); OBP.Pedacos.spawn(s, this.x, this.y - 40, 'estrela32');
     s.cameras.main.shake(83, new Phaser.Math.Vector2(2 / 640, 2 / 360));
-    if (this.vida <= 0) this.derrotar();
+    if (this.vida <= 0) this.derrotar(); else OBP.Voice.falarUma(['ccabeca-01', 'ccabeca-02']);
   }
   derrotar() {
     const s = this.scene;
@@ -177,6 +177,6 @@ OBP.Batata = class extends Phaser.Physics.Arcade.Sprite {
   morrer(dir, knockback) {
     this.morto = true; this.morreuEm = this.scene.time.now; this.fere = false; this.invencivel = true;
     this.body.setBounce(0, 0); this.body.setVelocity(dir * knockback, -200);
-    OBP.Audio.morteInimigo();
+    OBP.Audio.morteInimigo(); OBP.Voice.falarUma(['cbatata-01', 'cbatata-02']);
   }
 };

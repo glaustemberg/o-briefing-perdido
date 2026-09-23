@@ -150,6 +150,15 @@ teste('classe do id: dano e morte urgentes, início/check/vitória/seleção gar
   igual(OBP.VoiceLogic.classe('tk-vitfase-01'), 'garantida'); igual(OBP.VoiceLogic.classe('gp-sel-01'), 'garantida');
   igual(OBP.VoiceLogic.classe('tk-pulo-01'), 'reacao'); igual(OBP.VoiceLogic.classe('tk-moeda-01'), 'reacao');
 });
+teste('sorteio de variante nunca repete a última e cai para a única opção', () => {
+  const e = {}, L = ['a', 'b', 'c'];
+  const s1 = OBP.VoiceLogic.sorteia(e, L, 0.0); igual(s1, 'a');
+  igual(OBP.VoiceLogic.sorteia(e, L, 0.0), 'b', 'com rnd 0 a proxima e a primeira que nao e a ultima');
+  igual(OBP.VoiceLogic.sorteia(e, L, 0.99), 'c'); igual(OBP.VoiceLogic.sorteia(e, L, 0.99), 'b');
+  igual(OBP.VoiceLogic.sorteia(e, ['x'], 0.5), 'x'); igual(OBP.VoiceLogic.sorteia(e, ['x'], 0.5), 'x', 'uma opcao so repete');
+  igual(OBP.VoiceLogic.sorteia(e, [], 0.5), null);
+  igual(OBP.VoiceLogic.classe('tk-cinicio-02'), 'garantida'); igual(OBP.VoiceLogic.classe('tk-dano-c1'), 'urgente'); igual(OBP.VoiceLogic.classe('gp-cbatata-01'), 'reacao');
+});
 teste('reação respeita o teto de 20 s', () => {
   const e = OBP.VoiceLogic.criar();
   igual(OBP.VoiceLogic.decidir(e, 'tk-pulo-01', 1000), true, 'primeira');

@@ -1,0 +1,22 @@
+{
+ "mesa": {
+  "left": 29.65,
+  "top": 19.27,
+  "width": 40.7,
+  "height": 41.28,
+  "ratio": 1.767,
+  "imagem": "site/mesa.jpg",
+  "w": 1376,
+  "h": 768
+ },
+ "mesa-mobile": {
+  "left": 7.29,
+  "top": 27.4,
+  "width": 85.42,
+  "height": 28.12,
+  "ratio": 1.695,
+  "imagem": "site/mesa-mobile.jpg",
+  "w": 768,
+  "h": 1376
+ }
+}

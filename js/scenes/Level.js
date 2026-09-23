@@ -73,7 +73,7 @@ OBP.Level = class extends Phaser.Scene {
     // iris de entrada simplificada em fade (300 ms); a fala de inicio toca no primeiro frame de controle
     this.cameras.main.once('camerafadeincomplete', () => {
       if (this.faseId === 'chefe') {   // o jokenpo abre por cima da arena (decisao 85), depois da fala ao ver o Sobrinho (decisao 89)
-        OBP.Voice.falar(OBP.FALA.verChefe[this.registry.get('heroi')] || 'extra-01');
+        OBP.Voice.falarUma(['cinicio-01', 'cinicio-02', 'cinicio-03', OBP.FALA.verChefe[this.registry.get('heroi')]]);   // variedade (decisao 90)
         this.time.delayedCall(900, () => this.scene.launch('Boss'));
         return;
       }
@@ -193,7 +193,7 @@ OBP.Level = class extends Phaser.Scene {
     OBP.Audio.dano();
     this.pararTudo(OBP.CFG.HITSTOP_DANO_MS);
     this.cameras.main.shake(100, new Phaser.Math.Vector2(4 / 640, 4 / 360));
-    if (r.coracoes <= 0) this.matar(); else this.falarDoHeroi('dano-01');
+    if (r.coracoes <= 0) this.matar(); else this.falarDoHeroi(this.faseId === 'chefe' ? OBP.Voice.escolher(['dano-01', 'dano-c1', 'dano-c2']) || 'dano-01' : 'dano-01');
   }
   // soco no inimigo: mata, voa no knockback do herói, hit stop do herói (40 ms tikinho, 60 gilpp)
   socarInimigos(caixa) {

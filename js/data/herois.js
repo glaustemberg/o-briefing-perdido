@@ -31,6 +31,9 @@ OBP.HEROIS = {
       'tk-inicio-01', 'tk-inicio-f1', 'tk-inicio-f2', 'tk-inicio-f3', 'tk-inicio-f4', 'tk-inicio-f5', 'tk-inicio-f6', 'tk-inicio-f7', 'tk-inicio-f8',
       'tk-item-01', 'tk-jkp-01', 'tk-loja-01', 'tk-moeda-01', 'tk-morte-01', 'tk-pulo-01',
       'tk-sel-01', 'tk-soco-01', 'tk-vitchefe-01', 'tk-vitfase-01',
+      // chefe (decisao 90): variedade por momento
+      'tk-cinicio-01', 'tk-cinicio-02', 'tk-cinicio-03', 'tk-cganha-01', 'tk-cganha-02', 'tk-cganha-03', 'tk-cperde-02', 'tk-cperde-03',
+      'tk-cvence-01', 'tk-cvence-02', 'tk-ccabeca-01', 'tk-ccabeca-02', 'tk-cbatata-01', 'tk-cbatata-02', 'tk-dano-c1', 'tk-dano-c2',
     ],
   },
   gilpp: {
@@ -48,6 +51,9 @@ OBP.HEROIS = {
       'gp-inicio-01', 'gp-inicio-f1', 'gp-inicio-f2', 'gp-inicio-f3', 'gp-inicio-f4', 'gp-inicio-f5', 'gp-inicio-f6', 'gp-inicio-f7', 'gp-inicio-f8',
       'gp-item-01', 'gp-jkp-01', 'gp-loja-01', 'gp-moeda-01', 'gp-morte-01', 'gp-pulo-01',
       'gp-sel-01', 'gp-sel-02', 'gp-soco-01', 'gp-vitchefe-01', 'gp-vitfase-01',
+      // chefe (decisao 90): variedade por momento
+      'gp-cinicio-01', 'gp-cinicio-02', 'gp-cinicio-03', 'gp-cganha-01', 'gp-cganha-02', 'gp-cganha-03', 'gp-cperde-02', 'gp-cperde-03',
+      'gp-cvence-01', 'gp-cvence-02', 'gp-ccabeca-01', 'gp-ccabeca-02', 'gp-cbatata-01', 'gp-cbatata-02', 'gp-dano-c1', 'gp-dano-c2',
     ],
   },
 };

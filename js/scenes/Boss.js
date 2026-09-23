@@ -173,12 +173,13 @@ OBP.Boss = class extends Phaser.Scene {
     this.fase = 'resultado'; this.proximo = t + 2 * this.B;
     if (r > 0) {
       this.pontos.jogador++; this.resultado.setText('BOA!').setColor(P.moeda);
-      this.chefe.setFrame(5); OBP.Audio.dano(); OBP.Voice.falar('jkp-01');
+      this.chefe.setFrame(5); OBP.Audio.dano(); OBP.Voice.falarUma(['cganha-01', 'cganha-02', 'cganha-03']);
       this.cameras.main.shake(83, new Phaser.Math.Vector2(2 / 640, 2 / 360));
     } else if (r < 0) {
       this.pontos.chefe++; this.resultado.setText('PERDEU').setColor(P.coracao);
       this.chefe.setFrame(7); this.heroi.setFrame(this.heroi.frames().hurt); OBP.Audio.bloco();
       OBP.VozInimigo.falar(this, 'chefe', { variantes: 2, prioritaria: true });
+      this.time.delayedCall(900, () => OBP.Voice.falarUma(['jkp-01', 'cperde-02', 'cperde-03']));   // o heroi responde depois do Sobrinho
     } else { this.resultado.setText('EMPATE').setColor(P.cinzaClaro); OBP.Audio.menuMover(); }
     this.resultado.setVisible(true);
     this.pontosH.forEach((b, i) => b.setFillStyle(P.num(i < this.pontos.jogador ? P.moeda : P.contorno), i < this.pontos.jogador ? 1 : 0.6));
@@ -188,6 +189,7 @@ OBP.Boss = class extends Phaser.Scene {
     const P = OBP.PAL, ganhou = v === 'jogador';
     this.fase = 'fim';
     this.resultado.setText(ganhou ? 'VENCEU O JOKENPÔ!' : 'REPROVADO').setColor(ganhou ? P.moeda : P.coracao).setVisible(true);
+    if (ganhou) OBP.Voice.falarUma(['cvence-01', 'cvence-02']);
     this.aviso.setText(ganhou ? 'AGORA ELE VAI ATACAR' : 'ISSO CUSTA UM CORAÇÃO');
     this.chefe.setFrame(ganhou ? 5 : 7); this.heroi.setFrame(ganhou ? this.heroi.frames().idle : this.heroi.frames().hurt);
     this.balaoH.setVisible(false); this.maoH.setVisible(false); this.rotuloH.setVisible(false);

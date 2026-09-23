@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tikinho & gilpp: O Briefing Perdido</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>
+  html, body { margin: 0; height: 100%; background: #111; overflow: hidden; }
+  #jogo { position: relative; width: 100vw; height: 100vh; }
+  #jogo canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  #fonte-pre { position: absolute; left: -9999px; top: 0; font-family: "Press Start 2P", monospace; }
+  /* celular em pe deixa o jogo numa faixa estreita: o aviso pede a virada sem tapar a tela (decisao 74) */
+  #vire { display: none; }
+  @media (orientation: portrait) and (pointer: coarse) {
+    #vire { display: block; position: fixed; left: 0; right: 0; bottom: 24px; text-align: center;
+            font-family: "Press Start 2P", monospace; font-size: 12px; color: #FFCF3F; z-index: 5; }
+  }
+</style>
+</head>
+<body>
+<div id="jogo"></div>
+<span id="fonte-pre">.</span>
+<div id="vire">VIRE O CELULAR</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js"></script>
+<script src="js/data/paleta.js"></script>
+<script src="js/config.js"></script>
+<script src="js/data/herois.js"></script>
+<script src="js/systems/Mapa.js"></script>
+<script src="js/data/loja.js"></script>
+<script src="js/data/fase-01.js"></script>
+<script src="js/data/fase-02.js"></script>
+<script src="js/data/fase-03.js"></script>
+<script src="js/data/fase-04.js"></script>
+<script src="js/data/fase-05.js"></script>
+<script src="js/data/fase-06.js"></script>
+<script src="js/data/fase-07.js"></script>
+<script src="js/data/fase-08a.js"></script>
+<script src="js/data/fase-08b.js"></script>
+<script src="js/data/fase-chefe.js"></script>
+<script src="js/systems/Save.js"></script>
+<script src="js/systems/Audio.js"></script>
+<script src="js/systems/Voice.js"></script>
+<script src="js/systems/Input.js"></script>
+<script src="js/systems/Camera.js"></script>
+<script src="js/entities/Block.js"></script>
+<script src="js/entities/Item.js"></script>
+<script src="js/entities/Projetil.js"></script>
+<script src="js/entities/Enemy.js"></script>
+<script src="js/entities/Chefe.js"></script>
+<script src="js/entities/Player.js"></script>
+<script src="js/scenes/Hud.js"></script>
+<script src="js/scenes/Select.js"></script>
+<script src="js/scenes/Shop.js"></script>
+<script src="js/scenes/Level.js"></script>
+  <script src="js/scenes/Boss.js"></script>
+<script src="js/scenes/Fim.js"></script>
+<script src="js/scenes/Boot.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

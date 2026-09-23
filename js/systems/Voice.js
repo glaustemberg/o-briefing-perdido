@@ -2,11 +2,21 @@
 // nada, garantida substitui o que estiver tocando, urgente corta qualquer outra.
 window.OBP = window.OBP || {};
 OBP.VoiceLogic = {
+  // sorteio entre variantes sem repetir a ultima da mesma lista (a chave e a lista inteira); null se vazia
+  sorteia(e, lista, rnd) {
+    if (!lista.length) return null;
+    e.ultimaEscolha = e.ultimaEscolha || {};
+    const chave = lista.join('|'), ultima = e.ultimaEscolha[chave];
+    const opcoes = lista.length > 1 ? lista.filter(s => s !== ultima) : lista;
+    const s = opcoes[Math.min(opcoes.length - 1, Math.floor(rnd * opcoes.length))];
+    e.ultimaEscolha[chave] = s;
+    return s;
+  },
   TETO_MS: 20000, URGENTE_MS: 4000,
   criar() { return { ultimaReacao: -1e9, ultimaUrgente: -1e9, contagens: {} }; },
   classe(id) {
     if (/-(dano|morte)-/.test(id)) return 'urgente';
-    if (/-(inicio|check|vitfase|vitchefe|jkp|sel|loja)-/.test(id)) return 'garantida';
+    if (/-(inicio|check|vitfase|vitchefe|jkp|sel|loja|cinicio|cvence)-/.test(id)) return 'garantida';
     return 'reacao';
   },
   decidir(e, id, agora) {
@@ -44,6 +54,12 @@ OBP.Voice = {
     return true;
   },
   reacaoCada(sufixo, n) { if (OBP.VoiceLogic.cada(this.e, sufixo, n)) this.falar(sufixo); },
+  // variedade no chefe (decisao 90): escolhe um sufixo da lista entre os que o Boot carregou, sem repetir o ultimo
+  escolher(lista) {
+    const tem = lista.filter(s => s && this.scene && this.scene.cache.audio.exists(`${this.prefixo}-${s}`));
+    return OBP.VoiceLogic.sorteia(this.e, tem, Math.random());
+  },
+  falarUma(lista, opc) { const s = this.escolher(lista); return s ? this.falar(s, opc) : false; },
 };
 // Falas dos inimigos (decisao 70, pedido do Berg). Canal separado do herói de propósito: no mesmo canal o
 // resmungo do abacaxi comeria o cooldown das falas dele. Dois freios: 2,2 s entre duas falas quaisquer e 6 s

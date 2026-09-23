@@ -4,8 +4,8 @@
     {
       "name": "jogo",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8080"],
-      "port": 8080
+      "runtimeArgs": ["servir.py", "8733"],
+      "port": 8733
     }
   ]
 }

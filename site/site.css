@@ -1,0 +1,413 @@
+/* tikinho e gilpp: O Briefing Perdido, site */
+
+:root {
+  --bg: #0B0B0E;
+  --texto: #EDEDF2;
+  --secundario: #9B9BA8;
+  --roxo-texto: #B48AE0;
+  --botao: #582C83;
+  --botao-hover: #6B3799;
+  --foco: #FFC933;
+  --borda: #2E2E38;
+  --chip-bg: #1C1C22;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--texto);
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  line-height: 1.4;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--roxo-texto);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.botao {
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.botao-primario {
+  background: var(--botao);
+  color: #FFFFFF;
+  padding: 16px 40px;
+  font-size: clamp(16px, 2vw, 20px);
+}
+
+.botao-primario:hover {
+  background: var(--botao-hover);
+}
+
+.botao-secundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  padding: 8px 24px;
+  font-size: 14px;
+}
+
+.botao-secundario:hover {
+  border-color: var(--roxo-texto);
+}
+
+.botao-pequena {
+  margin-top: 8px;
+}
+
+/* abertura */
+
+#abertura {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(32px, 6vh, 80px) clamp(24px, 7vw, 120px) 32px;
+}
+
+.abertura-img-wrap {
+  position: absolute;
+  inset: -16px;
+  z-index: 0;
+}
+
+.abertura-img {
+  position: absolute;
+  inset: 0;
+  background-image: url("abertura.jpg");
+  background-size: cover;
+  background-position: right bottom;
+  transform-origin: 100% 100%;
+  animation: kenburns 24s ease-in-out infinite alternate;
+}
+
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+.abertura-conteudo {
+  position: relative;
+  z-index: 1;
+  text-align: left;
+  max-width: min(640px, 44vw);   /* na faixa de 1440 px o titulo quebra em duas linhas e nao encosta no tikinho */
+  margin-bottom: 8vh;
+  animation: fadeUp 600ms cubic-bezier(.16,1,.3,1) both;
+  animation-delay: 100ms;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.abertura-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  color: var(--secundario);
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.abertura-eyebrow .logo-dot {
+  height: 20px;
+  width: 48px;
+}
+
+.abertura-titulo {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(40px, 7vw, 88px);
+  line-height: 1.05;
+  text-shadow: 0 4px 24px rgba(0,0,0,.55);
+}
+
+.abertura-subtitulo {
+  margin: 8px 0 24px;
+  font-weight: 500;
+  font-size: clamp(20px, 3vw, 36px);
+  color: var(--roxo-texto);
+  text-shadow: 0 2px 16px rgba(0,0,0,.5);
+}
+
+.abertura-dica {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  text-align: center;
+  color: var(--secundario);
+  font-size: 14px;
+}
+
+/* em pe (celular): texto no alto, centralizado, e os bonecos embaixo */
+@media (orientation: portrait) {
+  #abertura { align-items: center; justify-content: flex-start; }
+  .abertura-conteudo { text-align: center; margin-bottom: 0; max-width: 640px; }
+  .abertura-eyebrow { justify-content: center; }
+  .abertura-img { background-position: center bottom; transform-origin: 50% 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abertura-img { animation: none; }
+  .abertura-conteudo { animation: fadeUp 300ms ease-out both; }
+  html { scroll-behavior: auto; }
+}
+
+/* mesa */
+
+#mesa {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: var(--bg);
+  padding: 32px 0;
+}
+
+.mesa {
+  position: relative;
+  aspect-ratio: 1376 / 768;
+  width: min(100vw, calc(100vh * 1376 / 768));
+  background-image: url("mesa.jpg");
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.tela {
+  position: absolute;
+  left: 29.25%;
+  top: 18.87%;
+  width: 41.50%;
+  height: 42.08%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.jogo-caixa {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.jogo-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+.standby {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(160deg, #2A1544, #582C83);
+  text-align: center;
+}
+
+.standby-titulo {
+  margin: 0;
+  font-family: 'Pixelify Sans', monospace;
+  color: #FFFFFF;
+  font-size: clamp(16px, 4vw, 28px);
+}
+
+.botao-sair {
+  display: none;
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 10;
+  background: rgba(0,0,0,.5);
+  color: #FFFFFF;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.aviso-girar {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  text-align: center;
+  padding: 16px;
+}
+
+.aviso-girar p {
+  margin: 0;
+  color: var(--texto);
+  font-size: 18px;
+}
+
+.mesa-legenda {
+  color: var(--secundario);
+  font-size: 14px;
+  text-align: center;
+  max-width: 480px;
+  padding: 0 16px;
+  margin: 0;
+}
+
+/* tela cheia: mesmo elemento .tela vira camada fixa */
+
+body.tela-cheia .tela {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  z-index: 1000;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+body.tela-cheia .jogo-caixa {
+  transition: transform 450ms cubic-bezier(.16,1,.3,1), opacity 450ms cubic-bezier(.16,1,.3,1);
+}
+
+body.tela-cheia .botao-sair {
+  display: block;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  body.tela-cheia .aviso-girar {
+    display: flex;
+  }
+}
+
+/* celular: mesa em pe */
+
+@media (max-width: 768px), (orientation: portrait) {
+  .mesa {
+    aspect-ratio: 768 / 1376;
+    width: min(100vw, calc(100vh * 768 / 1376));
+    background-image: url("mesa-mobile.jpg");
+  }
+
+  .tela {
+    left: 6.89%;
+    top: 27.00%;
+    width: 86.22%;
+    height: 28.92%;
+  }
+}
+
+/* controles */
+
+#controles {
+  padding: 64px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  max-width: 800px;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--chip-bg);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 88px;
+}
+
+.chip-tecla {
+  font-weight: 600;
+  color: var(--texto);
+  font-size: 15px;
+}
+
+.chip-desc {
+  color: var(--secundario);
+  font-size: 13px;
+}
+
+.rodape {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  color: var(--secundario);
+  font-size: 14px;
+  text-align: center;
+}
+
+.logo-dot-rodape {
+  height: 24px;
+  width: 58px;
+  margin-bottom: 8px;
+}
+
+.rodape p {
+  margin: 0;
+}
+
+.rodape a {
+  word-break: break-all;
+}
