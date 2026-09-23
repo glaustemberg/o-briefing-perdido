@@ -58,7 +58,9 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     const b = this.body;
     return { x: this.dir > 0 ? b.right : b.left - s.w, y: b.top + s.dy, w: s.w, h: s.h };
   }
-  podeFerir() { return !this.morto && this.scene.time.now >= this.invencivelAte; }
+  podeFerir() { return !this.morto && this.scene.time.now >= Math.max(this.invencivelAte, this.carimboAte || 0); }
+  // cafe e energetico (decisao 86): 1,4x ate velAte; carimbo APROVADO: invencivel ate carimboAte, brilhando roxo
+  fatorVel(t) { return t < (this.velAte || 0) ? OBP.EFEITOS.cafe.fator : 1; }
   // dir: +1 empurra para a direita. atrasoMs: duração do hit stop, os relógios do recuo começam depois dele.
   ferir(dir, atrasoMs) {
     if (!this.podeFerir()) return false;
@@ -114,7 +116,8 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     else if (this.agachado && (!noChao || !inp.baixo || inp.puloAgora) && this.tetoLivre()) this.agachar(false);
     // horizontal: aceleração e freio por herói; no chão o soco para o herói (Alex Kidd zera a velocidade no soco)
     let alvo = 0;
-    if (!travado) { if (inp.esq) alvo = -h.vel; else if (inp.dir) alvo = h.vel; }
+    const fv = this.fatorVel(t);
+    if (!travado) { if (inp.esq) alvo = -h.vel * fv; else if (inp.dir) alvo = h.vel * fv; }
     if (this.agachado) alvo *= OBP.CFG.VEL_AGACHADO;   // desliza mais devagar que andando
     if (this.socoMs >= 0 && noChao) alvo = 0;
     if (!travado) b.setVelocityX(F.andar(b.velocity.x, alvo, h, s));
@@ -149,6 +152,8 @@ OBP.Player = class extends Phaser.Physics.Arcade.Sprite {
     const F = this.frames(), b = this.body;
     // invencível pisca por visibilidade (alpha parcial é proibido, spec 2.3): 4 f ligado, 4 f desligado
     this.setVisible(t >= this.invencivelAte || Math.floor(t / 66) % 2 === 0);
+    if (t < (this.carimboAte || 0)) { if (Math.floor(t / 100) % 2) this.setTint(OBP.PAL.num(OBP.PAL.roxoBrilho)); else this.clearTint(); }
+    else if (this.isTinted) this.clearTint();
     if (t < this.feridoAte) { this.anims.stop(); this.setFrame(this.agachado ? F.crouchHurt : F.hurt); return; }
     // tira de armadura não tem quadro de tiro agachado (só 8 quadros): o flash de disparo vale em pé ou agachado.
     if (this.armadura && t < this.tiroAte) { this.anims.stop(); this.setFrame(F.shoot); return; }

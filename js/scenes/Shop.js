@@ -9,7 +9,7 @@ OBP.Shop = class extends Phaser.Scene {
     const r = this.registry;
     return {
       lampadas: r.get('lampadas'), coracoesMax: r.get('coracoesMax'), coracoesBase: OBP.dif(r).coracoes, coracoesExtra: r.get('coracoesExtra'),
-      pulosExtra: r.get('pulosExtra'), itemGuardado: r.get('itemGuardado'),
+      pulosExtra: r.get('pulosExtra'), inventario: r.get('inventario') || [],
     };
   }
   create() {
@@ -25,7 +25,7 @@ OBP.Shop = class extends Phaser.Scene {
       nome: this.add.text(120, 92 + i * 28, it.nome, OBP.estiloTexto(8, P.branco)).setOrigin(0, 0),
       preco: this.add.text(520, 92 + i * 28, String(it.preco), OBP.estiloTexto(8, P.moeda)).setOrigin(1, 0),
     }));
-    this.txtSair = this.add.text(120, 92 + OBP.LOJA.length * 28, 'SAIR', OBP.estiloTexto(8, P.branco)).setOrigin(0, 0);
+    this.txtSair = this.add.text(120, 92 + OBP.LOJA.length * 28, 'COMEÇAR A FASE', OBP.estiloTexto(8, P.branco)).setOrigin(0, 0);
     this.cursor = this.add.image(84, 88, 'ui-seta').setOrigin(0, 0);
     this.txtResumo = this.add.text(320, 268, '', OBP.estiloTexto(8, P.cinzaClaro)).setOrigin(0.5);
     this.txtAviso = this.add.text(320, 292, '', OBP.estiloTexto(8, P.coracao)).setOrigin(0.5);
@@ -45,7 +45,7 @@ OBP.Shop = class extends Phaser.Scene {
     });
     this.txtSair.setColor(this.sel === OBP.LOJA.length ? P.moeda : P.branco);
     const it = OBP.LOJA[this.sel];
-    this.txtResumo.setText(it ? it.resumo : 'VOLTA À SELEÇÃO SEM COMPRAR');
+    this.txtResumo.setText(it ? it.resumo : `SEGUE PARA ${OBP.FASES[this.faseId] ? OBP.FASES[this.faseId].nome : this.faseId}`);
   }
   update(t) {
     if (this.avisoAte && t > this.avisoAte) { this.avisoAte = 0; this.txtAviso.setText(''); }
@@ -67,16 +67,14 @@ OBP.Shop = class extends Phaser.Scene {
     this.comprando = true;
     this.registry.set(r.estado);
     OBP.Audio.compra(); OBP.Voice.falar('loja-01');
-    this.txtAviso.setColor(OBP.PAL.verdeClaro).setText('COMPRADO');
+    this.txtAviso.setColor(OBP.PAL.verdeClaro).setText('COMPRADO'); this.avisoAte = t + 900;
     this.atualizar();
-    this.time.delayedCall(700, () => this.sair());
+    // compra quantos quiser (decisao 86): a saida e a linha COMECAR A FASE
+    this.time.delayedCall(350, () => { this.comprando = false; });
   }
   // fim de fase leva à seguinte (decisão 67). Depois da última cai na Seleção com manter: true, que diz para não
   // zerar lâmpadas, vidas e bônus comprados (o reset é só de jogo novo).
-  sair() {
-    const prox = OBP.proximaFase(this.faseId);
-    // depois da ultima fase o jogo FECHA numa tela de fim (decisao 82), em vez de voltar calado para a Selecao
-    if (prox) this.scene.start('Level', { fase: prox });
-    else this.scene.start('Fim');
-  }
+  // a loja e da fase que vem (decisao 86): sair e comecar essa fase
+  sair() { this.scene.start('Level', { fase: this.faseId }); }
+
 };

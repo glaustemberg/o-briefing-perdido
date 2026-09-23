@@ -5,7 +5,7 @@
 // Controles de toque: seis botões desenhados DENTRO do canvas de 640x360, então escalam com o jogo e não
 // precisam de HTML nenhum. O estado é global porque cada cena cria os seus e a leitura é sempre a mesma.
 OBP.Toque = {
-  estado: { esq: false, dir: false, cima: false, baixo: false, pulo: false, soco: false },
+  estado: { esq: false, dir: false, cima: false, baixo: false, pulo: false, soco: false, item: false, usar: false },
   ativo: false,
   disponivel(scene) {
     const d = scene.sys.game.device.input;
@@ -54,8 +54,9 @@ OBP.Input = class {
       cima: [k.addKey('UP'), k.addKey('W')], baixo: [k.addKey('DOWN'), k.addKey('S')],
       // Berg (17/09): pulo no espaco e murro no M. Z e X ficam como alternativa para quem ja pegou o jeito.
       pulo: [k.addKey('SPACE'), k.addKey('Z')], soco: [k.addKey('M'), k.addKey('X')], start: [k.addKey('ENTER')],
+      item: [k.addKey('B')], usar: [k.addKey('N')],   // Berg (23/09): B troca o item do inventario, N usa
     };
-    this.ant = { esq: false, dir: false, pulo: false, soco: false, start: false };
+    this.ant = { esq: false, dir: false, pulo: false, soco: false, start: false, item: false, usar: false };
     this.estado = Object.assign({}, OBP.Input.VAZIO);
     OBP.Toque.criar(scene, botoesDeToque);
   }
@@ -75,14 +76,16 @@ OBP.Input = class {
     const soco = down(this.k.soco) || !!(pad && (pad.X || pad.B)) || tq.soco;
     // no celular nao existe Enter: o botao de pulo ja confirma em todo menu, entao start fica so no teclado/pad
     const start = down(this.k.start) || !!(pad && pad.buttons[9] && pad.buttons[9].pressed);
+    const item = down(this.k.item) || !!(pad && pad.L1) || !!tq.item, usar = down(this.k.usar) || !!(pad && pad.R1) || !!tq.usar;
+    e.itemAgora = item && !this.ant.item; e.usarAgora = usar && !this.ant.usar;
     e.esq = esq; e.dir = dir; e.esqAgora = esq && !this.ant.esq; e.dirAgora = dir && !this.ant.dir;
     e.puloAgora = pulo && !this.ant.pulo; e.puloSegurado = pulo; e.puloSoltou = !pulo && this.ant.pulo;
     e.socoAgora = soco && !this.ant.soco; e.socoSegurado = soco; e.startAgora = start && !this.ant.start;
-    this.ant = { esq, dir, pulo, soco, start };
+    this.ant = { esq, dir, pulo, soco, start, item, usar };
     return e;
   }
 };
 OBP.Input.VAZIO = Object.freeze({
   esq: false, dir: false, cima: false, baixo: false, esqAgora: false, dirAgora: false,
-  puloAgora: false, puloSegurado: false, puloSoltou: false, socoAgora: false, socoSegurado: false, startAgora: false, gamepad: false,
+  puloAgora: false, puloSegurado: false, puloSoltou: false, socoAgora: false, socoSegurado: false, startAgora: false, itemAgora: false, usarAgora: false, gamepad: false,
 });

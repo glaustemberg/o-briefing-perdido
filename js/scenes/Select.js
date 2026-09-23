@@ -232,8 +232,8 @@ OBP.Select = class extends Phaser.Scene {
     const d = OBP.dif(this.registry);
     const base = { heroi: id, coracoes: this.registry.get('coracoesMax') || d.coracoes };
     this.registry.set(this.manter ? base : Object.assign(base, {
-      vidas: d.vidas, lampadas: 0, prazo: 0, coracoes: d.coracoes,
-      coracoesMax: d.coracoes, coracoesExtra: 0, pulosExtra: 0, itemGuardado: null,
+      vidas: d.vidas, lampadas: OBP.CFG.VERBA_INICIAL, prazo: 0, coracoes: d.coracoes,
+      coracoesMax: d.coracoes, coracoesExtra: 0, pulosExtra: 0, inventario: [], itemSel: 0, efeito: null,
     }));
     OBP.Audio.menuConfirmar(); OBP.Voice.init(this, id); OBP.Voice.falar('sel-01');
     // 400 ms, os mesmos de antes: windup, pulo de 12 px em quadros inteiros, pouso. Quem não foi escolhido senta.
@@ -243,6 +243,6 @@ OBP.Select = class extends Phaser.Scene {
     this.time.delayedCall(120, () => { if (outro) outro.spr.setFrame(OBP.FRAMES.crouch); });
     this.time.delayedCall(330, () => { alvo.setFrame(OBP.FRAMES.idle); OBP.Audio.pouso(); });
     this.time.delayedCall(220, () => this.cameras.main.fadeOut(180, 0, 0, 0));
-    this.time.delayedCall(400, () => { OBP.Musica.parar(this); this.scene.start('Level', { fase: this.faseInicial }); });
+    this.time.delayedCall(400, () => { OBP.Musica.parar(this); this.scene.start('Shop', { fase: this.faseInicial }); });   // a loja abre ANTES da fase (decisao 86)
   }
 };

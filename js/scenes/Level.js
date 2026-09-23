@@ -213,7 +213,7 @@ OBP.Level = class extends Phaser.Scene {
     // na loja (coração permanente, pulo duplo, armadura e item guardado): o continue mantém só o herói.
     this.registry.set({
       vidas: OBP.dif(this.registry).vidas, lampadas: 0, coracoesMax: OBP.dif(this.registry).coracoes, coracoesExtra: 0,
-      pulosExtra: 0, itemGuardado: null,
+      pulosExtra: 0, inventario: [], itemSel: 0,
     });
     this.time.delayedCall(2000, () => this.scene.restart({ fase: this.faseId, checkpoint: null, prazoMs: null }));
   }
@@ -248,6 +248,24 @@ OBP.Level = class extends Phaser.Scene {
   }
   // coxinha (spec 4): fecha a fase, coracoes cheios, fala de vitoria; os segundos que sobraram viram lampadas
   // (1 s = 1 lampada, adendo 2) e a pontuacao da corrida e comparada com o recorde da dupla fase mais heroi.
+  // inventario (decisao 86): B avanca para o proximo item, N consome o selecionado e liga o efeito
+  trocarItem() {
+    const inv = this.registry.get('inventario') || [];
+    if (OBP.Inventario.resumo(inv).length < 2) { OBP.Audio.menuMover(); return; }
+    this.registry.set('itemSel', OBP.Inventario.proximo(inv, this.registry.get('itemSel') || 0));
+    OBP.Audio.menuMover();
+  }
+  usarItem(t) {
+    const r = OBP.Inventario.usar(this.registry.get('inventario') || [], this.registry.get('itemSel') || 0);
+    if (!r) { OBP.Audio.dano(); return; }
+    const ef = OBP.EFEITOS[r.id];
+    this.registry.set({ inventario: r.inventario, itemSel: r.sel });
+    if (ef.tipo === 'velocidade') this.player.velAte = Math.max(this.player.velAte || 0, t) + ef.ms;
+    else if (ef.tipo === 'invencivel') this.player.carimboAte = t + ef.ms;
+    else if (ef.tipo === 'vida') this.registry.inc('vidas', 1);
+    this.registry.set('efeito', { id: r.id, ate: ef.ms ? t + ef.ms : 0, desde: t });
+    OBP.Audio.item(); OBP.Voice.reacaoCada('item-01', 100);
+  }
   // vida do chefe (decisao 85): placa abaixo do HUD, a direita, uma batata por acerto que ainda falta
   vidaChefe(vida, max) {
     const P = OBP.PAL;
@@ -298,8 +316,9 @@ OBP.Level = class extends Phaser.Scene {
     }
     const inp = this.inp.ler();
     this.contarPrazo(dt);
-    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { this.scene.start(this.faseId === 'chefe' ? 'Fim' : 'Shop', { fase: this.faseId }); return; }
+    if (this.concluida && this.podeSair && (inp.startAgora || inp.puloAgora)) { const prox = OBP.proximaFase(this.faseId); this.scene.start(prox ? 'Shop' : 'Fim', { fase: prox }); return; }
     this.player.update(this.controle ? inp : OBP.Input.VAZIO, t, dt);
+    if (this.controle && !this.morrendo) { if (inp.itemAgora) this.trocarItem(); if (inp.usarAgora) this.usarItem(t); }
     for (const e of [...this.inimigos.getChildren()]) e.update(t, dt);
     this.blocos.update(t);
     this.projeteis.update();

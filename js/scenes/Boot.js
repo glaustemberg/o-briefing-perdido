@@ -64,7 +64,7 @@ OBP.Boot = class extends Phaser.Scene {
     this.registry.set({
       heroi: 'tikinho', dificuldade: 'medio', vidas: OBP.CFG.VIDAS, lampadas: 0, prazo: 0,
       coracoes: OBP.CFG.CORACOES, coracoesMax: OBP.CFG.CORACOES, coracoesExtra: 0,
-      pulosExtra: 0, itemGuardado: null,
+      pulosExtra: 0, inventario: [], itemSel: 0, efeito: null,
     });
     const fonte = document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => []) : Promise.resolve([]);
     const teto = new Promise(r => setTimeout(r, 2000));
