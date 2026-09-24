@@ -29,14 +29,12 @@ OBP.Shop = class extends Phaser.Scene {
     this.add.image(520, 16, 'item-lampada').setOrigin(0, 0);
     this.txtSaldo = this.add.text(632, 24, '', OBP.estiloTexto(16, P.moeda)).setOrigin(1, 0);
 
-    // itens nas duas prateleiras do fundo: 3 permanentes em cima, 4 consumiveis embaixo; a porta e o oitavo lugar
+    // itens nas duas prateleiras do fundo: permanentes em cima, consumiveis embaixo, repartidos por igual ao longo
+    // da madeira (as duas prateleiras do copa.png vao de x 77 a 352). Berg, decisao 93: "ficou desorganizado os
+    // itens", quando o Ctrl+Z virou consumivel e caiu fora da prateleira. A porta e o ultimo lugar.
     const cima = OBP.LOJA.filter(i => !i.consumivel), baixo = OBP.LOJA.filter(i => i.consumivel);
-    const lugar = (it, x, y) => ({ it, x, y });
-    this.lugares = [
-      ...cima.map((it, i) => lugar(it, 120 + i * 90, 84)),
-      ...baixo.map((it, i) => lugar(it, 100 + i * 70, 149)),
-      { it: null, x: 565, y: 240 },   // porta
-    ];
+    const fileira = (lista, y) => lista.map((it, i) => ({ it, x: Math.round(77 + (i + 0.5) * 275 / lista.length), y }));
+    this.lugares = [...fileira(cima, 84), ...fileira(baixo, 149), { it: null, x: 565, y: 240 }];
     this.cartoes = this.lugares.map(l => {
       if (!l.it) {
         const placa = this.add.rectangle(l.x, 150, 72, 20, P.num(P.contorno), 0.85);

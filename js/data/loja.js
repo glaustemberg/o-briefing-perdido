@@ -6,18 +6,20 @@ window.OBP = window.OBP || {};
 OBP.LOJA = [
   { id: 'coracao',    nome: 'CORAÇÃO PERMANENTE', preco: 30, resumo: 'UM CORAÇÃO A MAIS, PARA SEMPRE' },
   { id: 'pulo-duplo', nome: 'PULO DUPLO',          preco: 15, resumo: 'SEGUNDO PULO NO AR, PARA SEMPRE' },
-  { id: 'armadura',   nome: 'ARMADURA ROXA',       preco: 25, resumo: 'TRÊS CORAÇÕES EXTRAS E TIRO' },
+  { id: 'armadura',   nome: 'ARMADURA ROXA',       preco: 25, resumo: 'ATÉ O FIM DA FASE: 3 CORAÇÕES E TIRO', consumivel: true },
   { id: 'cafe',       nome: 'CAFÉ',                preco: 10, resumo: 'VELOCIDADE 1,4X POR 10 S', consumivel: true },
   { id: 'energetico', nome: 'ENERGÉTICO',          preco: 20, resumo: 'VELOCIDADE 1,4X POR 25 S', consumivel: true },
   { id: 'carimbo',    nome: 'CARIMBO APROVADO',    preco: 20, resumo: 'INVENCÍVEL POR 8 S', consumivel: true },
-  { id: 'ctrlz',      nome: 'CTRL+Z',              preco: 40, resumo: 'DESFAZ UMA MORTE, SOZINHO', consumivel: true },
+  { id: 'ctrlz',      nome: 'CTRL+Z',              preco: 40, resumo: 'DEVOLVE UM CORAÇÃO PERDIDO', consumivel: true },
 ];
-// o que cada consumivel faz quando o heroi usa (N). ms: duracao do efeito; 'vida' e instantaneo.
+// o que cada consumivel faz quando o heroi usa (N). ms: duracao do efeito; 'coracao' e 'armadura' (decisao 93,
+// Berg: "pausa e uma animacao rapida") sao aplicados na hora, e a Cena por cima do Level so mostra o flourish.
 OBP.EFEITOS = {
-  cafe:       { tipo: 'velocidade', fator: 1.4, ms: 10000 },
-  energetico: { tipo: 'velocidade', fator: 1.4, ms: 25000 },
+  cafe:       { tipo: 'velocidade', fator: 1.4, ms: 5000 },
+  energetico: { tipo: 'velocidade', fator: 1.4, ms: 10000 },
   carimbo:    { tipo: 'invencivel', ms: 8000 },
-  ctrlz:      { tipo: 'desfazer', passivo: true },   // dispara sozinho na morte: nao entra no ciclo do B nem no N
+  ctrlz:      { tipo: 'coracao' },      // devolve 1 coracao; usa com N como os outros (decisao 93)
+  armadura:   { tipo: 'armadura' },     // veste a armadura ate o fim da fase (Level.concluir zera coracoesExtra)
 };
 OBP.Loja = {
   MAX_POR_ITEM: 3,   // teto por consumivel no inventario
@@ -30,7 +32,6 @@ OBP.Loja = {
     if (estado.lampadas < it.preco) return 'LÂMPADAS DE MENOS';
     if (id === 'coracao' && estado.coracoesMax > (estado.coracoesBase || OBP.CFG.CORACOES)) return 'JÁ TEM';
     if (id === 'pulo-duplo' && estado.pulosExtra > 0) return 'JÁ TEM';
-    if (id === 'armadura' && estado.coracoesExtra > 0) return 'JÁ TEM';
     if (it.consumivel && (estado.inventario || []).filter(x => x === id).length >= this.MAX_POR_ITEM) return `JÁ TEM ${this.MAX_POR_ITEM}`;
     return null;
   },
@@ -41,7 +42,6 @@ OBP.Loja = {
     n.lampadas = estado.lampadas - it.preco;
     if (id === 'coracao') n.coracoesMax = estado.coracoesMax + 1;
     else if (id === 'pulo-duplo') n.pulosExtra = 1;
-    else if (id === 'armadura') n.coracoesExtra = OBP.CFG.CORACOES_ARMADURA || 3;
     else n.inventario.push(id);
     return { ok: true, motivo: null, estado: n };
   },

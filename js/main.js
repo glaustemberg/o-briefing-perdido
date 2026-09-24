@@ -6,7 +6,9 @@
     scale: { mode: Phaser.Scale.NONE, zoom: OBP.zoomInteiro(), autoCenter: Phaser.Scale.NO_CENTER },
     physics: { default: 'arcade', arcade: { gravity: { y: 0 }, tileBias: 32, fps: 60, debug: false } },
     input: { gamepad: true },
-    scene: [OBP.Boot, OBP.Select, OBP.Shop, OBP.Intro, OBP.Cena, OBP.Level, OBP.Hud, OBP.Boss, OBP.Fim].filter(Boolean),
+    // ordem = ordem de desenho: quem e lancado por cima (Boss, Cena) precisa vir DEPOIS de Level e Hud na lista,
+    // senao desenha atras mesmo estando ativo (achado da Cena: cena inteira rodava escondida atras do Level)
+    scene: [OBP.Boot, OBP.Select, OBP.Shop, OBP.Intro, OBP.Level, OBP.Hud, OBP.Boss, OBP.Cena, OBP.Fim].filter(Boolean),
   });
   // O autoCenter do Phaser centraliza em pixel CSS, e com dpr fracionario (Windows a 125% ou 150%) isso cai em
   // MEIO pixel fisico. Com nearest neighbor, meio pixel de deslocamento come uma linha inteira do sprite: e o que

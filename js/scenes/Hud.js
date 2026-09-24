@@ -41,7 +41,7 @@ OBP.Hud = class extends Phaser.Scene {
     // slot do item (decisao 86): icone do selecionado, quantidade em 8 px e a barra do efeito ativo
     this.itemIcone = this.add.image(606, 34, 'item-cafe').setOrigin(0.5).setVisible(false);
     this.itemQtd = this.add.text(620, 46, '', OBP.estiloTexto(8, P.moeda)).setOrigin(1, 1).setStroke(P.contorno, 3);
-    this.barraEfeito = this.add.rectangle(590, 55, 32, 3, P.num(P.moeda)).setOrigin(0, 0).setVisible(false);
+    this.barraEfeito = this.add.rectangle(590, 51, 32, 4, P.num(P.moeda)).setOrigin(0, 0).setVisible(false);
     this.desenharItem();
     // vidas (revisao 10): nunca apareciam em tela nenhuma
     this.txtVidas = this.add.text(H.CORACAO_X, 54, '', OBP.estiloTexto(8, P.branco)).setOrigin(0, 0).setStroke(P.contorno, 3);

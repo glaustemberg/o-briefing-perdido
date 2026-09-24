@@ -33,6 +33,17 @@ OBP.Boot = class extends Phaser.Scene {
     this.load.image('fundo-copa', 'assets/fundos/copa.png');
     for (const k of ['carimbo', 'ctrlz', 'pulo-duplo', 'armadura']) this.load.image('item-' + k, 'assets/tiles/itens/item-' + k + '.png');
     this.load.image('sob-corpo', 'assets/sprites/sobrinho/sob-corpo.png');
+    // marca dot. atras do heroi na cena de uso da armadura (decisao 93)
+    // PNG rasterizado do SVG oficial (assets/ui/logo-dot.svg): o load.svg subia para a GPU como um retangulo preto opaco
+    this.load.image('logo-dot', 'assets/ui/logo-dot.png');
+    // cenas de uso de item em video (decisao 93): Seedance no Magnific a partir de quadros do proprio jogo, sem audio.
+    // Baixadas em segundo plano como blob: o Phaser 3.60+ so baixa o mp4 ao dar play, e a primeira cena abria em
+    // branco esperando a rede. Sem o blob (offline, 404) a Cena cai na versao desenhada.
+    OBP.VIDEOS = {};
+    for (const h of ['tikinho', 'gilpp']) for (const it of ['cafe', 'energetico', 'ctrlz', 'armadura', 'carimbo']) {
+      const k = h + '-' + it;
+      fetch(`assets/video/${k}.mp4` + V).then(r => (r.ok ? r.blob() : null)).then(b => { if (b) OBP.VIDEOS[k] = URL.createObjectURL(b); }).catch(() => {});
+    }
     const T = 'assets/tiles/fase-01/';
     this.load.image('coxinha', T + 'item-coxinha.png');
     this.load.image('check-off', T + 'item-checkpoint-off.png');

@@ -8,7 +8,7 @@ OBP.CFG = {
   PROJETEIS_NA_TELA: 3,
   VERBA_INICIAL: 20,   // lampadas com que a partida comeca, para a primeira loja ter o que vender (decisao 86)
   // sobe quando um audio e refeito com o MESMO nome: sem isso o navegador serve o arquivo velho do cache
-  VERSAO_AUDIO: 7,   // era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
+  VERSAO_AUDIO: 8,   // 8: herois republicados a 6,2 sil/s (decisao 93). era 1: com teto de 1 o toque do murro de armadura 'nao saia' enquanto o tiro anterior voava
   PHASER_URL: 'https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js',
 };
 // Dificuldade (decisão 84, pedido do Berg). MÉDIO é o jogo exatamente como estava; os outros dois mexem nas mesmas
@@ -98,7 +98,6 @@ OBP.FALA_INICIO = { 'fase-01': 'f1', 'fase-02': 'f2', 'fase-05': 'f5', 'fase-08a
 OBP.FALA = {
   verChefe: { tikinho: 'extra-02', gilpp: 'extra-01' },
   arquivo:  { tikinho: 'extra-03', gilpp: 'extra-02' },
-  ctrlz:    { tikinho: 'extra-01', gilpp: 'check-01' },
 };
 // Arquétipos de inimigo (spec 4 e adendo 7). Fica aqui, e não em Enemy.js, porque tests/teste.html carrega este
 // arquivo sem o Phaser e Enemy.js não pode ser carregado (estende Phaser.Physics.Arcade.Sprite).

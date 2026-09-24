@@ -387,10 +387,11 @@ teste('loja tem os 5 itens do adendo mais os 2 consumiveis da decisao 86, com os
 });
 teste('comprar desconta o preço, aplica o bônus e não muta o estado antigo', () => {
   const e = lojaEstado(100);
+  // armadura virou consumivel (decisao 93): comprar poe no inventario, como cafe e energetico
   const r = OBP.Loja.comprar(e, 'armadura');
   igual(r.ok, true); igual(r.motivo, null);
-  igual(r.estado.lampadas, 75); igual(r.estado.coracoesExtra, 3);
-  igual(e.lampadas, 100, 'o estado de entrada continua intacto'); igual(e.coracoesExtra, 0);
+  igual(r.estado.lampadas, 75); igual(r.estado.inventario.join(), 'armadura');
+  igual(e.lampadas, 100, 'o estado de entrada continua intacto'); igual(e.inventario.join(), '');
   igual(OBP.Loja.comprar(lojaEstado(100), 'coracao').estado.coracoesMax, 4);
   igual(OBP.Loja.comprar(lojaEstado(100), 'pulo-duplo').estado.pulosExtra, 1);
   igual(OBP.Loja.comprar(lojaEstado(100), 'cafe').estado.inventario.join(), 'cafe');
@@ -403,28 +404,35 @@ teste('loja recusa por lâmpadas de menos, por já ter e por slot ocupado', () =
   igual(OBP.Loja.comprar(lojaEstado(9), 'cafe').estado.lampadas, 9, 'e não cobra');
   const comCoracao = Object.assign(lojaEstado(100), { coracoesMax: 4 });
   igual(OBP.Loja.motivo(comCoracao, 'coracao'), 'JÁ TEM');
-  const armado = Object.assign(lojaEstado(100), { coracoesExtra: 3 });
-  igual(OBP.Loja.motivo(armado, 'armadura'), 'JÁ TEM');
+  // armadura consumivel nao tem mais regra de "JA TEM": o teto e o mesmo MAX_POR_ITEM dos outros consumiveis
+  const armadoCheio = Object.assign(lojaEstado(100), { inventario: ['armadura', 'armadura', 'armadura'] });
+  igual(OBP.Loja.motivo(armadoCheio, 'armadura'), 'JÁ TEM 3', 'teto por consumivel vale pra armadura tambem');
   const comPulo = Object.assign(lojaEstado(100), { pulosExtra: 1 });
   igual(OBP.Loja.motivo(comPulo, 'pulo-duplo'), 'JÁ TEM');
   const cheio = Object.assign(lojaEstado(100), { inventario: ['cafe', 'cafe', 'cafe'] });
   igual(OBP.Loja.motivo(cheio, 'cafe'), 'JÁ TEM 3', 'teto por consumivel'); igual(OBP.Loja.motivo(cheio, 'energetico'), null, 'outro consumivel ainda cabe');
   igual(OBP.Loja.motivo(lojaEstado(100), 'nao-existe'), 'ITEM DESCONHECIDO');
 });
-// inventario (decisao 86): B troca entre ids distintos, N consome uma unidade do selecionado
+// inventario (decisao 93: ctrl+z e armadura viraram ativos): B troca entre ids distintos, N consome uma unidade
 teste('inventario: resumo por id, troca circular com B e consumo com N', () => {
   const I = OBP.Inventario, inv = ['cafe', 'carimbo', 'cafe', 'ctrlz'];
-  igual(I.resumo(inv).map(r => r.id + r.n).join(), 'cafe2,carimbo1', 'ctrl+z e passivo, fica fora do ciclo');
-  igual(I.selecionado(inv, 0).id, 'cafe'); igual(I.selecionado(inv, 1).id, 'carimbo'); igual(I.selecionado(inv, 2).id, 'cafe', 'indice circular');
-  igual(I.proximo(inv, 1), 0, 'depois do ultimo volta ao primeiro'); igual(I.proximo([], 0), 0);
+  igual(I.resumo(inv).map(r => r.id + r.n).join(), 'cafe2,carimbo1,ctrlz1', 'ctrl+z virou ativo: entra no ciclo do B');
+  igual(I.selecionado(inv, 0).id, 'cafe'); igual(I.selecionado(inv, 1).id, 'carimbo'); igual(I.selecionado(inv, 2).id, 'ctrlz');
+  igual(I.selecionado(inv, 3).id, 'cafe', 'indice circular');
+  igual(I.proximo(inv, 2), 0, 'depois do ultimo volta ao primeiro'); igual(I.proximo([], 0), 0);
   igual(I.gastar(inv, 'ctrlz').join(), 'cafe,carimbo,cafe'); igual(I.gastar(['cafe'], 'ctrlz'), null); igual(I.quantos(inv, 'cafe'), 2);
   const u = I.usar(inv, 0); igual(u.id, 'cafe'); igual(u.inventario.join(), 'carimbo,cafe,ctrlz'); igual(u.sel, 0);
-  igual(I.usar(['ctrlz'], 0), null, 'so ctrl+z: nada para usar com N');
+  const uz = I.usar(['ctrlz'], 0); igual(uz.id, 'ctrlz'); igual(uz.inventario.length, 0, 'ctrl+z agora se usa com N, como os outros');
   const u2 = I.usar(['cafe'], 0); igual(u2.inventario.length, 0); igual(u2.sel, 0);
   igual(I.usar([], 0), null, 'sem item nao usa');
   const u3 = I.usar(['cafe', 'carimbo'], 1); igual(u3.id, 'carimbo'); igual(u3.sel, 0, 'selecao volta a caber');
-  igual(OBP.EFEITOS.cafe.ms, 10000); igual(OBP.EFEITOS.energetico.ms, 25000); igual(OBP.EFEITOS.carimbo.ms, 8000); igual(OBP.EFEITOS.ctrlz.passivo, true);
-  igual(OBP.LOJA.filter(i => i.consumivel).length, 4, 'quatro consumiveis');
+});
+// Cena por cima do Level ao usar item (decisao 93, Berg: "pausa e uma animacao rapida"): cafe e energetico
+// encurtaram, ctrl+z e armadura viraram efeitos aplicados na hora em vez de passivo/compra permanente
+teste('efeitos dos consumiveis depois da Cena: durações novas, ctrl+z devolve coração, armadura vira consumível', () => {
+  igual(OBP.EFEITOS.cafe.ms, 5000); igual(OBP.EFEITOS.energetico.ms, 10000);
+  igual(OBP.EFEITOS.ctrlz.tipo, 'coracao'); igual(OBP.EFEITOS.armadura.tipo, 'armadura');
+  igual(OBP.Loja.item('armadura').consumivel, true);
 });
 // ruling do Berg (pré-voo, 16/09): sem trava de 200 ms o Enter que fecha "FASE CONCLUÍDA" compra sozinho o
 // primeiro item da loja, porque startAgora ainda está true no primeiro frame da nova cena

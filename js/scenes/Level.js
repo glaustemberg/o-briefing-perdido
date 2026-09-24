@@ -224,23 +224,9 @@ OBP.Level = class extends Phaser.Scene {
     else OBP.Voice.falar(sufixo);
   }
   // morte: voa e cai 1,2 s, fade 300 ms, volta ao checkpoint com 3 corações; sem vidas, game over mínimo do M1
-  // Ctrl+Z (decisao 86): dispara sozinho na morte. Volta o heroi ao ultimo chao seguro com os coracoes cheios.
-  desfazer() {
-    const inv = OBP.Inventario.gastar(this.registry.get('inventario') || [], 'ctrlz');
-    if (!inv || this.morrendo) return false;
-    const p = this.player, s = this.ultimoChao || { x: p.x, y: p.y };
-    this.registry.set({ inventario: inv, coracoes: this.registry.get('coracoesMax') });
-    p.x = s.x; p.y = s.y; p.body.reset(s.x, s.y); p.body.setVelocity(0, 0);
-    p.invencivelAte = this.time.now + 1500; p.socoMs = -1;
-    this.pararTudo(200);
-    const P = OBP.PAL, txt = this.add.text(p.x, p.y - 80, 'CTRL+Z!', OBP.estiloTexto(16, P.moeda)).setOrigin(0.5).setStroke(P.contorno, 4).setDepth(150);
-    this.time.delayedCall(900, () => txt.destroy());
-    OBP.Audio.compra(); OBP.Voice.falar(OBP.FALA.ctrlz[this.registry.get('heroi')] || 'extra-01');
-    return true;
-  }
+  // Ctrl+Z (decisao 93): deixou de ser passivo. Agora e um consumivel como os outros, usado com N (usarItem).
   matar() {
     if (this.morrendo) return;
-    if (this.desfazer()) return;
     this.morrendo = true; this.controle = false;
     this.registry.set({ coracoes: 0, coracoesExtra: 0, efeito: null });   // o efeito morre com o heroi (revisao 9)
     this.registry.inc('vidas', -1);
@@ -306,20 +292,26 @@ OBP.Level = class extends Phaser.Scene {
     this.registry.set('itemSel', OBP.Inventario.proximo(inv, this.registry.get('itemSel') || 0));
     OBP.Audio.menuMover();
   }
+  // usar item (decisao 93, Berg: "pausa no jogo e aparece uma animacao rapida no estilo do jogo mesmo onde eles
+  // consomem o item"). Consome, aplica o efeito e abre a Cena por cima, como o Boss.js abre o jokenpo. O Ctrl+Z
+  // olha o inventario ANTES de consumir: com os coracoes cheios ele nao gasta o item, so recusa.
   usarItem(t) {
-    const r = OBP.Inventario.usar(this.registry.get('inventario') || [], this.registry.get('itemSel') || 0);
+    const inv = this.registry.get('inventario') || [], sel = this.registry.get('itemSel') || 0;
+    const s = OBP.Inventario.selecionado(inv, sel);
+    if (!s) { OBP.Audio.dano(); return; }
+    if (s.id === 'ctrlz' && this.registry.get('coracoes') >= this.registry.get('coracoesMax')) { OBP.Audio.recusa(); return; }
+    const r = OBP.Inventario.usar(inv, sel);
     if (!r) { OBP.Audio.dano(); return; }
     const ef = OBP.EFEITOS[r.id];
     this.registry.set({ inventario: r.inventario, itemSel: r.sel });
     if (ef.tipo === 'velocidade') this.player.velAte = Math.max(this.player.velAte || 0, t) + ef.ms;
     else if (ef.tipo === 'invencivel') this.player.carimboAte = t + ef.ms;
-    else if (ef.tipo === 'vida') this.registry.inc('vidas', 1);
+    else if (ef.tipo === 'coracao') this.registry.set('coracoes', Math.min(this.registry.get('coracoesMax'), this.registry.get('coracoes') + 1));
+    else if (ef.tipo === 'armadura') { this.registry.set('coracoesExtra', OBP.CFG.CORACOES_ARMADURA); this.player.vestirArmadura(true); }
     this.registry.set('efeito', { id: r.id, ate: ef.ms ? t + ef.ms : 0, desde: t });
-    // o gole: o icone sobe da cabeca do heroi e some, com um hit stop curto (parecer 3)
-    const ic = this.add.image(this.player.x, this.player.y - this.player.height - 4, 'item-' + r.id).setOrigin(0.5).setDepth(150);
-    this.tweens.add({ targets: ic, y: ic.y - 12, duration: 150, delay: 50, onComplete: () => ic.destroy() });
-    this.pararTudo(50);
-    OBP.Audio.item(); OBP.Voice.reacaoCada('item-01', 100);
+    OBP.Audio.item();
+    this.scene.pause();
+    this.scene.launch('Cena', { tipo: r.id, heroi: this.heroiId });
   }
   // vida do chefe (decisao 85): placa abaixo do HUD, a direita, uma batata por acerto que ainda falta
   vidaChefe(vida, max) {
@@ -336,7 +328,8 @@ OBP.Level = class extends Phaser.Scene {
   concluir() {
     if (this.concluida || this.morrendo) return;
     this.concluida = true; this.controle = false;
-    this.registry.set({ coracoes: this.registry.get('coracoesMax'), efeito: null });
+    // a armadura acaba no fim da fase (decisao 93): consumivel so vale ate a proxima loja
+    this.registry.set({ coracoes: this.registry.get('coracoesMax'), efeito: null, coracoesExtra: 0 });
     OBP.Audio.item(); OBP.Voice.falar('vitfase-01');
     this.bonus = OBP.Relogio.bonus(this.prazoMs / 1000);
     this.pontos = OBP.Save.pontuacao(this.registry.get('lampadas'), this.bonus);
