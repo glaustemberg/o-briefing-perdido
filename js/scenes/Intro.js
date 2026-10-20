@@ -43,7 +43,9 @@ OBP.Intro = class extends Phaser.Scene {
     this['quadro' + this.i]();
     this.escrever(this.textos[this.i]);
     OBP.Voice.falarUma(['intro-0' + (this.i + 1)]);
-    this.time.delayedCall(4600, () => this.proximo());   // troca sozinho; a tecla adianta
+    // troca sozinho; a tecla adianta. Decisao 95: na velocidade natural a fala chega a 6,7 s, entao o quadro espera ela acabar
+    const dur = OBP.Voice.atual ? Math.round((OBP.Voice.atual.totalDuration || 0) * 1000) : 0;
+    this.time.delayedCall(Math.max(4600, dur + 500), () => this.proximo());
   }
   escrever(s) {
     this.txt.setText(''); let n = 0;
